@@ -1,0 +1,3 @@
+g_mode
+g_interactive_flag
+g_ai_flag

@@ -1,0 +1,116 @@
+//Lighting
+
+#ifdef GL2
+	#define PASSTHROUGH varying
+	#define OUTPUT(name) gl_FragData[##name]
+#endif
+#ifdef GL3
+	#define PASSTHROUGH in
+	#define OUTPUT(name) fragData[##name]
+#endif
+#ifdef GL4
+	#define PASSTHROUGH in
+	#define OUTPUT(name) fragData[##name]
+#endif
+
+#ifndef PASSTHROUGH
+#error GL version define not present, can not continue.
+#endif
+
+PASSTHROUGH vec2 uv0;
+PASSTHROUGH vec2 uv1;
+PASSTHROUGH vec2 uv2;
+PASSTHROUGH vec4 color;
+PASSTHROUGH vec3 f_normal;
+PASSTHROUGH vec3 f_tangent;
+PASSTHROUGH vec3 f_view;
+
+vec3 normal = normalize(f_normal);
+
+#ifdef GL3
+out vec4 fragData[gl_MaxDrawBuffers];
+#endif
+
+#ifdef GL4
+layout (location = 0) out vec4 fragData[gl_MaxDrawBuffers];
+
+uniform bool alphaTestEnable;
+uniform float alphaTestReference;
+uniform int alphaTestFunction;
+
+#define TESTFUNC_NEVER 0
+#define TESTFUNC_ALWAYS 1
+#define TESTFUNC_EQ 2
+#define TESTFUNC_NEQ 3
+#define TESTFUNC_LESS 4
+#define TESTFUNC_LEQ 5
+#define TESTFUNC_GREATER 6
+#define TESTFUNC_GEQ 7
+
+void processAlphaTest(float alpha){
+	if (alphaTestEnable){
+		switch (alphaTestFunction) {
+			case TESTFUNC_NEVER:
+				discard;
+				break;
+			case TESTFUNC_ALWAYS:
+				break;
+			case TESTFUNC_EQ:
+				if (alpha != alphaTestReference){
+					discard;
+				}
+				break;
+			case TESTFUNC_NEQ:
+				if (alpha == alphaTestReference){
+					discard;
+				}
+				break;
+			case TESTFUNC_LESS:
+				if (alpha >= alphaTestReference){
+					discard;
+				}
+				break;
+			case TESTFUNC_LEQ:
+				if (alpha > alphaTestReference){
+					discard;
+				}
+				break;
+			case TESTFUNC_GREATER:
+				if (alpha <= alphaTestReference){
+					discard;
+				}
+				break;
+			case TESTFUNC_GEQ:
+				if (alpha < alphaTestReference){
+					discard;
+				}
+				break;
+		}
+	}
+}
+#endif
+
+#define LIGHT_CMN_COLOR_AMB_IDX 0
+#define LIGHT_CMN_COLOR_DIF_IDX 1
+#define LIGHT_CMN_COLOR_SPC0_IDX 2
+#define LIGHT_CMN_COLOR_SPC1_IDX 3
+#define LIGHT_MAT_COLOR_EMI_IDX 4
+
+#define LIGHT_LGT_COLOR_MAX 4
+#define LIGHT_MAT_COLOR_MAX 5
+
+struct Light {
+	bool directional;
+    vec3 position;
+    vec3 direction;
+    vec4 colors[LIGHT_LGT_COLOR_MAX];
+};
+uniform Light lights[LIGHT_MAX];
+uniform int lightCount;
+
+uniform vec4 lightingColors[LIGHT_MAT_COLOR_MAX];
+vec4 ambientColor = lightingColors[LIGHT_CMN_COLOR_AMB_IDX];
+vec4 diffuseColor = lightingColors[LIGHT_CMN_COLOR_DIF_IDX];
+vec4 specular0Color = lightingColors[LIGHT_CMN_COLOR_SPC0_IDX];
+vec4 specular1Color = lightingColors[LIGHT_CMN_COLOR_SPC1_IDX];
+vec4 emissionColor = lightingColors[LIGHT_MAT_COLOR_EMI_IDX];

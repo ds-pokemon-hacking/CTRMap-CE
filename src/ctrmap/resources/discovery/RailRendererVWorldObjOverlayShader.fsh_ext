@@ -1,0 +1,11 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=frag-init
+/*
+#define OBJSEL_USED
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+OUTPUT(RT_OBJSEL) = vec4(0.0, 0.0, 0.0, 1.0);
+*/

@@ -1,0 +1,36 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=vert-init
+/*
+uniform vec3 p1;
+uniform vec3 p2;
+
+#ifdef PASS_ABS_RECT_POS
+PASSTHROUGH vec3 f_absRectPos;
+#endif
+*/
+
+//EXTENSION-CODE region=frag-init
+/*
+#ifdef PASS_ABS_RECT_POS
+PASSTHROUGH vec3 f_absRectPos;
+#endif
+*/
+
+//EXTENSION-CODE region=vert-post
+/*
+vec3 absRectPos = vec3(
+	mix(p1.x, p2.x, a_position.x), 
+	a_position.y,
+	mix(p1.z, p2.z, a_position.z)
+);
+
+#ifdef PASS_ABS_RECT_POS
+f_absRectPos = absRectPos;
+#endif
+
+outPosition = projectionMatrix * viewMatrix * modelMatrix * vec4(
+	absRectPos,
+	1.0
+);
+*/

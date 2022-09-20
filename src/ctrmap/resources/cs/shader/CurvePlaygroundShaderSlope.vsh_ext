@@ -1,0 +1,37 @@
+#version HOUSTON_EX
+
+/*
+HermiteCurveShader
+*/
+
+//EXTENSION-CODE region=vert-init
+/*
+//HermiteCurveShader extensions
+uniform vec3 p1;
+uniform vec3 p2;
+uniform vec3 t1;
+uniform vec3 t2;
+uniform float diff;
+
+float hermite(float LHS, float LS, float RHS, float RS, float Diff, float Weight) {
+	float Result;
+
+	Result = LHS + (LHS - RHS) * (2.0 * Weight - 3.0) * Weight * Weight; //(2.0 * t3 - 3.0 * t2 + 1) * p0; + (-2.0 * t3 + 3.0 * t2) * p1
+	Result += (Diff * (Weight - 1.0)) * (LS * (Weight - 1.0) + RS * Weight);
+
+	return Result;
+}
+
+vec3 vectorHermite(vec3 p0, vec3 m0, vec3 p1, vec3 m1, float diff, float t) {
+	vec3 dest;
+	dest.x = hermite(p0.x, m0.x, p1.x, m1.x, diff, t);
+	dest.y = hermite(p0.y, m0.y, p1.y, m1.y, diff, t);
+	dest.z = hermite(p0.z, m0.z, p1.z, m1.z, diff, t);
+	return dest;
+}
+*/
+
+//EXTENSION-CODE region=vert-post
+/*
+outPosition = projectionMatrix * viewMatrix * modelMatrix * vec4(vectorHermite(p1, t1, p2, t2, diff * a_position.x, a_position.x), 1.0);
+*/

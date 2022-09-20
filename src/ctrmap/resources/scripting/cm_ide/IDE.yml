@@ -1,0 +1,4 @@
+PlatformInfos:
+  - "sdk/PlatformInfo.yml"
+Definitions:
+  - "IDE"

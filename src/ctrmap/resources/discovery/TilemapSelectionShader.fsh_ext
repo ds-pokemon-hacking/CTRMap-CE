@@ -1,0 +1,55 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=frag-init
+/*
+#define OBJSEL_USED
+
+uniform int chunkLayer;
+uniform int chunkX;
+uniform int chunkZ;
+
+const float _1_255 = 1.0/255.0;
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+vec2 tilemapPos = uv0 * 40.0;
+tilemapPos.y = 40.0 - tilemapPos.y;
+if (tilemapPos.x < 0.0 || tilemapPos.x >= 40.0 || tilemapPos.y < 0.0 || tilemapPos.y >= 40.0){
+	OUTPUT(RT_OBJSEL) = vec4(0.0);
+}
+else {
+	tilemapPos += vec2(float(chunkX), float(chunkZ)) * 40.0;
+	tilemapPos += 1.0;
+
+	vec4 objIdVec = vec4(0.0, 0.0, 0.0, 255.0);
+
+	//24 bits available - 11-bit X, 11-bit Z, 11-bit layer. X/Z are +1
+	//vec.x = X & 255
+	//vec.y = ((X >> 8) & 7) | ((Z & 31) << 3)
+	//vec.z = (layer << 6) | ((Z >> 5) & 63)
+
+	#define LSH_8 256
+	#define LSH_6 64
+	#define LSH_5 32
+	#define RSH_5 32
+	#define RSH_8 256
+	#define LSH_3 8
+	
+	int outX = int(tilemapPos.x);
+	int outZ = int(tilemapPos.y);
+
+	int outZRSH5 = outZ / RSH_5;
+	int outXRSH8 = outX / RSH_8;
+
+	int vecZ = (chunkLayer * LSH_6) + outZRSH5;
+	int vecY = ((outZ - (outZRSH5 * LSH_5)) * LSH_3) + outXRSH8;
+	int vecX = (outX - (outXRSH8 * LSH_8));
+	objIdVec.z = float(vecZ);
+	objIdVec.y = float(vecY);
+	objIdVec.x = float(vecX);
+	objIdVec *= _1_255;
+
+	OUTPUT(RT_OBJSEL) = objIdVec;
+}
+*/

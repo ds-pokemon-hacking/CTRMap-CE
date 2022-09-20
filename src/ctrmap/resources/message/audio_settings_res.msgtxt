@@ -1,0 +1,2 @@
+enable_desc:Enables (or completely disables) audio playback.
+master_volume_desc:Sets a master volume coefficient globally for all audio.

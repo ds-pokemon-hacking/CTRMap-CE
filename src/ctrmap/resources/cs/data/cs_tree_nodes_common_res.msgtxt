@@ -1,0 +1,10 @@
+MODELS:Models
+TEXTURES:Textures
+ANIME_S_DIR:Skeletal animations
+ANIME_M_DIR:Material animations
+ANIME_V_DIR:Visibility animations
+MESHES:Meshes
+MATERIALS:Materials
+OTHER_DIR:Other files
+CAMERAS:Cameras
+ANIME_CAM_DIR:Camera animations

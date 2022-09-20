@@ -1,0 +1,4 @@
+//EXTENSION-CODE region=frag-post
+/*
+target = fragmentLightingPrimaryColor;
+*/

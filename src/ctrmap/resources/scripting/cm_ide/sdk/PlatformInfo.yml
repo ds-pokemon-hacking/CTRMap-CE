@@ -1,0 +1,9 @@
+PlatformInfo:
+  - Name: "Pawn (32-bit)"
+    LangPlatform: AMX_CTR
+    SDKInfo: "AMX_CTR/SDKInfo.yml"
+    HTMLPage: "_arch_html/AMX_CTR.html"
+  - Name: "Generation V Virtual Machine"
+    LangPlatform: EV_SWAN
+    SDKInfo: "EV_GEN_V/SDKInfo.yml"
+    HTMLPage: "_arch_html/EV_V.html"

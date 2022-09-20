@@ -1,0 +1,6 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=vert-post
+/*
+target = vec4(a_position.xy, 0.0, 0.0);
+*/

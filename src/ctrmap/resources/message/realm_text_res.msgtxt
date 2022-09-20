@@ -1,0 +1,26 @@
+r_header_msg:Welcome! If you are reading this, that means you opened your ExeFS/CRO in what's presumably a hex editor and reached all the way into the depths of CTRMap's Secret Extension Realm(TM). Enjoy your stay and try not to break anything!
+r_soundtable_msg:CUSTOM SOUND TABLE DATA REALM
+r_scriptdata_msg:CUSTOM SCRIPT HEADER REALM
+r_funcset_msg:CUSTOM FUNC SET DEFINITION REALM
+r_cro_field_lod_msg:CUSTOM LOD RESOURCE INFO REALM
+r_trmodeldata_msg:CUSTOM TRAINER MODEL RESOURCE TABLE REALM
+r_cro_bg_bgsys_msg:CUSTOM BATTLE BACKGROUND TABLE REALM
+r_funcset_msg:CUSTOM FUNC SET DEFINITION REALM
+r_cro_field_staticencdata_msg:CUSTOM STATIC ENCOUNTERS REALM
+r_cro_battle_trseqdata_msg:CUSTOM TRAINER SEQUENCE REALM
+r_cro_battle_trlights_msg:CUSTOM TRAINER LIGHTING REALM
+r_battle_envi_msg:CUSTOM BATTLE ENVIRONMENT REALM
+r_cro_field_mmdl_msg:CUSTOM MOVEMODEL DATA REALM
+r_arcfile_msg:CUSTOM ARCHIVE PATH REALM
+r_voicetable_msg:CUSTOM POKEMON VOICE REALM
+r_pkicontable_msg:CUSTOM POKEMON ICON REALM
+r_bg_config_msg:CUSTOM BG CONFIG REALM
+r_cro_battle_bg_pedestal_msg:CUSTOM BG PEDESTAL REALM
+r_secretbase_msg:CUSTOM SECRET BASE INFO REALM
+r_teleportzone_msg:CUSTOM TELEPORT INFO REALM
+r_zonemusic_msg:CUSTOM ZONE BGM CHANGES REALM
+r_zoneevflag_msg:CUSTOM ZONE EVENT FLAGS REALM
+r_battle_sg_staffroll_msg:CUSTOM ORAS STAFFROLL MEMORIES REALM
+r_pkrendericontable_msg:CUSTOM POKEDEX RENDER ICON REALM
+r_divezones_msg:CUSTOM DIVE MAP LINKS REALM
+r_mapreplace_msg:CUSTOM EVENT MAP REPLACEMENT REALM

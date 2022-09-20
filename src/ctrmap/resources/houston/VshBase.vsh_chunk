@@ -1,0 +1,48 @@
+//HOUSTON attributes
+
+#ifdef GL2
+	#define VTXATTR attribute
+	#define PASSTHROUGH varying
+#elif defined(GL4) || defined(GL3)
+	#define VTXATTR in
+	#define PASSTHROUGH out
+#endif
+
+VTXATTR vec3 a_position;
+VTXATTR vec3 a_normal;
+VTXATTR vec3 a_tangent;
+VTXATTR vec4 a_color;
+VTXATTR vec2 a_texcoord;
+VTXATTR vec2 a_texcoord1;
+VTXATTR vec2 a_texcoord2;
+VTXATTR vec4 a_boneIndices;
+VTXATTR vec4 a_boneWeights;
+
+PASSTHROUGH vec4 color;
+PASSTHROUGH vec2 uv0;
+PASSTHROUGH vec2 uv1;
+PASSTHROUGH vec2 uv2;
+
+//Model matrices
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat3 normalMatrix;
+uniform mat4 projectionMatrix;
+
+//Fragment lighting
+PASSTHROUGH vec3 f_normal;
+PASSTHROUGH vec3 f_tangent;
+PASSTHROUGH vec3 f_view;
+
+#define MESH_BOOLUNIFORMS_COLOR_IDX 0
+#define MESH_BOOLUNIFORMS_NORMAL_IDX 1
+#define MESH_BOOLUNIFORMS_TANGENT_IDX 2
+#define MESH_BOOLUNIFORMS_BONE_IDX 3
+#define MESH_BOOLUNIFORMS_NUMBEROF 4
+
+//Mesh attribs
+uniform bool meshBoolUniforms[MESH_BOOLUNIFORMS_NUMBEROF];
+bool hasColor = meshBoolUniforms[MESH_BOOLUNIFORMS_COLOR_IDX];
+bool hasNormal = meshBoolUniforms[MESH_BOOLUNIFORMS_NORMAL_IDX];
+bool hasTangent = meshBoolUniforms[MESH_BOOLUNIFORMS_TANGENT_IDX];
+bool hasBonesData = meshBoolUniforms[MESH_BOOLUNIFORMS_BONE_IDX];

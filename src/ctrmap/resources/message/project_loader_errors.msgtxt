@@ -1,0 +1,10 @@
+no_file:The project file can not be found.
+bad_file:The project file is corrupted.
+no_ovfs:The VFS overlay path is invalid.
+no_basefs:The game data path is invalid.
+no_usrdir:The user data path is invalid.
+bad_game:The game data is corrupt.
+no_romfs:RomFS directory could not be detected.
+no_exefs:ExeFS directory could not be detected.
+no_codebin:code.bin file could not be detected.
+no_exheader:ExHeader.bin file could not be detected.

@@ -1,0 +1,57 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=vert-init
+/*
+//BoneHighLight.vsh extensions
+PASSTHROUGH vec4 highLightColor;
+uniform int highLightBoneNum;
+
+//Mesh highlight
+uniform bool isMeshHighLit;
+*/
+
+//EXTENSION-CODE region=vert-main
+/*
+highLightColor = vec4(0.0, 1.0, 1.0, 0.0);
+*/
+
+//EXTENSION-CODE region=vert-skinning-post
+/*
+for (int i = 0; i < 4; i++) {
+    int boneIndex = int(a_boneIndices[i]);
+    if (boneIndex == -1){
+        break;
+    }
+
+    if (boneIndex == highLightBoneNum){
+        float weight = a_boneWeights[i];
+        //Use the alpha component for enabling/disabling the highlight in fsh
+        highLightColor.a = 1.0;
+        highLightColor.g -= weight;
+        highLightColor.b -= weight;
+        break;
+    }
+}
+*/
+
+//EXTENSION-CODE region=vert-post
+/*
+if (isMeshHighLit) {
+    highLightColor.r = 0.2;
+}
+*/
+
+//EXTENSION-CODE region=frag-init
+/*
+PASSTHROUGH vec4 highLightColor;
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+if (highLightColor.a > 0.0){
+	target.r = max(0.25, target.r);
+	target.gb *= highLightColor.gb;
+}
+target.r += highLightColor.r;
+target.gb -= highLightColor.rr;
+*/

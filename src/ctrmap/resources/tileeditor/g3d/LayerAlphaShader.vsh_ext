@@ -1,0 +1,40 @@
+#version HOUSTON_EX
+
+/*
+LayeredAlphaShader
+
+Used for controlling the transparency of layers in Sr.
+Since real transparency is hardly achievable on unsorted opaque scenes without MRT and multi-pass rendering, we just tint the alpha'd layers white.
+*/
+
+//EXTENSION-CODE region=vert-init
+/*
+//LayeredAlphaShader extensions
+PASSTHROUGH float layerAlpha;
+uniform bool layerAlphaEnable;
+uniform int selectedLayer;
+uniform int tilemapLayer;
+*/
+
+//EXTENSION-CODE region=vert-main
+/*
+if (layerAlphaEnable && selectedLayer != tilemapLayer){
+	layerAlpha = 0.35;
+}
+else {
+	layerAlpha = 0.0;	
+}
+*/
+
+//EXTENSION-CODE region=frag-init
+/*
+PASSTHROUGH float layerAlpha;
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+if (layerAlpha > 0.0){
+	target.rgb *= 0.5;
+	target.rgb += layerAlpha;
+}
+*/

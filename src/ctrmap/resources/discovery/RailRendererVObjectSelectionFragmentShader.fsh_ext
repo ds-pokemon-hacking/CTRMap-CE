@@ -1,0 +1,41 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=vert-init
+/*
+PASSTHROUGH vec3 railPos;
+*/
+
+//EXTENSION-CODE region=vert-post
+/*
+railPos = vec3(inPosition.xy, float(railID));
+*/
+
+//EXTENSION-CODE region=frag-init
+/*
+#define OBJSEL_USED
+
+uniform int railId;
+
+const float _1_255 = 1.0/255.0;
+
+PASSTHROUGH vec3 railPos;
+*/
+
+//EXTENSION-CODE region=frag-main
+/*
+if (railId == -1){
+	discard;
+}
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+vec4 objIdVec = vec4(0.0, 0.0, 0.0, 255.0);
+if (railId >= 0){	
+	objIdVec.z = (floor(railPos.x + 0.5) + 128.0 + 64.0);
+	objIdVec.y = floor(railPos.y);
+	objIdVec.x = railPos.z;
+	objIdVec *= _1_255;
+}
+OUTPUT(RT_OBJSEL) = objIdVec;
+*/

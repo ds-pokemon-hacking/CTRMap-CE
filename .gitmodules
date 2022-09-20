@@ -1,0 +1,9 @@
+[submodule "submodules/XStandard"]
+	path = submodules/XStandard
+	url = https://github.com/HelloOO7/XStandard
+[submodule "submodules/RPMAuthoringTools"]
+	path = submodules/RPMAuthoringTools
+	url = https://github.com/HelloOO7/RPMAuthoringTools
+[submodule "submodules/PokeScript"]
+	path = submodules/PokeScript
+	url = https://github.com/HelloOO7/PokeScript

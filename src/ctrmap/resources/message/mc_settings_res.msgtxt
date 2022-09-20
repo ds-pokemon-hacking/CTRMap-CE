@@ -1,0 +1,3 @@
+player_gender_desc:Mission Control's player gender.\n\nCurrently, only male and female are supported. Sorry!
+player_autorun_desc:If set, walk/run is inverted when Mission Control boots.\n\nIn-MC, this can be toggled with the L button.
+ikplus_desc:Transforms all NPC models' animations for use with MC's inverse kinematics.\n(requires restart for loaded NPCs)\n\nThis is a safe enhancement, but not accurate to the original game.

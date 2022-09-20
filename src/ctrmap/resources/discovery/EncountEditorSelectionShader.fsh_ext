@@ -1,0 +1,20 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=frag-init
+/*
+#define OBJSEL_USED
+
+uniform int tileClass;
+
+const float _1_255 = 1.0/255.0;
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+if (tileClass == 0){
+	OUTPUT(RT_OBJSEL) = vec4(0.0);
+}
+else {
+	OUTPUT(RT_OBJSEL) = vec4(float(tileClass) * _1_255, 0.0, 0.0, 1.0);
+}
+*/

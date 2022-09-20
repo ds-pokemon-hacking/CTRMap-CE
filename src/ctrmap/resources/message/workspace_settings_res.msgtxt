@@ -1,0 +1,4 @@
+wspath_desc:Path to a working directory for CTRMap to store its data.
+gamepath_desc:Path to the extracted game dump root.\nThis directory should contain the RomFS and ExeFS subfolders.
+espica_desc:Path to an executable of ESPICA. Recommended for advanced users only.
+tset_desc:Path to a custom CMTS tileset.\nIf the custom tileset is enabled, it will be loaded from this path.

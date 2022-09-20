@@ -1,0 +1,42 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=vert-define
+/*
+#define PASS_ABS_RECT_POS
+*/
+
+//EXTENSION-CODE region=frag-define
+/*
+#define PASS_ABS_RECT_POS
+*/
+
+//EXTENSION-CODE region=frag-init
+/*
+uniform vec3 p1;
+uniform vec3 p2;
+uniform vec3 aoOffset;
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+vec3 rp = f_absRectPos;
+float valX = 1.0;
+float valZ = 1.0;
+
+if (rp.x >= aoOffset.x){
+	valX = 1.0 - (rp.x - aoOffset.x) / (p2.x - aoOffset.x);
+}
+else if (rp.x <= -aoOffset.x){
+	valX = 1.0 - (rp.x + aoOffset.x) / (p1.x + aoOffset.x);
+}
+if (rp.z >= aoOffset.z){
+	valZ = 1.0 - (rp.z - aoOffset.z) / (p2.z - aoOffset.z);
+}
+else if (rp.z <= -aoOffset.z){
+	valZ = 1.0 - (rp.z + aoOffset.z) / (p1.z + aoOffset.z);
+}
+
+float val = valX * valZ;
+
+target = vec4(val, val, val, val + 0.5) * diffuseColor;
+*/

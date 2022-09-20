@@ -1,0 +1,11 @@
+SDKBundles:
+  - Name: "Pokémon Black/White 2 SDK"
+    ResourceType: INTERNAL
+    ResourcePath: "SDK5-B2W2-Generated.lib"
+    Definitions:
+      - "SWAN"
+  - Name: "Pokémon Black/White SDK"
+    ResourceType: INTERNAL
+    ResourcePath: "SDK5-BW-Generated.lib"
+    Definitions:
+      - "WB"

@@ -1,0 +1,12 @@
+
+package ctrmap.editor.system.juliet;
+
+public class CTRMapPluginControl {
+	public static void readyInterface(CTRMapPluginInterface iface) {
+		iface.ready();
+	}
+	
+	public static void freeInterface(CTRMapPluginInterface iface) {
+		iface.free();
+	}
+}

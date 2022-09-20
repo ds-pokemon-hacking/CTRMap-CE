@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.JToggleButton" name="jToggleButton1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="jToggleButton1"/>
+      </Properties>
+    </Component>
+  </NonVisualComponents>
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="3"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="btnCalculate" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="225" max="32767" attributes="0"/>
+                      <Component id="btnClear" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cafeXLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cafeSXLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cafeX" max="32767" attributes="0"/>
+                          <Component id="cafeSX" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cafeSYLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="cafeYLabel" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cafeSY" max="32767" attributes="0"/>
+                          <Component id="cafeY" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="rvlSXLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="rvlXLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="rvlX" pref="139" max="32767" attributes="0"/>
+                          <Component id="rvlSX" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="rvlSYLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="rvlYLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="rvlSY" max="32767" attributes="0"/>
+                          <Component id="rvlY" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="transVLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="RVLLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="CafeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="scaleVLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="transV" max="32767" attributes="0"/>
+                          <Component id="scaleV" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="btnCultureSwitch" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="CafeLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cafeSXLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cafeSYLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cafeSY" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cafeSX" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cafeXLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cafeX" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cafeY" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cafeYLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="btnCalculate" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnClear" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="RVLLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="rvlSXLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rvlSYLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rvlSY" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rvlSX" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="rvlXLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rvlX" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rvlY" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rvlYLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="scaleVLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="scaleV" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="transVLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="transV" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="btnCultureSwitch" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JFormattedTextField" name="cafeY">
+      <Properties>
+        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
+          <Format format="#0.000000" subtype="-1" type="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="cafeSXLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="ScaleX"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="cafeSYLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="ScaleY"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JFormattedTextField" name="cafeSY">
+      <Properties>
+        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
+          <Format format="#0.000000" subtype="-1" type="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="cafeXLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="TranslX"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JFormattedTextField" name="cafeX">
+      <Properties>
+        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
+          <Format format="#0.000000" subtype="-1" type="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JFormattedTextField" name="cafeSX">
+      <Properties>
+        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
+          <Format format="#0.000000" subtype="-1" type="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="cafeYLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="TranslY"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnCalculate">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Revolutionize"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCalculateActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="RVLLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="RVL (keep scale):"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="CafeLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Cafe:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="rvlXLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="TranslX"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JFormattedTextField" name="rvlX">
+    </Component>
+    <Component class="javax.swing.JLabel" name="rvlYLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="TranslY"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JFormattedTextField" name="rvlY">
+    </Component>
+    <Component class="javax.swing.JLabel" name="rvlSXLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="ScaleX"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JFormattedTextField" name="rvlSX">
+    </Component>
+    <Component class="javax.swing.JLabel" name="rvlSYLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="ScaleY"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JFormattedTextField" name="rvlSY">
+    </Component>
+    <Component class="javax.swing.JButton" name="btnClear">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Clear"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnClearActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="scaleVLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Scale vector:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="scaleV">
+    </Component>
+    <Component class="javax.swing.JLabel" name="transVLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Translation vector:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="transV">
+    </Component>
+    <Component class="javax.swing.JToggleButton" name="btnCultureSwitch">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Invariant"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCultureSwitchActionPerformed"/>
+      </Events>
+    </Component>
+  </SubComponents>
+</Form>

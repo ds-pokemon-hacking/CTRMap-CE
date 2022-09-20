@@ -1,0 +1,27 @@
+#version HOUSTON_EX
+
+//EXTENSION-CODE region=frag-init
+/*
+#define OBJSEL_USED
+
+uniform int objectId;
+*/
+
+//EXTENSION-CODE region=frag-post
+/*
+#define SHIFT_24 0x1000000
+#define SHIFT_16 0x10000
+#define SHIFT_8 0x100
+
+vec4 objIdVec = vec4(0.0, 0.0, 0.0, 1.0);
+if ((objectId / 0x800000) == 1){
+	int vObjectId = objectId;
+	int flags = (vObjectId / SHIFT_16);
+	int objIdMid = (vObjectId - (flags * SHIFT_16)) / SHIFT_8;
+	int objIdLow = vObjectId - (objIdMid * SHIFT_8) - (flags * SHIFT_16);
+	objIdVec.z = float(flags) / 255.0;
+	objIdVec.y = float(objIdMid) / 255.0;
+	objIdVec.x = float(objIdLow) / 255.0;
+}
+OUTPUT(RT_OBJSEL) = objIdVec;
+*/

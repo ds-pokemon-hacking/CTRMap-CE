@@ -1,0 +1,5 @@
+//EXTENSION-CODE region=frag-post
+/*
+target.xy = uv0.xy;
+target.z = 0.0;
+*/
