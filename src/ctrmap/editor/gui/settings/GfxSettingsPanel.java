@@ -8,6 +8,7 @@ import ctrmap.renderer.backends.base.RenderSettings;
 import xstandard.formats.msgtxt.MsgTxt;
 import javax.swing.JFormattedTextField;
 import javax.swing.text.NumberFormatter;
+import xstandard.gui.components.ComponentUtils;
 
 public class GfxSettingsPanel extends javax.swing.JPanel implements SettingsPanel {
 
@@ -32,8 +33,8 @@ public class GfxSettingsPanel extends javax.swing.JPanel implements SettingsPane
 
 	public GfxSettingsPanel() {
 		initComponents();
-		setValueClass(Float.class, fov, zNear, zFar, animeSpeed);
-		setValueClass(Integer.class, fpsCap);
+		ComponentUtils.setNFValueClass(Float.class, fov, zNear, zFar, animeSpeed);
+		ComponentUtils.setNFValueClass(Integer.class, fpsCap);
 
 		renderer.setSelectedIndex(getIndexForRendererString());
 		zNear.setValue(RenderSettings.Defaults.Z_NEAR);
@@ -64,12 +65,6 @@ public class GfxSettingsPanel extends javax.swing.JPanel implements SettingsPane
 				return 1;
 		}
 		return 0;
-	}
-
-	public static void setValueClass(Class c, JFormattedTextField... fields) {
-		for (int i = 0; i < fields.length; i++) {
-			((NumberFormatter) fields[i].getFormatter()).setValueClass(c);
-		}
 	}
 
 	/**
@@ -445,6 +440,7 @@ public class GfxSettingsPanel extends javax.swing.JPanel implements SettingsPane
 		save();
     }//GEN-LAST:event_btnSaveActionPerformed
 
+	@Override
 	public void save() {
 		IMissionControl mc = parent.cm.getMissionControl();
 		String newBackend = defaultBackEndEnumToString();

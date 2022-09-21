@@ -44,7 +44,7 @@ public abstract class IMissionControl {
 	public boolean mcInit(FSManager filesystem, GameInfo gameMan, RenderSettings vSettings, AudioSettings aSettings) {
 		mcScene.clear(true);
 		this.videoSettings = vSettings;
-		this.audioSettings = audioSettings;
+		this.audioSettings = aSettings;
 		List<String> errors = new ArrayList<>();
 		if (filesystem != null) {
 			fsManager = filesystem;

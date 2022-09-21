@@ -286,15 +286,17 @@ public class CTRMap extends JFrame {
 		tabs.removeAll();
 		tabs.add("World Editor", worldEditorPanel);
 
+		mcInUse.addGameInfoListener(new CTRMapGameInfoListener());
+	}
+	
+	private void loadSupportedPerspectives() {
 		for (AbstractPerspective p : editorMgr.getPerspectives()) {
-			if (p.isGameSupported(game)) {
+			if (p.isGameSupported(getGame())) {
 				p.load();
 			} else {
 				p.release();
 			}
 		}
-
-		mcInUse.addGameInfoListener(new CTRMapGameInfoListener());
 	}
 
 	public CTRMapProject getProject() {
@@ -467,6 +469,7 @@ public class CTRMap extends JFrame {
 
 		mcInUse.mcInit(prj.wsfs, prj.gameInfo, RenderSettings.getDefaultSettings(), AudioSettings.defaultSettings);
 		gameAdapters.getGameAdapter(prj.gameInfo).startup();
+		loadSupportedPerspectives();
 
 		SwingUtilities.invokeLater(() -> {
 			getMissionControl().callGameInfoListeners();

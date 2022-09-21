@@ -74,9 +74,6 @@ public class SceneRenderFlow {
 		Scene scene = backend.getScene();
 		RenderSettings settings = backend.getSettings();
 
-		driver.clearColor(backend.getSettings().CLEAR_COLOR);
-		driver.clearDepth(1.0f);
-
 		if (resetVerticesNextPass.get()) {
 			scene.resetVertexData(driver.getIdentity());
 		}
@@ -114,6 +111,8 @@ public class SceneRenderFlow {
 		scene.notifyBeginDraw(settings);
 		scene.advanceAllAnimations(anmFrameStep, settings);
 
+		driver.clearColor(backend.getSettings().CLEAR_COLOR);
+		driver.clearDepth(1.0f);
 		driver.clearFramebuffer();
 
 		RenderState state = new RenderState();

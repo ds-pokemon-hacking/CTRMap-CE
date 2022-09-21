@@ -4,7 +4,6 @@ package ctrmap.util;
 import xstandard.fs.FSFile;
 import xstandard.fs.FSManager;
 import xstandard.fs.FSWildCardManager;
-import xstandard.fs.accessors.arc.ArcFileAccessor;
 
 /**
  *
@@ -29,7 +28,7 @@ public class DirectFSManager implements FSManager {
 
 	@Override
 	public FSFile getFsFile(String path) {
-		return root.getChild(path);
+		return wcMng.getFileFromRefPath(root, path);
 	}
 
 }

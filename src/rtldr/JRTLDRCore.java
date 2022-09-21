@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import xstandard.util.collections.IntList;
 
 public class JRTLDRCore {
 
@@ -22,8 +21,6 @@ public class JRTLDRCore {
 
 	private static final List<String> loadedPluginPaths = new ArrayList<>();
 	private static final List<ClassLoader> classloaders = new ArrayList<>();
-
-	private static final IntList loadedPluginHashes = new IntList();
 
 	public static Preferences getPrefsNodeForExtensionManager(String key) {
 		return Preferences.userRoot().node("RomeoConfig").node(key);
@@ -102,36 +99,19 @@ public class JRTLDRCore {
 		}
 	}
 
-	private static int makeClassHash(ClassLoader cldr, String className) {
-		try (InputStream in = new BufferedInputStream(cldr.getResourceAsStream(className.replace('.', '/') + ".class"))) {
-			int hash = 7;
-			while (in.available() > 0) {
-				hash = 37 * hash + in.read();
-			}
-			return hash;
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-		return 0;
-	}
-
 	private static void loadRmoFromCldr(String rmoClassName, ClassLoader cldr, JExtensionManager mgr) {
 		try {
 			Class rmoClass = Class.forName(rmoClassName, true, cldr);
 			if (RExtensionBase.class.isAssignableFrom(rmoClass)) {
-				int hash = makeClassHash(cldr, rmoClassName);
-				if (!loadedPluginHashes.contains(hash)) {
-					try {
-						Object rmo = rmoClass.getDeclaredConstructor().newInstance();
-						if (rmo != null && rmo instanceof RExtensionBase) {
-							RExtensionBase riface = (RExtensionBase) rmo;
-							plugins.add(riface);
-							loadedPluginHashes.add(hash);
-							mgr.bootstrapR(riface);
-						}
-					} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-						Logger.getLogger(JRTLDRCore.class.getName()).log(Level.SEVERE, null, ex);
+				try {
+					Object rmo = rmoClass.getDeclaredConstructor().newInstance();
+					if (rmo != null && rmo instanceof RExtensionBase) {
+						RExtensionBase riface = (RExtensionBase) rmo;
+						plugins.add(riface);
+						mgr.bootstrapR(riface);
 					}
+				} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+					Logger.getLogger(JRTLDRCore.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
 		} catch (ClassNotFoundException ex) {
