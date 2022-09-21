@@ -45,7 +45,7 @@ public class JExtensionManager<J extends JExtensionReceiver<R>, R extends RExten
 
 	void bootstrapR(R riface) {
 		if (!loadedExtensions.contains(riface)) {
-			int hash = makeClassHash(riface.getClass().getClassLoader(), rmoClassName);
+			int hash = makeClassHash(riface.getClass().getClassLoader(), riface.getClass().getName());
 			if (!loadedExtensionHashes.contains(hash)) {
 				riface.attach(iface);
 				loadedExtensions.add(riface);
