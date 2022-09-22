@@ -1,7 +1,6 @@
 package ctrmap.formats.pokemon.text;
 
 import xstandard.fs.FSFile;
-import xstandard.fs.accessors.DiskFile;
 import xstandard.util.ListenableList;
 import java.util.List;
 
@@ -10,19 +9,12 @@ import java.util.List;
  */
 public class TextFile implements ITextFile {
 
-	public static final MessageHandler MSG_HND_GEN_VI = new GenVIMessageHandler();
-	public static final MessageHandler MSG_HND_GEN_V = new GenVMessageHandler();
-
 	public ListenableList<MsgStr> lines;
 	
 	public boolean enableEncryption;
 
 	private FSFile source;
 	private MessageHandler hnd;
-
-	public TextFile(FSFile f) {
-		this(f, MSG_HND_GEN_VI);
-	}
 
 	public TextFile(FSFile f, MessageHandler handler) {
 		lines = new ListenableList<>();

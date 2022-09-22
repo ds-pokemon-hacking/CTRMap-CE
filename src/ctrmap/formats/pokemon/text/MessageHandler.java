@@ -1,7 +1,5 @@
 package ctrmap.formats.pokemon.text;
 
-import ctrmap.formats.pokemon.text.varcodes.GenVITextVariableCode;
-import ctrmap.formats.pokemon.text.varcodes.TextVariableCode;
 import java.util.Map;
 
 public interface MessageHandler {

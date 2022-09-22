@@ -111,7 +111,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="recentProjectsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="324" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="331" max="32767" attributes="0"/>
                           </Group>
                           <Component id="projectsSP" alignment="0" max="32767" attributes="0"/>
                       </Group>
@@ -167,7 +167,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace min="0" pref="148" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="155" max="32767" attributes="0"/>
                               <Component id="btnAddDSRom" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnAddGame" min="-2" max="-2" attributes="0"/>
@@ -227,11 +227,11 @@
             </Component>
           </SubComponents>
         </Container>
-        <Container class="javax.swing.JPanel" name="pluginsPanel">
+        <Container class="javax.swing.JPanel" name="pluginContainerPanel">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Plug-ins">
-                <Property name="tabTitle" type="java.lang.String" value="Plug-ins"/>
+              <JTabbedPaneConstraints tabName="Additional plug-ins">
+                <Property name="tabTitle" type="java.lang.String" value="Additional plug-ins"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -241,13 +241,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="0" pref="261" max="32767" attributes="0"/>
-                              <Component id="btnAddPluginJAR" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="pluginsSP" alignment="0" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="pluginPanel" pref="365" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -256,36 +250,15 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="pluginsSP" pref="163" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btnAddPluginJAR" min="-2" max="-2" attributes="0"/>
+                      <Component id="pluginPanel" pref="214" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JButton" name="btnAddPluginJAR">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Install plug-in"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddPluginJARActionPerformed"/>
-              </Events>
+            <Component class="ctrmap.util.gui.PluginManagementPanel" name="pluginPanel">
             </Component>
-            <Container class="javax.swing.JScrollPane" name="pluginsSP">
-
-              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-              <SubComponents>
-                <Container class="xstandard.gui.components.ComponentList" name="pluginList">
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;PluginEntryUI&gt;"/>
-                  </AuxValues>
-
-                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
-                </Container>
-              </SubComponents>
-            </Container>
           </SubComponents>
         </Container>
       </SubComponents>

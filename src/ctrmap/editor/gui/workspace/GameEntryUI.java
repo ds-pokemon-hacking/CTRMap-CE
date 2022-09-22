@@ -1,13 +1,15 @@
 package ctrmap.editor.gui.workspace;
 
+import ctrmap.editor.system.workspace.GameRegistryData;
+
 public class GameEntryUI extends javax.swing.JPanel {
 
-	public String gamePath;
-	private ProjectManager man;
+	public final String gamePath;
+	private final ProjectManager man;
 	
 	public GameEntryUI(String gamePath, ProjectManager man) {
 		initComponents();
-		gamePath = gamePath.replace('\\', '/');
+		gamePath = GameRegistryData.normalizePath(gamePath);
 		this.gamePath = gamePath;
 		this.man = man;
 		nameLabel.setText(gamePath);

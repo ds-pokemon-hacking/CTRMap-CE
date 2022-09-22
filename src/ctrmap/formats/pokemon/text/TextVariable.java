@@ -1,6 +1,5 @@
 package ctrmap.formats.pokemon.text;
 
-import ctrmap.formats.pokemon.text.varcodes.TextVariableCode;
 import xstandard.text.FormattingUtils;
 import xstandard.util.ParsingUtils;
 import java.io.IOException;

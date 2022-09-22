@@ -14,20 +14,38 @@ import javax.swing.SwingUtilities;
 import rtldr.JRTLDRCore;
 import xstandard.util.ArraysEx;
 import rtldr.JExtensionReceiver;
+import rtldr.JExtensionStateListener;
+import rtldr.JGarbageCollector;
 import rtldr.RExtensionBase;
 
 public class Launc extends ActionSelector {
 	
 	private static final JulietInterface PLUGIN_IFACE_INSTANCE = new JulietInterface();
 	private static final List<Subprocess> launcherSubprocs = new ArrayList<>();
+	private static final JGarbageCollector<Subprocess> subprocGc = new JGarbageCollector<>();
 	
 	static {
-		JRTLDRCore.bindExtensionManager("LauncherPlugin", PLUGIN_IFACE_INSTANCE);
+		JRTLDRCore.bindExtensionManager("LauncherPlugin", PLUGIN_IFACE_INSTANCE, new JExtensionStateListener<IPlugin>() {
+			@Override
+			public void onExtensionLoaded(IPlugin ext) {
+				subprocGc.startListening(ext);
+				ext.registSubprocesses(PLUGIN_IFACE_INSTANCE);
+				subprocGc.stopListening();
+			}
+
+			@Override
+			public void onExtensionUnloaded(IPlugin ext) {
+				System.out.println("Unloading extension " + ext);
+				subprocGc.collect(ext, (t) -> {
+					launcherSubprocs.remove(t);
+				});
+			}
+		});
 		//no listening is needed as the launcher will only load plugins once
 	}
 	
 	private static void registSubproces(Subprocess sp) {
-		ArraysEx.addIfNotNullOrContains(launcherSubprocs, sp);
+		ArraysEx.addIfNotNullOrContains(launcherSubprocs, subprocGc.regGc(sp));
 	}
 	
 	private static ASelAction[] createActionsForSubprocs() {
@@ -77,13 +95,23 @@ public class Launc extends ActionSelector {
 					DialogUtils.showErrorMessage(this, "Error", "Subprocess \"" + sp.name + "\" failed to start.");
 				}
 				else {
-					setVisible(false);
+					disposeWithoutExit();
 				}
 			}
 		}));
 		btnCancel.addActionListener(((e) -> {
 			System.exit(0);
 		}));
+	}
+	
+	private void disposeWithoutExit() {
+		super.dispose();
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		System.exit(0);
 	}
 
 	public static void main(String[] args) {
@@ -92,6 +120,10 @@ public class Launc extends ActionSelector {
 			ComponentUtils.setSystemNativeLookAndFeel();
 			new Launc().setVisible(true);
 		}));
+	}
+	
+	public static void returnToLauncher() {
+		new Launc().setVisible(true);
 	}
 	
 	public static class Subprocess {
@@ -121,6 +153,6 @@ public class Launc extends ActionSelector {
 	}
 	
 	public static interface IPlugin extends RExtensionBase<JulietInterface> {
-		
+		public void registSubprocesses(JulietInterface iface);
 	}
 }

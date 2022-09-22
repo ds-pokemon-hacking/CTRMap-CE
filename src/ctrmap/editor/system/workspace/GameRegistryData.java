@@ -21,7 +21,7 @@ public class GameRegistryData {
 			prefs = CMPrefs.node(dirNodeName);
 			
 			for (String entryKey : prefs.keys()){
-				entries.put(entryKey, prefs.get(entryKey, null));
+				entries.put(entryKey, normalizePath(prefs.get(entryKey, null)));
 			}
 		} catch (BackingStoreException ex) {
 			Logger.getLogger(GameRegistryData.class.getName()).log(Level.SEVERE, null, ex);
@@ -29,13 +29,14 @@ public class GameRegistryData {
 	}
 	
 	public void putGamePath(String path){
-		path = path.replace('\\', '/');
+		path = normalizePath(path);
 		String gameName = "game" + UUID.randomUUID();
 		entries.put(gameName, path);
 		prefs.put(gameName, path);
 	}
 	
 	public void removeEntry(String path){
+		path = normalizePath(path);
 		for (Map.Entry<String, String> e : entries.entrySet()){
 			if (e.getValue().equals(path)){
 				entries.remove(e.getKey());
@@ -43,5 +44,9 @@ public class GameRegistryData {
 				break;
 			}
 		}
+	}
+	
+	public static String normalizePath(String path) {
+		return path.replace('\\', '/');
 	}
 }

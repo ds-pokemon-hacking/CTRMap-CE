@@ -58,12 +58,10 @@ import ctrmap.editor.system.juliet.GameAdapterRegistry;
 import ctrmap.missioncontrol_base.McLogger;
 import ctrmap.renderer.scenegraph.SceneAnimationCallback;
 import java.awt.Component;
-import java.io.File;
 import xstandard.math.vec.RGBA;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import rtldr.JRTLDRCore;
 import xstandard.gui.components.ComponentUtils;
 import xstandard.thread.ThreadingUtils;
 
@@ -117,9 +115,7 @@ public class CTRMap extends JFrame {
 		super();
 		CTRMapResources.load();
 
-		for (CTRMapPluginDatabase.PluginEntry plg : CTRMapPluginDatabase.getPlugins()) {
-			JRTLDRCore.loadJarExt(new File(plg.path));
-		}
+		CTRMapPluginDatabase.INSTANCE.loadAllPlugins();
 
 		if (initGUI) {
 			initSwingGUI();

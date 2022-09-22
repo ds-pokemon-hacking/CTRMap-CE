@@ -20,7 +20,7 @@ import javax.swing.JComponent;
 
 public class FPSCameraInputManager extends AbstractCameraInputManager implements MouseWheelListener, MouseMotionListener, MouseInputListener, KeyListener, FocusListener {
 
-	private float speed = 30f;
+	protected float speed = 30f;
 	protected final ArrayList<Integer> keycodes = new ArrayList<>();
 
 	public boolean isCameraEnabled = true;

@@ -1,9 +1,6 @@
 package rtldr;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +9,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import xstandard.fs.FSUtil;
 
 public class JRTLDRCore {
 
@@ -20,10 +18,24 @@ public class JRTLDRCore {
 	private static final List<RExtensionBase> plugins = new ArrayList<>();
 
 	private static final List<String> loadedPluginPaths = new ArrayList<>();
-	private static final List<ClassLoader> classloaders = new ArrayList<>();
+	private static final Map<String, ClassLoader> classloaders = new HashMap<>();
+	
+	static {
+		JGlobalExtensionDB.init();
+	}
+	
+	public static void suppressDebugPluginByFileName(String fileName) {
+		for (String path : loadedPluginPaths) {
+			if (FSUtil.getFileName(path).equals(fileName)) {
+				unloadJarExt(new File(path));
+				System.out.println("Suppressed debug plugin " + path);
+				break;
+			}
+		}
+	}
 
 	public static Preferences getPrefsNodeForExtensionManager(String key) {
-		return Preferences.userRoot().node("RomeoConfig").node(key);
+		return Preferences.userRoot().node("RTLDR").node(key);
 	}
 
 	public static <R extends RExtensionBase<J>, J extends JExtensionReceiver<R>> JExtensionManager<J, R> bindExtensionManager(String rmoClassName, JExtensionReceiver<R> iface) {
@@ -48,7 +60,7 @@ public class JRTLDRCore {
 		mgrList.add(mgr);
 		//if the parent module contains a plugin, load it as well
 		loadRmoFromCldr(rmoClassName, JRTLDRCore.class.getClassLoader(), mgr);
-		for (ClassLoader cldr : classloaders) {
+		for (ClassLoader cldr : classloaders.values()) {
 			//already loaded JARs
 			loadRmoFromCldr(rmoClassName, cldr, mgr);
 		}
@@ -119,18 +131,60 @@ public class JRTLDRCore {
 		}
 	}
 
-	public static void loadJarExt(File file) {
-		String absPath = file.getAbsolutePath();
-		if (!loadedPluginPaths.contains(absPath)) {
-			ClassLoader cldr = JJarLoader.mountFileToClasspath(file);
-			if (cldr != null) {
-				classloaders.add(cldr);
-				for (JExtensionManager mgr : managers) {
-					String rmoClassName = mgr.rmoClassName;
-					loadRmoFromCldr(rmoClassName, cldr, mgr);
+	private static void unloadRmoFromCldr(String rmoClassName, ClassLoader cldr, JExtensionManager mgr) {
+		try {
+			Class rmoClass = Class.forName(rmoClassName, true, cldr);
+			if (rmoClass.getClassLoader() == cldr && RExtensionBase.class.isAssignableFrom(rmoClass)) {
+				List<RExtensionBase> terminatedPlugins = new ArrayList<>();
+				for (RExtensionBase plg : plugins) {
+					//This is the same classloader instance, not a new one, so the class is the same
+					if (plg.getClass() == rmoClass) {
+						terminatedPlugins.add(plg);
+					}
 				}
+				for (RExtensionBase term : terminatedPlugins) {
+					System.out.println("Terminating plugin " + rmoClassName + " for receiver " + mgr.iface);
+					mgr.terminateR(term);
+				}
+				plugins.removeAll(terminatedPlugins);
 			}
-			loadedPluginPaths.add(absPath);
+		} catch (ClassNotFoundException ex) {
+			//Not registered
+		}
+	}
+	
+	public static void loadJarExt(File file) {
+		if (file != null && file.isFile()) {
+			String absPath = file.getAbsolutePath();
+			if (!loadedPluginPaths.contains(absPath)) {
+				ClassLoader cldr = JJarLoader.mountFileToClasspath(file);
+				if (cldr != null) {
+					classloaders.put(absPath, cldr);
+					for (JExtensionManager mgr : managers) {
+						String rmoClassName = mgr.rmoClassName;
+						loadRmoFromCldr(rmoClassName, cldr, mgr);
+					}
+				}
+				loadedPluginPaths.add(absPath);
+			}
+		}
+	}
+	
+	public static void unloadJarExt(File file) {
+		if (file != null && file.isFile()) {
+			String absPath = file.getAbsolutePath();
+			if (loadedPluginPaths.contains(absPath)) {
+				ClassLoader cldr = classloaders.get(absPath);
+				if (cldr != null) {
+					System.out.println("Got classloader " + cldr + " for plug-in " + absPath + ", terminating...");
+					for (JExtensionManager mgr : managers) {
+						String rmoClassName = mgr.rmoClassName;
+						unloadRmoFromCldr(rmoClassName, cldr, mgr);
+					}
+				}
+				loadedPluginPaths.remove(absPath);
+				classloaders.remove(absPath);
+			}
 		}
 	}
 }

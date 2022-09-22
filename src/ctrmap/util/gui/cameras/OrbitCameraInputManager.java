@@ -1,7 +1,6 @@
 package ctrmap.util.gui.cameras;
 
 import ctrmap.renderer.scene.Camera;
-import xstandard.math.vec.Vec3f;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 

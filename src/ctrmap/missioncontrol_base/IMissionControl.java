@@ -136,8 +136,6 @@ public abstract class IMissionControl {
 		}
 		backend = new RenderSurface(videoSettings);
 
-		backend.getProgramManager().getUserShManager().addIncludeDirectory(ResourceAccess.getResourceFile("missioncontrol/shader"));
-
 		if (errors.isEmpty()) {
 			backend.setScene(mcScene);
 			for (IMCSurfaceListener l : surfaceListeners) {

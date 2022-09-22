@@ -28,8 +28,6 @@ import javax.swing.SwingUtilities;
 
 public class MinecraftCameraInputManager extends FPSCameraInputManager implements MouseWheelListener, MouseMotionListener, MouseInputListener, KeyListener {
 
-	private float speedMul = 10f;
-
 	private List<MinecraftCameraListener> listeners = new ArrayList<>();
 
 	private MinecraftHeightProvider height;
@@ -38,6 +36,7 @@ public class MinecraftCameraInputManager extends FPSCameraInputManager implement
 
 	public MinecraftCameraInputManager() {
 		super();
+		speed = 10f;
 		try {
 			robot = new Robot();
 		} catch (AWTException ex) {
@@ -47,10 +46,6 @@ public class MinecraftCameraInputManager extends FPSCameraInputManager implement
 	
 	public void setGroundOffset(float val){
 		GROUND_OFFSET = val;
-	}
-
-	public void setSpeed(float speed) {
-		speedMul = speed;
 	}
 
 	public void addMinecraftCameraListener(MinecraftCameraListener l) {
@@ -113,7 +108,7 @@ public class MinecraftCameraInputManager extends FPSCameraInputManager implement
 
 			@Override
 			public void run(float frameAdvance) {
-				float rawSpeed = speedMul * frameAdvance;
+				float rawSpeed = speed * frameAdvance;
 
 				if (isCameraEnabled && allowMotion && !isPaused) {
 					if (height != null) {
@@ -243,7 +238,7 @@ public class MinecraftCameraInputManager extends FPSCameraInputManager implement
 					}
 
 					//Apply gravity
-					translateY = -gravity * speedMul / G / 4f;
+					translateY = -gravity * speed / G / 4f;
 
 					//Accumulate air time
 					if (!isMidAir || gravity != G) {
@@ -383,7 +378,7 @@ public class MinecraftCameraInputManager extends FPSCameraInputManager implement
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (isCameraEnabled && allowMotion) {
 			if (!e.isControlDown()) {
-				speedMul = Math.max(speedMul - e.getWheelRotation(), 2f);
+				speed = Math.max(speed - e.getWheelRotation(), 2f);
 			}
 		}
 	}

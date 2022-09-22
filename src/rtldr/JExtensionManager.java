@@ -56,4 +56,17 @@ public class JExtensionManager<J extends JExtensionReceiver<R>, R extends RExten
 			}
 		}
 	}
+
+	void terminateR(R riface) {
+		if (loadedExtensions.contains(riface)) {
+			int hash = makeClassHash(riface.getClass().getClassLoader(), riface.getClass().getName());
+			if (loadedExtensionHashes.contains(hash)) {
+				loadedExtensionHashes.removeValue(hash);
+			}
+			loadedExtensions.remove(riface);
+			if (extensionStateListener != null) {
+				extensionStateListener.onExtensionUnloaded(riface);
+			}
+		}
+	}
 }

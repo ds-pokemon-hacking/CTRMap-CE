@@ -1,6 +1,5 @@
 package ctrmap.editor.gui.workspace;
 
-import xstandard.gui.file.CommonExtensionFilters;
 import xstandard.gui.file.XFileDialog;
 import ctrmap.editor.CTRMap;
 import ctrmap.editor.system.juliet.CTRMapPluginDatabase;
@@ -20,7 +19,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import xstandard.formats.zip.ZipArchive;
 import xstandard.thread.ThreadingUtils;
 
 public class ProjectManager extends javax.swing.JFrame {
@@ -48,13 +46,10 @@ public class ProjectManager extends javax.swing.JFrame {
 			gameList.addElement(new GameEntryUI(gamePath, this));
 		}
 
-		for (CTRMapPluginDatabase.PluginEntry plg : CTRMapPluginDatabase.getPlugins()) {
-			pluginList.addElement(new PluginEntryUI(plg, this));
-		}
+		pluginPanel.setPluginDB(CTRMapPluginDatabase.INSTANCE);
 
 		projectsSP.getVerticalScrollBar().setUnitIncrement(15);
 		gamesSP.getVerticalScrollBar().setUnitIncrement(15);
-		pluginsSP.getVerticalScrollBar().setUnitIncrement(15);
 	}
 
 	public void removeProjectEntryAction(ProjectEntryUI e) {
@@ -65,11 +60,6 @@ public class ProjectManager extends javax.swing.JFrame {
 	public void removeGameEntryAction(GameEntryUI e) {
 		gameList.removeElement(e);
 		gameRegData.removeEntry(e.gamePath);
-	}
-
-	public void removePluginEntryAction(PluginEntryUI e) {
-		pluginList.removeElement(e);
-		CTRMapPluginDatabase.removePlugin(e.plugin.name);
 	}
 
 	public GameEntryUI findGameEntry(String path) {
@@ -198,10 +188,8 @@ public class ProjectManager extends javax.swing.JFrame {
         gamesSP = new javax.swing.JScrollPane();
         gameList = new xstandard.gui.components.ComponentList<>();
         btnAddDSRom = new javax.swing.JButton();
-        pluginsPanel = new javax.swing.JPanel();
-        btnAddPluginJAR = new javax.swing.JButton();
-        pluginsSP = new javax.swing.JScrollPane();
-        pluginList = new xstandard.gui.components.ComponentList<>();
+        pluginContainerPanel = new javax.swing.JPanel();
+        pluginPanel = new ctrmap.util.gui.PluginManagementPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         btnNewProject = new javax.swing.JMenuItem();
@@ -225,7 +213,7 @@ public class ProjectManager extends javax.swing.JFrame {
                 .addGroup(prjPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(prjPanelLayout.createSequentialGroup()
                         .addComponent(recentProjectsLabel)
-                        .addGap(0, 324, Short.MAX_VALUE))
+                        .addGap(0, 331, Short.MAX_VALUE))
                     .addComponent(projectsSP))
                 .addContainerGap())
         );
@@ -265,7 +253,7 @@ public class ProjectManager extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(gamesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(gamesPanelLayout.createSequentialGroup()
-                        .addGap(0, 148, Short.MAX_VALUE)
+                        .addGap(0, 155, Short.MAX_VALUE)
                         .addComponent(btnAddDSRom)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAddGame))
@@ -286,40 +274,24 @@ public class ProjectManager extends javax.swing.JFrame {
 
         projectManagerTabs.addTab("Games", gamesPanel);
 
-        btnAddPluginJAR.setText("Install plug-in");
-        btnAddPluginJAR.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddPluginJARActionPerformed(evt);
-            }
-        });
-
-        pluginList.setLayout(new javax.swing.BoxLayout(pluginList, javax.swing.BoxLayout.LINE_AXIS));
-        pluginsSP.setViewportView(pluginList);
-
-        javax.swing.GroupLayout pluginsPanelLayout = new javax.swing.GroupLayout(pluginsPanel);
-        pluginsPanel.setLayout(pluginsPanelLayout);
-        pluginsPanelLayout.setHorizontalGroup(
-            pluginsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pluginsPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout pluginContainerPanelLayout = new javax.swing.GroupLayout(pluginContainerPanel);
+        pluginContainerPanel.setLayout(pluginContainerPanelLayout);
+        pluginContainerPanelLayout.setHorizontalGroup(
+            pluginContainerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pluginContainerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(pluginsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pluginsPanelLayout.createSequentialGroup()
-                        .addGap(0, 261, Short.MAX_VALUE)
-                        .addComponent(btnAddPluginJAR))
-                    .addComponent(pluginsSP))
+                .addComponent(pluginPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        pluginsPanelLayout.setVerticalGroup(
-            pluginsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pluginsPanelLayout.createSequentialGroup()
+        pluginContainerPanelLayout.setVerticalGroup(
+            pluginContainerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pluginContainerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pluginsSP, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAddPluginJAR)
+                .addComponent(pluginPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        projectManagerTabs.addTab("Plug-ins", pluginsPanel);
+        projectManagerTabs.addTab("Additional plug-ins", pluginContainerPanel);
 
         fileMenu.setText("File");
 
@@ -422,19 +394,6 @@ public class ProjectManager extends javax.swing.JFrame {
 		}
     }//GEN-LAST:event_btnOpenProjectActionPerformed
 
-    private void btnAddPluginJARActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPluginJARActionPerformed
-		FSFile jar = XFileDialog.openFileDialog("Select a plug-in JAR file", CommonExtensionFilters.JAR);
-		if (jar != null && ZipArchive.isZip(jar)) {
-			String name = jar.getName();
-			if (!CTRMapPluginDatabase.hasPlugin(name)) {
-				CTRMapPluginDatabase.PluginEntry plg = CTRMapPluginDatabase.addPluginPath(jar.getName(), jar.getPath());
-				pluginList.addElement(new PluginEntryUI(plg, this));
-			} else {
-				DialogUtils.showErrorMessage(this, "Duplicate plugin", "A plugin with name " + jar.getName() + " is already registered.");
-			}
-		}
-    }//GEN-LAST:event_btnAddPluginJARActionPerformed
-
     private void btnAddDSRomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddDSRomActionPerformed
 		AddROMGameDialog dlg = new AddROMGameDialog(this, true);
 		final ProjectManager man = this;
@@ -470,7 +429,6 @@ public class ProjectManager extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddDSRom;
     private javax.swing.JButton btnAddGame;
-    private javax.swing.JButton btnAddPluginJAR;
     private javax.swing.JMenuItem btnExit;
     private javax.swing.JMenuItem btnNewProject;
     private javax.swing.JMenuItem btnOpenProject;
@@ -479,9 +437,8 @@ public class ProjectManager extends javax.swing.JFrame {
     private javax.swing.JPanel gamesPanel;
     private javax.swing.JScrollPane gamesSP;
     private javax.swing.JMenuBar menuBar;
-    private xstandard.gui.components.ComponentList<PluginEntryUI> pluginList;
-    private javax.swing.JPanel pluginsPanel;
-    private javax.swing.JScrollPane pluginsSP;
+    private javax.swing.JPanel pluginContainerPanel;
+    private ctrmap.util.gui.PluginManagementPanel pluginPanel;
     private javax.swing.JPanel prjPanel;
     private xstandard.gui.components.ComponentList projectList;
     private javax.swing.JTabbedPane projectManagerTabs;
