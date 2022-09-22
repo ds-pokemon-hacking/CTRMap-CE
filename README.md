@@ -4,7 +4,7 @@ CTRMap CE is a framework designed for editing primarily the Generation V Pokémo
 
 ## Installing plug-ins
 
-At the moment, plug-in modules can only be installed from the CTRMap Project Manager accessible from the main launcher. As a result, CreativeStudio plug-ins will only be loaded when it is launched from within the main editor. Proper support will be introduced once a separate installer is up.
+Plug-ins that contain extension code for multiple components of the editor can be installed from the `Global extension manager` accessible from the Launcher. Additional plug-ins that only affect the CTRMap editor can be configured using its Project Manager, and although they may be loaded globally instead, it is strongly recommended not to do so in order to unregister them from redundant contexts.
 
 ## Developing plug-ins
 
