@@ -9,7 +9,7 @@ public class HoustonResources {
 	public static final ResourceAccessor ACCESSOR = new ResourceAccessor("ctrmap/resources");
 	
 	public static void load(){
-		ResourceAccess.loadResourceTable("ctrmap/resources/houston/res_houston.tbl");
+		ResourceAccess.loadResourceTable(HoustonResources.class.getClassLoader(), "ctrmap/resources/houston/res_houston.tbl");
 	}
 
 	public static void main(String[] args) {

@@ -29,6 +29,7 @@ public class CTRMapPluginInterface implements JExtensionReceiver<ICTRMapPlugin> 
 	}
 
 	void ready() {
+		System.out.println("CTRMapPlugin receiver ready");
 		JRTLDRCore.bindExtensionManager("CTRMapPlugin", this, new JExtensionStateListener<ICTRMapPlugin>() {
 			@Override
 			public void onExtensionLoaded(ICTRMapPlugin ext) {

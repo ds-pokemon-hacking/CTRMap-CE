@@ -13,7 +13,7 @@ public class CTRMapResources {
 	public static final ResourceAccessor ACCESSOR = new ResourceAccessor("ctrmap/resources");
 	
 	public static void load(){
-		ResourceAccess.loadResourceTable("ctrmap/resources/res_ctrmap.tbl");
+		ResourceAccess.loadResourceTable(CTRMapResources.class.getClassLoader(), "ctrmap/resources/res_ctrmap.tbl");
 	}
 
 	public static void main(String[] args) {

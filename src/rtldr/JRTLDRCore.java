@@ -110,6 +110,15 @@ public class JRTLDRCore {
 			loadExtension(j, r);
 		}
 	}
+	
+	private static String getPathOfCldr(ClassLoader cldr) {
+		for (Map.Entry<String, ClassLoader> e : classloaders.entrySet()) {
+			if (e.getValue() == cldr) {
+				return e.getKey();
+			}
+		}
+		return null;
+	}
 
 	private static void loadRmoFromCldr(String rmoClassName, ClassLoader cldr, JExtensionManager mgr) {
 		try {
@@ -120,6 +129,7 @@ public class JRTLDRCore {
 					if (rmo != null && rmo instanceof RExtensionBase) {
 						RExtensionBase riface = (RExtensionBase) rmo;
 						plugins.add(riface);
+						System.out.println("Bootstrapping plugin " + riface + " from ClassLoader " + getPathOfCldr(cldr));
 						mgr.bootstrapR(riface);
 					}
 				} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {

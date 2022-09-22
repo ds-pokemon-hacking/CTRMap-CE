@@ -77,6 +77,7 @@ public abstract class JAbstractPluginDatabase {
 
 	public final void loadAllPlugins() {
 		for (PluginEntry plg : getPlugins()) {
+			System.out.println("Loading plug-in " + plg.path + "...");
 			JRTLDRCore.loadJarExt(new File(plg.path));
 		}
 	}
