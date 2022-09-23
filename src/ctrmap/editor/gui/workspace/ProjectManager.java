@@ -53,13 +53,13 @@ public class ProjectManager extends javax.swing.JFrame {
 	}
 
 	public void removeProjectEntryAction(ProjectEntryUI e) {
-		projectList.removeElement(e);
 		regData.removeEntry(e.e);
+		projectList.removeElement(e);
 	}
 
 	public void removeGameEntryAction(GameEntryUI e) {
-		gameList.removeElement(e);
 		gameRegData.removeEntry(e.gamePath);
+		gameList.removeElement(e);
 	}
 
 	public GameEntryUI findGameEntry(String path) {

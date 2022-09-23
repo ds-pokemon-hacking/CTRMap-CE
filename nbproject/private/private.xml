@@ -3,9 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Čeněk/eclipse-workspace/GRParser/src/rtldr/JRTLDRCore.java</file>
-            <file>file:/C:/Users/Čeněk/eclipse-workspace/GRParser/src/ctrmap/Launc.java</file>
-            <file>file:/C:/Users/Čeněk/eclipse-workspace/GRParser/src/ctrmap/editor/system/script/CTRMapIDEHelper.java</file>
+            <file>file:/C:/Users/Čeněk/eclipse-workspace/GRParser/src/ctrmap/editor/system/workspace/ProjectRegistryData.java</file>
+            <file>file:/C:/Users/Čeněk/eclipse-workspace/GRParser/src/ctrmap/editor/gui/workspace/ProjectManager.java</file>
         </group>
     </open-files>
 </project-private>

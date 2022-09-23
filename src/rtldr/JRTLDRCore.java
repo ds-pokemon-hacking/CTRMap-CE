@@ -123,7 +123,7 @@ public class JRTLDRCore {
 	private static void loadRmoFromCldr(String rmoClassName, ClassLoader cldr, JExtensionManager mgr) {
 		try {
 			Class rmoClass = Class.forName(rmoClassName, true, cldr);
-			if (RExtensionBase.class.isAssignableFrom(rmoClass)) {
+			if (rmoClass.getClassLoader() == cldr && RExtensionBase.class.isAssignableFrom(rmoClass)) {
 				try {
 					Object rmo = rmoClass.getDeclaredConstructor().newInstance();
 					if (rmo != null && rmo instanceof RExtensionBase) {
