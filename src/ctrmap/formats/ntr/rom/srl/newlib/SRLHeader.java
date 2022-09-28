@@ -64,6 +64,16 @@ public class SRLHeader {
 	public int usedRomSize;
 	public int headerSize;
 
+	byte[] unknownDSi;
+
+	/**
+	 * These two fields are a doozy. Pokemon White 2 refuses to read files past this point, so they both have
+	 * to be adjusted properly. (see 0x207215C in W2U ARM9, took me ages to debug all the way there). However,
+	 * our implementation doesn't care about the DSi parts, so they'll just be set to the end of the ROM.
+	 */
+	public int ntrRomRegionEnd;
+	public int twlRomRegionStart;
+
 	public byte[] reserved2;
 	public byte[] reserved3;
 
@@ -133,7 +143,10 @@ public class SRLHeader {
 		secureAreaDisable = rom.readLong();
 		usedRomSize = rom.readInt();
 		headerSize = rom.readInt();
-		reserved2 = rom.readBytes(0x28);
+		unknownDSi = rom.readBytes(0x8);
+		ntrRomRegionEnd = rom.readUnsignedShort();
+		twlRomRegionStart = rom.readUnsignedShort();
+		reserved2 = rom.readBytes(0x24);
 		reserved3 = rom.readBytes(0x10);
 
 		logo = rom.readBytes(0x9c);
@@ -191,6 +204,9 @@ public class SRLHeader {
 		rom.writeLong(secureAreaDisable);
 		rom.writeInt(usedRomSize);
 		rom.writeInt(headerSize);
+		rom.write(unknownDSi);
+		rom.writeShort(ntrRomRegionEnd);
+		rom.writeShort(twlRomRegionStart);
 		rom.write(reserved2);
 		rom.write(reserved3);
 

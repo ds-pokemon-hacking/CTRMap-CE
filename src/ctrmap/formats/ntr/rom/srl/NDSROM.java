@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import ctrmap.formats.ntr.rom.OverlayTable;
+import ctrmap.formats.ntr.rom.srl.newlib.SRLHeader;
 import xstandard.fs.accessors.DiskFile;
 import xstandard.gui.file.ExtensionFilter;
 import java.util.logging.Level;
@@ -61,7 +62,7 @@ public class NDSROM {
 
 		DataIOStream rom = romPath.getDataIOStream();
 		NitroDirectory root = new NitroDirectory("data", 0xf000, null);
-		NitroHeader header = NitroHeader.readHeader(rom);
+		SRLHeader header = new SRLHeader(rom);
 		Map<Integer, Integer> startOffset = new HashMap<>(); // The NDSROM's files start offset
 		Map<Integer, Integer> endOffset = new HashMap<>(); // The NDSROM's files end offsets
 
@@ -223,7 +224,7 @@ public class NDSROM {
 
 		// Reading the header template, but skipping the section for now as we have to adjust some values
 		DataIOStream reader = headerBin.getDataIOStream();
-		NitroHeader header = NitroHeader.readHeader(reader);
+		SRLHeader header = new SRLHeader(reader);
 		reader.close();
 		out.write(new byte[0x4000]); //allocate
 		
@@ -306,11 +307,16 @@ public class NDSROM {
 		// The actual files
 		out.seek(fimgOffset);
 		NitroDirectory.repackFileTree(out, fimgOffset, dataDir, root);
+		
+		out.pad(1 << 0x13);
+		int size = out.getPosition();
+		header.ntrRomRegionEnd = size >> 0x13;
+		header.twlRomRegionStart = size >> 0x13;
 
 		// Write updated header
-		NitroHeader.updateHeaderChecksum(header, out);
+		header.updateHeaderChecksum(out);
 		out.seek(0);
-		NitroHeader.writeHeader(header, out);
+		header.write(out);
 
 		out.close();
 	}
