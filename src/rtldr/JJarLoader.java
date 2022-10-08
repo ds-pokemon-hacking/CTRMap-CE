@@ -1,15 +1,13 @@
-
 package rtldr;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JJarLoader {
-	
+
 	public static ClassLoader mountFileToClasspath(File jarFile) {
 		try {
 			return mountURLToClasspath(jarFile.toURI().toURL());
@@ -18,9 +16,9 @@ public class JJarLoader {
 		}
 		return null;
 	}
-	
+
 	private static ClassLoader mountURLToClasspath(URL... urls) {
-		URLClassLoader loader = new URLClassLoader(
+		ClassLoader loader = new JHierarchicalURLClassLoader(
 			urls,
 			JJarLoader.class.getClassLoader()
 		);

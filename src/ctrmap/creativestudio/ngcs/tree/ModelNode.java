@@ -169,6 +169,7 @@ public class ModelNode extends CSNode {
 	@Override
 	public void putForExport(G3DResource rsc) {
 		rsc.addModel(mdl);
+		rsc.addTextures(getCS().getTextures()); //textures for model export
 	}
 
 	@Override

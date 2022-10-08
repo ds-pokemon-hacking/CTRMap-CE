@@ -42,7 +42,7 @@ public class UVBufferComponent extends BufferComponent {
 	public void createUVBuffer() {
 		if (isEnabled()) {
 			uvBuffer = FloatBuffer.allocate(mesh.vertices.size() * 2);
-
+			
 			for (Vertex v : mesh.vertices) {
 				Vec2f uv = new Vec2f(v.uv[setNo].x, v.uv[setNo].y);
 				uvBuffer.put(uv.x);

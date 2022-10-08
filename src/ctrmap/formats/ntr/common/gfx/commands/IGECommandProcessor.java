@@ -1,6 +1,6 @@
 package ctrmap.formats.ntr.common.gfx.commands;
 
-import ctrmap.formats.ntr.common.gfx.GETextureFormat;
+import ctrmap.formats.ntr.common.gfx.texture.GETextureFormat;
 import ctrmap.formats.ntr.common.gfx.commands.mat.MatTexImageParamSet;
 import ctrmap.formats.ntr.common.gfx.commands.mtx.MtxMode;
 import ctrmap.formats.ntr.common.gfx.commands.poly.PolyAttrSet;

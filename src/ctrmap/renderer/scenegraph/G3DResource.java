@@ -210,7 +210,7 @@ public class G3DResource {
 
 					@Override
 					public boolean hasNext() {
-						if (matIt == null || !matIt.hasNext()) {
+						while (matIt == null || !matIt.hasNext()) {
 							if (mdlIt.hasNext()) {
 								matIt = mdlIt.next().materials.iterator();
 							}
@@ -241,7 +241,7 @@ public class G3DResource {
 
 					@Override
 					public boolean hasNext() {
-						if (meshIt == null || !meshIt.hasNext()) {
+						while (meshIt == null || !meshIt.hasNext()) {
 							if (mdlIt.hasNext()) {
 								meshIt = mdlIt.next().meshes.iterator();
 							}
@@ -272,7 +272,7 @@ public class G3DResource {
 
 					@Override
 					public boolean hasNext() {
-						if (visgroupIt == null || !visgroupIt.hasNext()) {
+						while (visgroupIt == null || !visgroupIt.hasNext()) {
 							if (mdlIt.hasNext()) {
 								visgroupIt = mdlIt.next().visGroups.iterator();
 							}
@@ -462,8 +462,8 @@ public class G3DResource {
 
 	public void mergeFull(G3DResource res) {
 		if (res != null) {
-			addListPrededupe(models, res.models, "Texture");
-			addListPrededupe(textures, res.textures, "Model");
+			addListPrededupe(models, res.models, "Model");
+			addListPrededupe(textures, res.textures, "Texture");
 			addListPrededupe(cameras, res.cameras, "Camera");
 			addListPrededupe(lights, res.lights, "Light");
 			addListPrededupe(skeletalAnimations, res.skeletalAnimations, "SkeletalAnimation");

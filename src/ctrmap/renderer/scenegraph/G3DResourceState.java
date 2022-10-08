@@ -22,7 +22,6 @@ import ctrmap.renderer.scene.model.MeshVisibilityGroup;
 import xstandard.math.AABB6f;
 import xstandard.math.FAtan;
 import xstandard.math.MathEx;
-import xstandard.math.MatrixUtil;
 import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.Quaternion;
 import java.util.ArrayList;
@@ -161,7 +160,7 @@ public class G3DResourceState {
 		applyVisibilityAnimation();
 
 		applySkeletalAnimation();
-		
+
 		setupBBoxes();
 
 		for (G3DResourceInstance child : new ArrayList<>(instance.getChildren())) {
@@ -232,7 +231,9 @@ public class G3DResourceState {
 	private void setDefaultVisgroupStates() {
 		if (instance != null && instance.resource != null) {
 			for (MeshVisibilityGroup visgroup : instance.resource.visGroups()) {
-				visGroupVisibilities.put(visgroup.name, visgroup.isVisible);
+				if (visGroupVisibilities.getOrDefault(visgroup.name, true)) {
+					visGroupVisibilities.put(visgroup.name, visgroup.isVisible);
+				}
 			}
 		}
 	}
@@ -291,7 +292,7 @@ public class G3DResourceState {
 				aabb.max.set(mdl.maxVector);
 				aabb.min.mulPosition(mv);
 				aabb.max.mulPosition(mv);
-				
+
 				boundingBoxes.put(mdl, aabb);
 			}
 		}

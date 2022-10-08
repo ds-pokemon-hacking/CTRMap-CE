@@ -1,4 +1,4 @@
-package ctrmap.formats.ntr.common.gfx;
+package ctrmap.formats.ntr.common.gfx.texture;
 
 public enum GETextureFormat {
 	NULL(0, 0),

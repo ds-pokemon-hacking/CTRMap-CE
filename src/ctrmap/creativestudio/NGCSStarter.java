@@ -1,6 +1,5 @@
 package ctrmap.creativestudio;
 
-import ctrmap.creativestudio.CreativeStudioChecker;
 import ctrmap.Launc;
 import ctrmap.creativestudio.ngcs.NGCS;
 

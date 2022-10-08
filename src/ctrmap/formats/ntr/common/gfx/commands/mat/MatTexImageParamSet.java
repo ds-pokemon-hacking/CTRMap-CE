@@ -1,6 +1,6 @@
 package ctrmap.formats.ntr.common.gfx.commands.mat;
 
-import ctrmap.formats.ntr.common.gfx.GETextureFormat;
+import ctrmap.formats.ntr.common.gfx.texture.GETextureFormat;
 import ctrmap.formats.ntr.common.gfx.commands.GECommand;
 import ctrmap.formats.ntr.common.gfx.commands.GEOpCode;
 import ctrmap.formats.ntr.common.gfx.commands.IGECommandProcessor;

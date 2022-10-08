@@ -1,6 +1,6 @@
 package ctrmap.formats.ntr.common.gfx.commands;
 
-import ctrmap.formats.ntr.common.gfx.GETextureFormat;
+import ctrmap.formats.ntr.common.gfx.texture.GETextureFormat;
 import ctrmap.formats.ntr.common.gfx.commands.mtx.MtxMode;
 import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.RGBA;
@@ -20,8 +20,8 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 
 	private final MatrixStack.MatrixCtor matrixCtorNormal = new MatrixStack.MatrixCtor() {
 		@Override
-		public Matrix4f newMatrix(int index) {
-			return new Matrix4f();
+		public Matrix4 newMatrix(int index) {
+			return new Matrix4();
 		}
 	};
 
@@ -31,7 +31,7 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 
 	private final MatrixStack.MatrixCtor matrixCtorComb = new MatrixStack.MatrixCtor() {
 		@Override
-		public Matrix4f newMatrix(int index) {
+		public Matrix4 newMatrix(int index) {
 			if (index == -1) {
 				return new CombMatrix(normalStack.cur);
 			}
@@ -39,9 +39,9 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 		}
 	};
 
-	private final CombMatrixStack modelViewStack = new CombMatrixStack(31, matrixCtorComb, normalStack);
+	protected final CombMatrixStack modelViewStack = new CombMatrixStack(31, matrixCtorComb, normalStack);
 
-	private final Map<MtxMode.GEMatrixMode, MatrixStack> matrixStacks = new HashMap<>();
+	protected final Map<MtxMode.GEMatrixMode, MatrixStack> matrixStacks = new HashMap<>();
 
 	protected AbstractGECommandProcessor() {
 		matrixStacks.put(MtxMode.GEMatrixMode.PROJECTION, projectionStack);
@@ -56,6 +56,10 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 
 	protected MatrixStack getCurMatrixStack() {
 		return matrixStacks.get(nowMatrixMode);
+	}
+	
+	public Matrix4 getMvStack(int index) {
+		return modelViewStack.stack[index];
 	}
 	
 	public void mulVertex(Vec3f vert) {
@@ -210,7 +214,7 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 		currentTexcoord.set(texcoord);
 	}
 
-	private class CombMatrix extends Matrix4f {
+	private class CombMatrix extends Matrix4 {
 
 		private final Matrix4f normal;
 
@@ -277,17 +281,21 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 
 	protected static class MatrixStack {
 
-		private Matrix4f cur;
+		private Matrix4 cur;
 
-		private Matrix4f[] stack;
+		protected Matrix4[] stack;
 		private int index = 0;
 
 		public MatrixStack(int capacity, MatrixCtor matrixCtor) {
 			cur = matrixCtor.newMatrix(-1);
-			stack = new Matrix4f[capacity];
+			stack = new Matrix4[capacity];
 			for (int i = 0; i < capacity; i++) {
 				stack[i] = matrixCtor.newMatrix(i);
 			}
+		}
+		
+		public int size() {
+			return stack.length;
 		}
 
 		public Matrix4f cur() {
@@ -316,13 +324,13 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 			}
 		}
 
-		private static interface MatrixCtor {
+		protected static interface MatrixCtor {
 
-			public Matrix4f newMatrix(int index);
+			public Matrix4 newMatrix(int index);
 		}
 	}
 
-	private static class CombMatrixStack extends MatrixStack {
+	protected static class CombMatrixStack extends MatrixStack {
 
 		private final MatrixStack normal;
 

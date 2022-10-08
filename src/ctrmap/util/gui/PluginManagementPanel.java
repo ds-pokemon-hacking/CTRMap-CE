@@ -59,7 +59,6 @@ public class PluginManagementPanel extends javax.swing.JPanel {
             }
         });
 
-        pluginList.setLayout(new javax.swing.BoxLayout(pluginList, javax.swing.BoxLayout.LINE_AXIS));
         pluginsSP.setViewportView(pluginList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
