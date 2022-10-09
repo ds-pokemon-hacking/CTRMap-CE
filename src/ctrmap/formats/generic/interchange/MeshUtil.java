@@ -222,6 +222,18 @@ public class MeshUtil {
 					break;
 			}
 		}
+		
+		if (fileVersion >= Revisions.REV_INDEX_BUFFERS) {
+			mesh.useIBO = dis.readBoolean();
+			if (mesh.useIBO) {
+				int indexCount = dis.readInt();
+				int indexSize = dis.read();
+				for (int i = 0; i < indexCount; i++) {
+					mesh.indices.add(dis.readSized(indexSize));
+				}
+			}
+		}
+		
 		return mesh;
 	}
 
@@ -319,15 +331,27 @@ public class MeshUtil {
 		writeVertexAttrib(boneWeights, dos);
 
 		//since this converter always keeps the given order (positions, normals, colors...), we can just dump it into the buffer
-		dos.writeInt(mesh.getVertexCount());
-		writeVertexAttribArray(positions, mesh, dos);
-		writeVertexAttribArray(normals, mesh, dos);
-		writeVertexAttribArray(colors, mesh, dos);
-		writeVertexAttribArray(texCoord0, mesh, dos);
-		writeVertexAttribArray(texCoord1, mesh, dos);
-		writeVertexAttribArray(texCoord2, mesh, dos);
-		writeVertexAttribArray(boneIndices, mesh, dos);
-		writeVertexAttribArray(boneWeights, mesh, dos);
+		int vertexCount = mesh.vertices.size();
+		dos.writeInt(vertexCount);
+		writeVertexAttribArray(positions, mesh.vertices, dos);
+		writeVertexAttribArray(normals, mesh.vertices, dos);
+		writeVertexAttribArray(colors, mesh.vertices, dos);
+		writeVertexAttribArray(texCoord0, mesh.vertices, dos);
+		writeVertexAttribArray(texCoord1, mesh.vertices, dos);
+		writeVertexAttribArray(texCoord2, mesh.vertices, dos);
+		writeVertexAttribArray(boneIndices, mesh.vertices, dos);
+		writeVertexAttribArray(boneWeights, mesh.vertices, dos);
+
+		dos.writeBoolean(mesh.useIBO);
+		if (mesh.useIBO) {
+			dos.writeInt(mesh.indices.size());
+			int maxIndex = vertexCount - 1;
+			int size = (maxIndex > 0xFFFF) ? 4 : (maxIndex > 0xFF) ? 2 : 1;
+			dos.write(size);
+			for (int i = 0; i < mesh.indices.size(); i++) {
+				dos.writeSized(mesh.indices.get(i), size);
+			}
+		}
 	}
 
 	private static void writeVertexAttrib(VertexAttrib a, DataOutput dos) throws IOException {

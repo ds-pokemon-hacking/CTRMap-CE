@@ -3,6 +3,7 @@ package ctrmap.creativestudio.editors;
 import ctrmap.creativestudio.ngcs.CSG3DSurface;
 import ctrmap.creativestudio.ngcs.NGCS;
 import ctrmap.creativestudio.ngcs.tree.JointNode;
+import ctrmap.creativestudio.ngcs.tree.ModelNode;
 import ctrmap.renderer.backends.base.shaderengine.ShaderUniform;
 import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scenegraph.G3DResource;
@@ -83,6 +84,7 @@ public class JointEditor extends javax.swing.JPanel implements ISceneBound, IEdi
 		loaded = false;
 		if (IEditor.checkIsCompatibleNG(j, Joint.class)) {
 			node = (JointNode) j;
+			node.getCS().showLoadedModel(node.descend(ModelNode.class).getContent());
 			joint = (Joint) node.getContent();
 			CSG3DSurface renderer = cs.getRenderer();
 
@@ -130,7 +132,7 @@ public class JointEditor extends javax.swing.JPanel implements ISceneBound, IEdi
 	}
 
 	public void resetSkeletonModel() {
-		skeletonModel.setResource(new G3DResource(SkeletonModelGenerator.generateSkeletonModel(lastSkeleton, new G3DResource(cs.currentModel))));
+		skeletonModel.setResource(new G3DResource(SkeletonModelGenerator.generateSkeletonModel(lastSkeleton)));
 	}
 
 	public void updateSkeletonModel() {

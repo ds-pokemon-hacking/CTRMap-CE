@@ -10,7 +10,6 @@ import ctrmap.renderer.scene.model.draw.vtxlist.VertexArrayList;
 import ctrmap.renderer.scene.model.draw.buffers.MeshBufferManager;
 import ctrmap.renderer.scene.model.draw.vtxlist.VertexListUsage;
 import xstandard.util.collections.IntList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;

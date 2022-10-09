@@ -40,7 +40,7 @@ public class SkeletonModelGenerator {
 		skeletonMaterial.constantColors[0] = new RGBA(252, 233, 3, 255);
 	}
 
-	public static Model generateSkeletonModel(Skeleton src, G3DResource model) {
+	public static Model generateSkeletonModel(Skeleton src) {
 		Model sklMdl = new Model();
 		if (src == null) {
 			return sklMdl;

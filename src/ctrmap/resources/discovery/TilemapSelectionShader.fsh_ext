@@ -24,7 +24,7 @@ else {
 
 	vec4 objIdVec = vec4(0.0, 0.0, 0.0, 255.0);
 
-	//24 bits available - 11-bit X, 11-bit Z, 11-bit layer. X/Z are +1
+	//24 bits available - 11-bit X, 11-bit Z, 2-bit layer. X/Z are +1
 	//vec.x = X & 255
 	//vec.y = ((X >> 8) & 7) | ((Z & 31) << 3)
 	//vec.z = (layer << 6) | ((Z >> 5) & 63)

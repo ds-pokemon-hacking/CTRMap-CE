@@ -136,7 +136,7 @@ public class ModelNode extends CSNode {
 	}
 
 	@Override
-	public NamedResource getContent() {
+	public Model getContent() {
 		return mdl;
 	}
 

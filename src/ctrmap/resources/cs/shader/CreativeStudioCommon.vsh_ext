@@ -50,7 +50,13 @@ PASSTHROUGH vec4 highLightColor;
 /*
 if (highLightColor.a > 0.0){
 	target.r = max(0.25, target.r);
-	target.gb *= highLightColor.gb;
+    if (target.g <= 0.05 && target.b <= 0.05) {
+        //If the fragment is pretty much red channel-only, replace the value with the weight completely
+        target.r = 1.0 - highLightColor.g;
+    }
+    else {
+	    target.gb *= highLightColor.gb;
+    }
 }
 target.r += highLightColor.r;
 target.gb -= highLightColor.rr;

@@ -31,13 +31,13 @@ public class MaterialUtil {
 	public static Material readMaterial(File f) {
 		return readMaterial(new DiskFile(f));
 	}
-	
+
 	public static Material readMaterial(FSFile f) {
 		try {
 			CMIFFile.Level0Info l0 = CMIFFile.readLevel0File(f, MATERIAL_MAGIC);
-			
+
 			Material mat = readMaterial(l0.io, l0.fileVersion);
-			
+
 			l0.io.close();
 			return mat;
 		} catch (IOException ex) {
@@ -62,14 +62,23 @@ public class MaterialUtil {
 		}
 
 		Material m = new Material();
-		m.name = StringIO.readStringWithAddress(dis);
+		m.name = dis.readStringWithAddress();
 
 		if (fileVersion != Revisions.REV_NDS_RESERVED) {
 			if (fileVersion >= Revisions.REV_SHADER_INFO) {
-				m.vertexShaderName = StringIO.readStringWithAddress(dis);
-				int shaderIndex = dis.read();
-				if (shaderIndex != 255) {
-					m.vertexShaderName = shaderIndex + "@" + m.vertexShaderName;
+				m.vertexShaderName = dis.readStringWithAddress();
+				if (fileVersion >= Revisions.REV_EXT_FSH_INFO) {
+					m.fragmentShaderName = dis.readStringWithAddress();
+					m.fshType = MaterialParams.FragmentShaderType.values()[dis.read()];
+					int shExtCount = dis.readUnsignedShort();
+					for (int i = 0; i < shExtCount; i++) {
+						m.shaderExtensions.add(dis.readStringWithAddress());
+					}
+				} else {
+					int shaderIndex = dis.read();
+					if (shaderIndex != 255) {
+						m.vertexShaderName = shaderIndex + "@" + m.vertexShaderName;
+					}
 				}
 			}
 			if (fileVersion >= Revisions.REV_LIGHTING_DATA) {
@@ -86,12 +95,11 @@ public class MaterialUtil {
 				m.lightingLayer = dis.read();
 			}
 			if (fileVersion >= Revisions.REV_CCOL_ASSIGNMENT) {
-				for (int i = 0; i < m.constantColors.length; i++){
+				for (int i = 0; i < m.constantColors.length; i++) {
 					m.constantColors[i] = new RGBA(dis);
 				}
 			}
-		}
-		else {
+		} else {
 			m.lightSetIndex = dis.read();
 			m.ambientColor = new RGBA(dis);
 			m.diffuseColor = new RGBA(dis);
@@ -103,12 +111,11 @@ public class MaterialUtil {
 		for (int i = 0; i < count; i++) {
 			TextureMapper t = new TextureMapper();
 
-			t.textureName = StringIO.readStringWithAddress(dis);
+			t.textureName = dis.readStringWithAddress();
 			t.uvSetNo = dis.read();
 			if (fileVersion >= Revisions.REV_TEX_MAP_MODE) {
 				t.mapMode = MaterialParams.TextureMapMode.values()[dis.read()];
-			}
-			else {
+			} else {
 				switch (t.uvSetNo) {
 					case 3:
 						t.mapMode = MaterialParams.TextureMapMode.CUBE_MAP;
@@ -141,7 +148,7 @@ public class MaterialUtil {
 				LUT lut = new LUT();
 				lut.target = MaterialParams.LUTTarget.values()[dis.read()];
 				lut.source = MaterialParams.LUTSource.values()[dis.read()];
-				lut.textureName = StringIO.readStringWithAddress(dis);
+				lut.textureName = dis.readStringWithAddress();
 				m.LUTs.add(lut);
 			}
 		}
@@ -201,14 +208,13 @@ public class MaterialUtil {
 		if (!StringIO.checkMagic(dis, TEVCONF_MAGIC)) {
 			throw new InvalidMagicException("Invalid TexEnvConfig magic.");
 		}
-		
+
 		m.tevStages.inputBufferColor = new RGBA(dis);
 		for (int stage = 0; stage < 6; stage++) {
 			if (fileVersion < Revisions.REV_CCOL_ASSIGNMENT) {
 				m.constantColors[stage] = new RGBA(dis);
 				m.tevStages.stages[stage].constantColor = MaterialColorType.forCColIndex(stage);
-			}
-			else {
+			} else {
 				m.tevStages.stages[stage].constantColor = MaterialColorType.forCColIndex(dis.read());
 			}
 
@@ -242,7 +248,7 @@ public class MaterialUtil {
 	public static void writeMaterial(Material m, File f) {
 		writeMaterial(m, new DiskFile(f));
 	}
-	
+
 	public static void writeMaterial(Material m, FSFile f) {
 		try {
 			CMIFWriter dos = CMIFFile.writeLevel0File(MATERIAL_MAGIC);
@@ -260,8 +266,13 @@ public class MaterialUtil {
 		dos.writeStringUnterminated(MATERIAL_MAGIC);			//MAGIC
 		dos.writeString(m.name);								//Nameofs
 
-		/*dos.writeString(m.vertexShaderName);
-		dos.write(255);
+		dos.writeString(m.vertexShaderName);
+		dos.writeString(m.fragmentShaderName);
+		dos.writeEnum(m.fshType);
+		dos.writeShort(m.shaderExtensions.size());
+		for (String shext : m.shaderExtensions) {
+			dos.writeString(shext);
+		}
 
 		//LIGHTING DATA
 		dos.write(m.lightSetIndex);
@@ -271,18 +282,18 @@ public class MaterialUtil {
 		m.specular1Color.write(dos);
 		m.emissionColor.write(dos);
 		dos.write(m.lightingLayer);
-		
+
 		//CONSTANT COLORs
-		for (RGBA ccol : m.constantColors){
+		for (RGBA ccol : m.constantColors) {
 			ccol.write(dos);
-		}*/
-		
+		}
+
+		/* REV_NDS_RESERVED
 		dos.write(m.lightSetIndex);
 		m.ambientColor.write(dos);
 		m.diffuseColor.write(dos);
 		m.specular0Color.write(dos);
-		m.emissionColor.write(dos);
-
+		m.emissionColor.write(dos);*/
 		//TEXTURE DATA
 		int count = 0;			//There can theoretically be blank textures before the last texture, although H3D does not support it
 		for (TextureMapper t : m.textures) {
@@ -296,13 +307,13 @@ public class MaterialUtil {
 			writeTextureEntry(t, dos);
 		}
 
-		/*//LUTs
+		//LUTs
 		dos.write(m.LUTs.size());
 		for (LUT lut : m.LUTs) {
 			dos.writeEnum(lut.target);
 			dos.writeEnum(lut.source);
 			dos.writeString(lut.textureName);						//Nameofs
-		}*/
+		}
 
 		//MATERIAL PARAMETERS
 		//DEPTH TEST
@@ -359,7 +370,7 @@ public class MaterialUtil {
 		dos.write(m.bumpMode.ordinal() | (m.bumpTextureIndex << 2));
 
 		//Texture Environment config
-		dos.write(TEVCONF_MAGIC.getBytes("ASCII"));
+		dos.writeStringUnterminated(TEVCONF_MAGIC);
 		m.tevStages.inputBufferColor.write(dos);
 		for (TexEnvStage s : m.tevStages.stages) {
 			dos.writeEnum(s.constantColor);	//Constant color assignment

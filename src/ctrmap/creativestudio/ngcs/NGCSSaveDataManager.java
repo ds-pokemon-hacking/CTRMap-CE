@@ -4,11 +4,6 @@ import ctrmap.formats.generic.interchange.CMIFFile;
 import xstandard.fs.FSFile;
 import xstandard.gui.DialogUtils;
 import xstandard.gui.file.XFileDialog;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class NGCSSaveDataManager {

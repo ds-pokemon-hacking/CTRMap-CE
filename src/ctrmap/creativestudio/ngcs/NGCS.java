@@ -960,6 +960,7 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 			showLoadedModel(rsc.models.get(0));
 			CSNode modelNode = dataTree.getRootCSNode().ascendByContent(ModelNode.class, rsc.models.get(0));
 			if (modelNode != null) {
+				dataTree.setSelectionPath(new TreePath(modelNode.getPath()));
 				modelNode.setExpansionState(true);
 			}
 		}

@@ -36,7 +36,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The Common Interchange Format is a simple yet effective unified file format for passing data to external utilities. Said utilities, currently limited to SPICA, have to implement the format reader according to the specification.
+ * The Common Interchange Format is a simple yet effective unified file format for passing data to external
+ * utilities. Said utilities, currently limited to SPICA, have to implement the format reader according to the
+ * specification.
  */
 public class CMIFFile {
 
@@ -96,14 +98,18 @@ public class CMIFFile {
 	}
 
 	public CMIFFile(FSFile fsf) {
-		this(fsf.getIO());
+		this(fsf.getIO(), true);
 	}
 
 	public CMIFFile(byte[] b) {
-		this(new MemoryStream(b));
+		this(new MemoryStream(b), true);
 	}
 
 	public CMIFFile(IOStream strm) {
+		this(strm, false);
+	}
+	
+	private CMIFFile(IOStream strm, boolean close) {
 		try {
 			DataIOStream dis = new DataIOStream(strm);
 
@@ -188,11 +194,15 @@ public class CMIFFile {
 					sceneTemplates.add(SceneTemplateUtil.readSceneTemplate(io, version));
 				});
 			}
+
+			if (close) {
+				strm.close();
+			}
 		} catch (IOException ex) {
 			Logger.getLogger(CMIFFile.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	private void readPointerTableAt(DataIOStream io, int offset, PointerTable.PointerTableCallback callback) throws IOException {
 		io.seek(offset);
 		new PointerTable(io).forEach(callback);
