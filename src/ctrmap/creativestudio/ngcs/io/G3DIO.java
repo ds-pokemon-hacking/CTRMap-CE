@@ -1,7 +1,5 @@
 package ctrmap.creativestudio.ngcs.io;
 
-import ctrmap.renderer.scene.Camera;
-import ctrmap.renderer.scene.model.Skeleton;
 import ctrmap.renderer.scenegraph.G3DResource;
 import xstandard.fs.FSFile;
 import xstandard.io.base.impl.ext.data.DataIOStream;

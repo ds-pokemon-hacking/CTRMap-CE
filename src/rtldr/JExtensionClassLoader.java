@@ -11,10 +11,14 @@ import java.net.URLClassLoader;
  * meaning that even plug-ins in JRTLDRCore's dummyRootClassloader will be loaded on the same level
  * as JAR ones, and in turn will not cause problems that would stem from being subject to the AppClassLoader.
  */
-public class JHierarchicalURLClassLoader extends URLClassLoader {
+public class JExtensionClassLoader extends URLClassLoader {
 
-	public JHierarchicalURLClassLoader(URL[] urls, ClassLoader parent) {
+	public JExtensionClassLoader(URL[] urls, ClassLoader parent) {
 		super(urls, parent);
+	}
+	
+	public Class<?> findLocalClass(String name) throws ClassNotFoundException {
+		return super.findClass(name);
 	}
 
 	@Override
@@ -39,5 +43,13 @@ public class JHierarchicalURLClassLoader extends URLClassLoader {
 			}
 		}
 		return super.loadClass(name, resolve);
+	}
+	
+	public Class<?> getLoadedClass(String name) throws ClassNotFoundException {
+		Class<?> cls = findLoadedClass(name);
+		if (cls == null) {
+			throw new ClassNotFoundException(name);
+		}
+		return cls;
 	}
 }

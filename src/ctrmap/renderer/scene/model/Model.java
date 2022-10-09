@@ -70,8 +70,8 @@ public class Model implements NamedResource {
 			visGroupNames.add(g.name);
 		}
 		for (Mesh m : meshes) {
-			if (!visGroupNames.contains(m.name)) {
-				visGroupNames.add(m.name);
+			if (!visGroupNames.contains(m.visGroupName)) {
+				visGroupNames.add(m.visGroupName);
 			}
 		}
 		List<String> namesList = new ArrayList<>(visGroupNames);

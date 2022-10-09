@@ -8,19 +8,19 @@ import java.util.logging.Logger;
 
 public class JJarLoader {
 
-	public static ClassLoader mountFileToClasspath(File jarFile) {
+	public static JExtensionClassLoader mountFileToClasspath(ClassLoader parent, File jarFile) {
 		try {
-			return mountURLToClasspath(jarFile.toURI().toURL());
+			return mountURLToClasspath(parent, jarFile.toURI().toURL());
 		} catch (MalformedURLException ex) {
 			Logger.getLogger(JJarLoader.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		return null;
 	}
 
-	private static ClassLoader mountURLToClasspath(URL... urls) {
-		ClassLoader loader = new JHierarchicalURLClassLoader(
+	private static JExtensionClassLoader mountURLToClasspath(ClassLoader parent, URL... urls) {
+		JExtensionClassLoader loader = new JExtensionClassLoader(
 			urls,
-			JJarLoader.class.getClassLoader()
+			parent
 		);
 		return loader;
 	}

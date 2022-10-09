@@ -3,9 +3,7 @@ package rtldr;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,19 +19,22 @@ public class JRTLDRCore {
 	private static final List<RExtensionBase> plugins = new ArrayList<>();
 	
 	private static final List<String> loadedPluginPaths = new ArrayList<>();
-	private static final Map<String, ClassLoader> classloaders = new HashMap<>();
+	private static final Map<String, JExtensionClassLoader> classloaders = new HashMap<>();
 	
-	private static final ClassLoader dummyRootClassloader;
+	private static final JCombinedClassLoader linkingClassLoader;
+	private static final JExtensionClassLoader dummySelfClassLoader;
 	
 	static {
-		JGlobalExtensionDB.init();
+		linkingClassLoader = new JCombinedClassLoader(JRTLDRCore.class.getClassLoader());
 		//create a duplicate classloader pointing to the same source for loading child plugins
-		dummyRootClassloader = new JHierarchicalURLClassLoader(
+		dummySelfClassLoader = new JExtensionClassLoader(
 			new URL[]{
 				JRTLDRCore.class.getProtectionDomain().getCodeSource().getLocation()
 			}, 
-			JRTLDRCore.class.getClassLoader()
+			linkingClassLoader
 		);
+		linkingClassLoader.addChild(dummySelfClassLoader);
+		JGlobalExtensionDB.init();
 	}
 	
 	public static void suppressDebugPluginByFileName(String fileName) {
@@ -71,7 +72,7 @@ public class JRTLDRCore {
 		managers.add(mgr);
 		mgrList.add(mgr);
 		//if the parent module contains a plugin, load it as well
-		loadRmoFromCldr(rmoClassName, dummyRootClassloader, mgr);
+		loadRmoFromCldr(rmoClassName, dummySelfClassLoader, mgr);
 		for (ClassLoader cldr : classloaders.values()) {
 			//already loaded JARs
 			loadRmoFromCldr(rmoClassName, cldr, mgr);
@@ -124,7 +125,7 @@ public class JRTLDRCore {
 	}
 	
 	private static String getPathOfCldr(ClassLoader cldr) {
-		for (Map.Entry<String, ClassLoader> e : classloaders.entrySet()) {
+		for (Map.Entry<String, JExtensionClassLoader> e : classloaders.entrySet()) {
 			if (e.getValue() == cldr) {
 				return e.getKey();
 			}
@@ -188,8 +189,9 @@ public class JRTLDRCore {
 		if (file != null && file.isFile()) {
 			String absPath = file.getAbsolutePath();
 			if (!loadedPluginPaths.contains(absPath)) {
-				ClassLoader cldr = JJarLoader.mountFileToClasspath(file);
+				JExtensionClassLoader cldr = JJarLoader.mountFileToClasspath(linkingClassLoader, file);
 				if (cldr != null) {
+					linkingClassLoader.addChild(cldr);
 					classloaders.put(absPath, cldr);
 					for (JExtensionManager mgr : managers) {
 						String rmoClassName = mgr.rmoClassName;
@@ -205,13 +207,14 @@ public class JRTLDRCore {
 		if (file != null && file.isFile()) {
 			String absPath = file.getAbsolutePath();
 			if (loadedPluginPaths.contains(absPath)) {
-				ClassLoader cldr = classloaders.get(absPath);
+				JExtensionClassLoader cldr = classloaders.get(absPath);
 				if (cldr != null) {
 					System.out.println("Got classloader " + cldr + " for plug-in " + absPath + ", terminating...");
 					for (JExtensionManager mgr : managers) {
 						String rmoClassName = mgr.rmoClassName;
 						unloadRmoFromCldr(rmoClassName, cldr, mgr);
 					}
+					linkingClassLoader.removeChild(cldr);
 				}
 				loadedPluginPaths.remove(absPath);
 				classloaders.remove(absPath);

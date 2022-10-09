@@ -13,7 +13,6 @@ import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scenegraph.NamedResource;
 import xstandard.fs.FSFile;
-import xstandard.fs.accessors.DiskFile;
 import xstandard.gui.components.tree.CustomJTreeCellRenderer;
 import xstandard.gui.components.tree.CustomJTreeNode;
 import xstandard.gui.file.XFileDialog;

@@ -1,6 +1,5 @@
 package ctrmap.renderer.scene.model;
 
-import xstandard.math.vec.Vec3f;
 import ctrmap.renderer.scenegraph.NamedResource;
 import ctrmap.renderer.scene.Scene;
 import xstandard.math.vec.Matrix4;
