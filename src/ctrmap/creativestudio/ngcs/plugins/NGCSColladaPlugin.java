@@ -36,9 +36,9 @@ import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.JMenuItem;
 import ctrmap.creativestudio.ngcs.rtldr.INGCSPlugin;
 import ctrmap.formats.common.FormatIOExConfig;
+import ctrmap.renderer.scene.Camera;
 
 public class NGCSColladaPlugin implements INGCSPlugin {
 
@@ -129,8 +129,13 @@ public class NGCSColladaPlugin implements INGCSPlugin {
 			if (!rsc.cameraAnimations.isEmpty()) {
 				G3DResource mergeRsc = new G3DResource();
 				mergeRsc.merge(rsc);
-				mergeRsc.addCamera(exData.getCameraByName(getExportTargetName(rsc)));
-				new DAE(rsc, config).writeToFile(target, null);
+				Camera cam = exData.getCameraByName(getExportTargetName(rsc));
+				if (cam != null) {
+					cam = new Camera(cam);
+					cam.name = getExportTargetName(rsc);
+					mergeRsc.addCamera(cam);
+				}
+				new DAE(mergeRsc, config).writeToFile(target, null);
 			}
 		}
 

@@ -5,10 +5,11 @@ import ctrmap.renderer.scene.model.Vertex;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class VertexArrayList extends AbstractVertexList {
 	
-	private ArrayList<Vertex> backend = new ArrayList<>();
+	private List<Vertex> backend = new ArrayList<>();
 	
 	public VertexArrayList(){
 		

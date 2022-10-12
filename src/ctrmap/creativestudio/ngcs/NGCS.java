@@ -74,6 +74,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import rtldr.JRTLDRCore;
+import xstandard.math.AABB6f;
 
 public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 
@@ -465,48 +466,45 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 
 	public void resetCameraToModel() {
 		changeCamera(mainCamera);
-		Vec3f minVector = new Vec3f();
-		Vec3f maxVector = new Vec3f();
-
+		
+		AABB6f aabb = new AABB6f();
+		
 		if (currentTemplateScene == null) {
 			if (btnDrawAllModels.isSelected()) {
 				scene.resource.updateBBox(false);
-				minVector = scene.calcMinVector();
-				maxVector = scene.calcMaxVector();
+				aabb = scene.calcAABB();
 			} else {
 				if (currentModel != null) {
-					minVector = currentModel.minVector;
-					maxVector = currentModel.maxVector;
+					aabb = currentModel.boundingBox;
 				} else {
-					minVector.set(-50f);
-					maxVector.set(50f);
+					aabb.min.set(-50f);
+					aabb.max.set(50f);
 				}
 			}
 		} else {
-			minVector = currentTemplateScene.calcMinVector();
-			maxVector = currentTemplateScene.calcMaxVector();
+			aabb = currentTemplateScene.calcAABB();
 		}
-		if (minVector.equals(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE)) {
-			minVector.set(-50f);
+		if (aabb.min.equals(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE)) {
+			aabb.min.set(-50f);
 		}
-		if (maxVector.equals(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)) {
-			maxVector.set(50f);
+		if (aabb.max.equals(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)) {
+			aabb.max.set(50f);
 		}
 
 		input.cam.mode = Camera.Mode.PERSPECTIVE;
-		setNearFar(minVector, maxVector);
-		setCameraTransRot(minVector, maxVector);
+		setNearFar(aabb);
+		setCameraTransRot(aabb);
 	}
 
-	public void setNearFar(Vec3f minVector, Vec3f maxVector) {
-		float far = Math.max(minVector.getHighestAbsComponent(), maxVector.getHighestAbsComponent());
+	public void setNearFar(AABB6f aabb) {
+		float far = Math.max(aabb.min.getHighestAbsComponent(), aabb.max.getHighestAbsComponent());
 		input.cam.zFar = Math.max(far * 4f, 300f);
 		input.cam.zNear = Math.max(0.01f, far / 300f);
 	}
 
-	public void setCameraTransRot(Vec3f minVector, Vec3f maxVector) {
-		input.setSpeed(Math.max(maxVector.getHighestAbsComponent(), minVector.getHighestAbsComponent()) / 20f);
-		input.overrideCamera((maxVector.x + minVector.x) / 2f, maxVector.y * 0.5f, Math.max(maxVector.getHighestAbsComponent(), minVector.getHighestAbsComponent()) * 1.5f, 0f, 0f, 0f);
+	public void setCameraTransRot(AABB6f aabb) {
+		input.setSpeed(Math.max(aabb.max.getHighestAbsComponent(), aabb.min.getHighestAbsComponent()) / 20f);
+		input.overrideCamera((aabb.max.x + aabb.min.x) / 2f, aabb.max.y * 0.5f, Math.max(aabb.max.getHighestAbsComponent(), aabb.min.getHighestAbsComponent()) * 1.5f, 0f, 0f, 0f);
 	}
 
 	public CSG3DSurface getRenderer() {

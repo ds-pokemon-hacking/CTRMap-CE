@@ -42,4 +42,9 @@ public class VtxPosSet10 extends GECommand {
 	public void process(IGECommandProcessor processor) {
 		processor.vertex(position);
 	}
+	
+	@Override
+	public String toString() {
+		return "VtxPosSet10" + position;
+	}
 }

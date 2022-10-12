@@ -20,7 +20,7 @@ public enum CSNodeContentType {
 	ANIMATION_TARGET("AnimationTarget", 0),
 	ANIMATION_TARGET_S("BoneTarget", CAP_ALL, CSG3DIOContentType.ANIMATION_CURVE_SKL),
 	ANIMATION_TARGET_C("CameraTarget", CAP_ALL, CSG3DIOContentType.ANIMATION_CURVE_CAM),
-	CAMERA("Camera", CAP_ALL, CSG3DIOContentType.ANIMATION_CAM),
+	CAMERA("Camera", CAP_ALL, CSG3DIOContentType.CAMERA),
 	LIGHT("Light", CAP_ALL, CSG3DIOContentType.LIGHT),
 	JOINT("Joint", 0),
 	VISGROUP("VisGroup", 0),

@@ -17,12 +17,12 @@ public class BoundingBoxGenerator {
 	}
 
 	public static Mesh generateBBox(G3DResource resource, boolean isLines) {
-		float x = resource.minVector.x;
-		float y = resource.minVector.y;
-		float z = resource.minVector.z;
-		float w = resource.maxVector.x - resource.minVector.x;//width
-		float d = resource.maxVector.y - resource.minVector.y;//depth
-		float h = resource.maxVector.z - resource.minVector.z;//height
+		float x = resource.boundingBox.min.x;
+		float y = resource.boundingBox.min.y;
+		float z = resource.boundingBox.min.z;
+		float w = resource.boundingBox.max.x - resource.boundingBox.min.x;//width
+		float d = resource.boundingBox.max.y - resource.boundingBox.min.y;//depth
+		float h = resource.boundingBox.max.z - resource.boundingBox.min.z;//height
 		return generateBBox(w, h, d, x, y, z, isLines, 1, RGBA.RED);
 	}
 

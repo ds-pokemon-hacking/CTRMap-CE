@@ -137,11 +137,11 @@ public class Custom3DPreview extends HoustonGL2 implements GLEventListener {
 
 	protected void setCamera(G3DResource resource) {
 		if (resource != null) {
-			float maxTransl0 = Math.max(resource.minVector.getHighestAbsComponent(), resource.maxVector.getHighestAbsComponent());
+			float maxTransl0 = Math.max(resource.boundingBox.min.getHighestAbsComponent(), resource.boundingBox.max.getHighestAbsComponent());
 			camera.getTranslationCamera().FOV = 45f;
 			camera.getRotationCamera().FOV = 45f;
-			camera.setTX((resource.minVector.x + resource.maxVector.x) / 2f);
-			camera.setTY(resource.maxVector.y / 2f);
+			camera.setTX((resource.boundingBox.max.x + resource.boundingBox.max.x) / 2f);
+			camera.setTY(resource.boundingBox.max.y / 2f);
 			camera.setTZ(maxTransl0 * 2.25f + 5f);
 
 			float near = G3DUtils.getIdealNearClipDistance(resource, 0.1f);

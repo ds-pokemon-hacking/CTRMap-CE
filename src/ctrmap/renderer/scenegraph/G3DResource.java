@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import xstandard.math.AABB6f;
 
 public class G3DResource {
 
@@ -41,9 +42,8 @@ public class G3DResource {
 
 	public ListenableList<G3DSceneTemplate> sceneTemplates = new ListenableList<>();
 
-	public Vec3f maxVector = new Vec3f();
-	public Vec3f minVector = new Vec3f();
-
+	public AABB6f boundingBox = new AABB6f();
+	
 	public MetaData metaData = new MetaData();
 
 	public G3DResource() {
@@ -81,13 +81,11 @@ public class G3DResource {
 	}
 
 	public Vec3f getCenterVector() {
-		Vec3f result = minVector.clone();
-		result.add(maxVector).mul(0.5f);
-		return result;
+		return boundingBox.getCenter();
 	}
 	
 	public Vec3f getDimVector() {
-		return new Vec3f(maxVector.x - minVector.x, maxVector.y - minVector.y, maxVector.z - minVector.z);
+		return boundingBox.getDimensions();
 	}
 
 	public void updateBBox() {
@@ -96,29 +94,16 @@ public class G3DResource {
 
 	public void updateBBox(boolean rebuildSubs) {
 		if (!models.isEmpty()) {
-			minVector = null;
-			maxVector = null;
+			boundingBox.reset();
 
 			for (Model m : models) {
 				if (rebuildSubs) {
 					m.genBbox();
 				}
-				if (maxVector == null) {
-					maxVector = m.maxVector;
-				}
-				if (minVector == null) {
-					minVector = m.minVector;
-				}
-				maxVector.x = Math.max(m.maxVector.x, maxVector.x);
-				maxVector.y = Math.max(m.maxVector.y, maxVector.y);
-				maxVector.z = Math.max(m.maxVector.z, maxVector.z);
-				minVector.x = Math.min(m.minVector.x, minVector.x);
-				minVector.y = Math.min(m.minVector.y, minVector.y);
-				minVector.z = Math.min(m.minVector.z, minVector.z);
+				boundingBox.minmax(m.boundingBox);
 			}
 		} else {
-			minVector = new Vec3f();
-			maxVector = new Vec3f();
+			boundingBox.zero();
 		}
 	}
 
@@ -438,6 +423,7 @@ public class G3DResource {
 			addMatAnimes(res.materialAnimations);
 			addSklAnimes(res.skeletalAnimations);
 			addVisAnimes(res.visibilityAnimations);
+			addCamAnimes(res.cameraAnimations);
 			addCameras(res.cameras);
 			addModels(res.models);
 			addLights(res.lights);

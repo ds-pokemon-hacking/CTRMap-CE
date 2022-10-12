@@ -38,4 +38,9 @@ public class VtxPosSetXY extends GECommand {
 	public void process(IGECommandProcessor processor) {
 		processor.vertexXY(x, y);
 	}
+	
+	@Override
+	public String toString() {
+		return "VtxPosSetXY(" + x + ", " + y + ")";
+	}
 }

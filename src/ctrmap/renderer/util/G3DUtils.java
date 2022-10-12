@@ -7,11 +7,11 @@ import ctrmap.renderer.scenegraph.G3DResourceInstance;
 public class G3DUtils {
 
 	public static float getMaxModelDimXZ(G3DResource model) {
-		return Math.max(model.maxVector.z - model.minVector.z, model.maxVector.x - model.minVector.x);
+		return Math.max(model.boundingBox.max.z - model.boundingBox.min.z, model.boundingBox.max.x - model.boundingBox.min.x);
 	}
 
 	public static float getMaxModelDimXYZ(G3DResource model) {
-		return getMaxModelDimXYZ(model.minVector, model.maxVector);
+		return model.boundingBox.getDimensions().getHighestAbsComponent();
 	}
 
 	public static float getMaxModelDimXYZ(Vec3f minVector, Vec3f maxVector) {
@@ -35,7 +35,7 @@ public class G3DUtils {
 
 	public static float getIdealNearClipDistance(G3DResource resource, float minimum) {
 		if (resource != null) {
-			float far = Math.max(Math.max(resource.maxVector.x - resource.minVector.x, resource.maxVector.y - resource.minVector.y), resource.maxVector.z - resource.minVector.z);
+			float far = getMaxModelDimXYZ(resource);
 			return Math.max(minimum, far / 300f);
 		}
 		return minimum;
@@ -54,7 +54,7 @@ public class G3DUtils {
 	
 	public static float getIdealFarClipDistance(G3DResource resource, float minimum) {
 		if (resource != null) {
-			float far = Math.max(Math.max(resource.maxVector.x - resource.minVector.x, resource.maxVector.y - resource.minVector.y), resource.maxVector.z - resource.minVector.z);
+			float far = getMaxModelDimXYZ(resource);
 			return Math.max(far * 10f, minimum);
 		}
 		return minimum;

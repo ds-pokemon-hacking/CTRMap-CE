@@ -3,6 +3,7 @@ package rtldr;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,30 +14,36 @@ import java.util.prefs.Preferences;
 import xstandard.fs.FSUtil;
 
 public class JRTLDRCore {
-	
+
 	private static final Map<Class<? extends JExtensionReceiver>, List<JExtensionManager>> mgrMaps = new HashMap<>();
 	private static final List<JExtensionManager> managers = new ArrayList<>();
 	private static final List<RExtensionBase> plugins = new ArrayList<>();
-	
+
 	private static final List<String> loadedPluginPaths = new ArrayList<>();
 	private static final Map<String, JExtensionClassLoader> classloaders = new HashMap<>();
-	
+
 	private static final JCombinedClassLoader linkingClassLoader;
-	private static final JExtensionClassLoader dummySelfClassLoader;
-	
+	private static final List<JExtensionClassLoader> selfClassLoaders = new ArrayList<>();
+
 	static {
 		linkingClassLoader = new JCombinedClassLoader(JRTLDRCore.class.getClassLoader());
 		//create a duplicate classloader pointing to the same source for loading child plugins
-		dummySelfClassLoader = new JExtensionClassLoader(
-			new URL[]{
-				JRTLDRCore.class.getProtectionDomain().getCodeSource().getLocation()
-			}, 
-			linkingClassLoader
-		);
-		linkingClassLoader.addChild(dummySelfClassLoader);
+		addDebugSelfClassLoader(JRTLDRCore.class.getProtectionDomain().getCodeSource());
 		JGlobalExtensionDB.init();
 	}
-	
+
+	public static void addDebugSelfClassLoader(CodeSource codeSrc) {
+		JExtensionClassLoader rootSelfClassLoader = new JExtensionClassLoader(
+			new URL[]{
+				codeSrc.getLocation()
+			},
+			linkingClassLoader
+		);
+		selfClassLoaders.add(rootSelfClassLoader);
+		linkingClassLoader.addChild(rootSelfClassLoader);
+		onCldrAdded(rootSelfClassLoader);
+	}
+
 	public static void suppressDebugPluginByFileName(String fileName) {
 		for (String path : loadedPluginPaths) {
 			if (FSUtil.getFileName(path).equals(fileName)) {
@@ -46,15 +53,15 @@ public class JRTLDRCore {
 			}
 		}
 	}
-	
+
 	public static Preferences getPrefsNodeForExtensionManager(String key) {
 		return Preferences.userRoot().node("RTLDR").node(key);
 	}
-	
+
 	public static <R extends RExtensionBase<J>, J extends JExtensionReceiver<R>> JExtensionManager<J, R> bindExtensionManager(String rmoClassName, JExtensionReceiver<R> iface) {
 		return bindExtensionManager(rmoClassName, iface, null);
 	}
-	
+
 	public static <R extends RExtensionBase<J>, J extends JExtensionReceiver<R>> JExtensionManager<J, R> bindExtensionManager(String rmoClassName, JExtensionReceiver<R> iface, JExtensionStateListener<R> extensionListener) {
 		List<JExtensionManager> mgrList = mgrMaps.get(iface.getClass());
 		if (mgrList == null) {
@@ -66,21 +73,23 @@ public class JRTLDRCore {
 				return mgr;
 			}
 		}
-		
+
 		JExtensionManager mgr = new JExtensionManager(iface, rmoClassName);
 		mgr.setExtensionStateListener(extensionListener);
 		managers.add(mgr);
 		mgrList.add(mgr);
 		//if the parent module contains a plugin, load it as well
-		loadRmoFromCldr(rmoClassName, dummySelfClassLoader, mgr);
+		for (JExtensionClassLoader cldr : selfClassLoaders) {
+			loadRmoFromCldr(rmoClassName, cldr, mgr);
+		}
 		for (ClassLoader cldr : classloaders.values()) {
 			//already loaded JARs
 			loadRmoFromCldr(rmoClassName, cldr, mgr);
 		}
-		
+
 		return mgr;
 	}
-	
+
 	public static void unregistExtensionManager(JExtensionReceiver iface) {
 		if (iface != null) {
 			List<JExtensionManager> l = mgrMaps.get(iface.getClass());
@@ -95,7 +104,7 @@ public class JRTLDRCore {
 			}
 		}
 	}
-	
+
 	public static void loadExtensionDirectory(File dir) {
 		if (dir != null && dir.exists() && dir.isDirectory()) {
 			for (File file : dir.listFiles()) {
@@ -105,7 +114,7 @@ public class JRTLDRCore {
 			}
 		}
 	}
-	
+
 	public static void loadExtension(JExtensionReceiver j, RExtensionBase r) {
 		if (!plugins.contains(r)) {
 			for (JExtensionManager mgr : managers) {
@@ -117,13 +126,13 @@ public class JRTLDRCore {
 			}
 		}
 	}
-	
+
 	public static void loadExtensions(JExtensionReceiver j, RExtensionBase... rs) {
 		for (RExtensionBase r : rs) {
 			loadExtension(j, r);
 		}
 	}
-	
+
 	private static String getPathOfCldr(ClassLoader cldr) {
 		for (Map.Entry<String, JExtensionClassLoader> e : classloaders.entrySet()) {
 			if (e.getValue() == cldr) {
@@ -132,8 +141,11 @@ public class JRTLDRCore {
 		}
 		return null;
 	}
-	
+
 	static boolean isRmoPluginClass(String className) {
+		if (className.contains("$")) {
+			className = className.substring(0, className.indexOf('$'));
+		}
 		for (JExtensionManager mgr : managers) {
 			if (mgr.rmoClassName.equals(className)) {
 				return true;
@@ -141,7 +153,7 @@ public class JRTLDRCore {
 		}
 		return false;
 	}
-	
+
 	private static void loadRmoFromCldr(String rmoClassName, ClassLoader cldr, JExtensionManager mgr) {
 		try {
 			Class rmoClass = Class.forName(rmoClassName, true, cldr);
@@ -162,7 +174,7 @@ public class JRTLDRCore {
 			//Not registered
 		}
 	}
-	
+
 	private static void unloadRmoFromCldr(String rmoClassName, ClassLoader cldr, JExtensionManager mgr) {
 		try {
 			Class rmoClass = Class.forName(rmoClassName, true, cldr);
@@ -184,7 +196,14 @@ public class JRTLDRCore {
 			//Not registered
 		}
 	}
-	
+
+	private static void onCldrAdded(ClassLoader cldr) {
+		for (JExtensionManager mgr : managers) {
+			String rmoClassName = mgr.rmoClassName;
+			loadRmoFromCldr(rmoClassName, cldr, mgr);
+		}
+	}
+
 	public static void loadJarExt(File file) {
 		if (file != null && file.isFile()) {
 			String absPath = file.getAbsolutePath();
@@ -193,16 +212,13 @@ public class JRTLDRCore {
 				if (cldr != null) {
 					linkingClassLoader.addChild(cldr);
 					classloaders.put(absPath, cldr);
-					for (JExtensionManager mgr : managers) {
-						String rmoClassName = mgr.rmoClassName;
-						loadRmoFromCldr(rmoClassName, cldr, mgr);
-					}
+					onCldrAdded(cldr);
 				}
 				loadedPluginPaths.add(absPath);
 			}
 		}
 	}
-	
+
 	public static void unloadJarExt(File file) {
 		if (file != null && file.isFile()) {
 			String absPath = file.getAbsolutePath();

@@ -74,8 +74,7 @@ public class ModelProcessor {
 			mesh.createAndInvalidateBuffers();
 		}
 
-		model.maxVector.mul(factor);
-		model.minVector.mul(factor);
+		model.boundingBox.mul(factor);
 
 		if (model.skeleton != null) {
 			for (Joint j : model.skeleton.getJoints()) {

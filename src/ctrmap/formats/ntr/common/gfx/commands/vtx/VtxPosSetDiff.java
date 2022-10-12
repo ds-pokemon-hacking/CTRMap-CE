@@ -45,4 +45,9 @@ public class VtxPosSetDiff extends GECommand {
 	public void process(IGECommandProcessor processor) {
 		processor.vertexDiff(difference);
 	}
+	
+	@Override
+	public String toString() {
+		return "VtxPosSetDiff" + difference;
+	}
 }

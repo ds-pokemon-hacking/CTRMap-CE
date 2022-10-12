@@ -20,8 +20,8 @@ public class VtxUvSet extends GECommand {
 	public VtxUvSet(DataInput in) throws IOException {
 		super(in);
 		this.vec = new Vec2f(
-			FX.unfx(in.readShort(), 11, 4),
-			FX.unfx(in.readShort(), 11, 4)
+			FX.unfx(in.readShort(), 12, 4),
+			FX.unfx(in.readShort(), 12, 4)
 		);
 	}
 
@@ -32,12 +32,17 @@ public class VtxUvSet extends GECommand {
 
 	@Override
 	public void writeParams(DataOutput out) throws IOException {
-		out.writeShort(FX.fx(vec.x, 11, 4));
-		out.writeShort(FX.fx(vec.y, 11, 4));
+		out.writeShort(FX.fx(vec.x, 12, 4));
+		out.writeShort(FX.fx(vec.y, 12, 4));
 	}
 
 	@Override
 	public void process(IGECommandProcessor processor) {
 		processor.texCoord(vec);
+	}
+	
+	@Override
+	public String toString() {
+		return "VtxUvSet" + vec;
 	}
 }

@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import xstandard.math.AABB6f;
 
 public class G3DResourceInstance {
 
@@ -114,12 +115,29 @@ public class G3DResourceInstance {
 	public Vec3f getScale() {
 		return s;
 	}
+	
+	public AABB6f calcAABB() {
+		AABB6f aabb = new AABB6f();
+		if (resource != null && !resource.models.isEmpty()) {
+			aabb.set(resource.boundingBox);
+		}
+		
+		for (G3DResourceInstance child : getChildren()) {
+			AABB6f childAABB = child.calcAABB();
+			if (childAABB.min.x != Float.MAX_VALUE) {
+				childAABB.add(child.getPosition());
+				aabb.minmax(childAABB);
+			}
+		}
+		
+		return aabb;
+	}
 
 	public Vec3f calcMinVector() {
 		Vec3f min = new Vec3f(Float.MAX_VALUE);
 
 		if (resource != null && !resource.models.isEmpty()) {
-			min.set(resource.minVector);
+			min.set(resource.boundingBox.min);
 		}
 
 		for (G3DResourceInstance child : getChildren()) {
@@ -137,7 +155,7 @@ public class G3DResourceInstance {
 		Vec3f max = new Vec3f(-Float.MAX_VALUE);
 
 		if (resource != null && !resource.models.isEmpty()) {
-			max.set(resource.maxVector);
+			max.set(resource.boundingBox.max);
 		}
 
 		for (G3DResourceInstance child : getChildren()) {

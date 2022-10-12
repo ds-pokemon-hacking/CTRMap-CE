@@ -42,7 +42,7 @@ public class FX {
 	}
 
 	public static int fx(float f, int intBits, int fracBits) {
-		return roundToZero(f * (1 << fracBits)) & ((1 << (fracBits + intBits + 1 + 1)) - 1);
+		return roundToZero(f * (1 << fracBits)) & ((1 << (fracBits + intBits)) - 1);
 	}
 
 	public static float unfx16(int val) {

@@ -32,6 +32,8 @@ public class DAEAnimationPacker {
 		for (DAECamera cam : scene.cameras) {
 			if (cam.valid()) {
 				List<DAEChannel> camChannels = getChannelsByBoneId(channels, cam.getAnimationTargetID());
+				camChannels.addAll(getChannelsByBoneId(channels, cam.getID()));
+
 				if (!camChannels.isEmpty()) {
 					CameraViewpointBoneTransform bt = new CameraViewpointBoneTransform();
 					bt.name = cam.name;

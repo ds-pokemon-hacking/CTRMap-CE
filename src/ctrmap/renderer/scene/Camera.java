@@ -47,6 +47,7 @@ public class Camera implements NamedResource {
 		FOV = src.FOV;
 		zFar = src.zFar;
 		zNear = src.zNear;
+		metaData = new MetaData(src.metaData);
 	}
 
 	@Override

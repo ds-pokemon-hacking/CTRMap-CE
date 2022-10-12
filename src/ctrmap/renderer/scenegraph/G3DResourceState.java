@@ -286,10 +286,8 @@ public class G3DResourceState {
 		if (instance.resource != null) {
 			Matrix4 mv = getModelViewMatrix();
 			for (Model mdl : instance.resource.models) {
-				AABB6f aabb = new AABB6f();
-
-				aabb.min.set(mdl.minVector);
-				aabb.max.set(mdl.maxVector);
+				AABB6f aabb = new AABB6f(mdl.boundingBox);
+					
 				aabb.min.mulPosition(mv);
 				aabb.max.mulPosition(mv);
 

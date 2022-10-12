@@ -41,12 +41,17 @@ public class VtxNormalSet extends GECommand {
 
 	@Override
 	public void writeParams(DataOutput out) throws IOException {
-		int param = FX.fx(limitNrmVal(normal.x), 0, 9) | (FX.fx(limitNrmVal(normal.y), 0, 9) << 10) | (FX.fx(limitNrmVal(normal.z), 0, 9) << 20);
+		int param = FX.fx(limitNrmVal(normal.x), 1, 9) | (FX.fx(limitNrmVal(normal.y), 1, 9) << 10) | (FX.fx(limitNrmVal(normal.z), 1, 9) << 20);
 		out.writeInt(param);
 	}
 
 	@Override
 	public void process(IGECommandProcessor processor) {
 		processor.normal(normal);
+	}
+	
+	@Override
+	public String toString() {
+		return "VtxNormalSet" + normal;
 	}
 }

@@ -24,15 +24,31 @@ public class CameraViewpointFrame extends CameraAnimationFrame {
 		}
 		cam.mode = Camera.Mode.PERSPECTIVE;
 	}
+	
+	public void loadDefaultsIfNeeded(Camera cam, boolean toRadians) {
+		float mul = toRadians ? MathEx.DEGREES_TO_RADIANS : 1f;
+		if (!rx.exists) {
+			rx.value = cam.rotation.x * mul;
+		}
+		if (!ry.exists) {
+			ry.value = cam.rotation.y * mul;
+		}
+		if (!rz.exists) {
+			rz.value = cam.rotation.z * mul;
+		}
+	}
 
 	public Quaternion getRotationQuat(boolean rad) {
-		Quaternion q = new Quaternion();
+		return getRotationQuat(rad, new Quaternion());
+	}
+	
+	public Quaternion getRotationQuat(boolean rad, Quaternion dest) {
 		if (!rad) {
-			q.rotateZYX(MathEx.toRadiansf(rz.value), MathEx.toRadiansf(ry.value), MathEx.toRadiansf(rx.value));
+			dest.rotationZYX(MathEx.toRadiansf(rz.value), MathEx.toRadiansf(ry.value), MathEx.toRadiansf(rx.value));
 		} else {
-			q.rotateZYX(rz.value, ry.value, rx.value);
+			dest.rotationZYX(rz.value, ry.value, rx.value);
 		}
-		return q;
+		return dest;
 	}
 
 	@Override

@@ -116,7 +116,7 @@ public class CTRMapIDEHelper {
 				"ctrmap." + cmproject.getProjectName() + "." + name,
 				cmproject.gameInfo.isGenV() ? LangPlatform.EV_SWAN : LangPlatform.AMX_CTR
 			);
-			
+
 			IDEProjectManifest mf = project.getManifest();
 
 			String mainClassName = setupParam.getMainClassName();
@@ -175,9 +175,11 @@ public class CTRMapIDEHelper {
 	public VCommandDataBase createCombCommandDB(int... overlayIds) {
 		List<VCommandDataBase> databases = new ArrayList<>();
 		databases.add(getCommandDBByOvlNo(-1));
-		for (int ovlId : overlayIds) {
-			if (ovlId != -1) {
-				databases.add(getCommandDBByOvlNo(ovlId));
+		if (overlayIds != null) {
+			for (int ovlId : overlayIds) {
+				if (ovlId != -1) {
+					databases.add(getCommandDBByOvlNo(ovlId));
+				}
 			}
 		}
 
@@ -219,11 +221,11 @@ public class CTRMapIDEHelper {
 				decompiler.decompile();
 				try {
 					StringBuilder sb = new StringBuilder();
-					
+
 					sb.append("import messages.script.Msg").append(FormattingUtils.getIntWithLeadingZeros(4, textFileId)).append(".MSGID;\n\n");
-					
+
 					sb.append(decompiler.dump());
-					
+
 					return sb.toString().getBytes();
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -299,7 +301,7 @@ public class CTRMapIDEHelper {
 
 		protected final int zoneId;
 		protected final GameInfo game;
-		
+
 		public ZoneInitProjectSetupParam(int zoneId, GameInfo game) {
 			this.zoneId = zoneId;
 			this.game = game;

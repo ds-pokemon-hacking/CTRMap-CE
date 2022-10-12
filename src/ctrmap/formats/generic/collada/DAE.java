@@ -220,7 +220,7 @@ public class DAE extends XmlFormat {
 
 		Map<Camera, DAENode> camNodes = new HashMap<>();
 
-		boolean needsLightScene = visualScenes.content.isEmpty();
+		boolean needsLightScene = visualScenes.content.isEmpty() && !scene.lights.isEmpty();
 
 		if (!scene.cameras.isEmpty()) {
 			Skeleton camSceneSkl = new Skeleton();

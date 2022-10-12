@@ -105,8 +105,8 @@ public class GECommandDecoder {
 
 	public static List<GECommand> decodePacked(DataInputEx data, int sizeLimit) throws IOException {
 		List<GECommand> dest = new ArrayList<>();
-		int start = data.getPosition();
-		while (data.getPosition() - start < sizeLimit) {
+		int endPos = data.getPosition() + sizeLimit;
+		while (data.getPosition() < endPos) {
 			int packed = data.readInt();
 			for (int i = 0; i < 4; i++) {
 				dest.add(decode(packed & 0xFF, data));

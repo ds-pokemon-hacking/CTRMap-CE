@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import xstandard.math.AABB6f;
 
 public class Model implements NamedResource {
 
@@ -27,8 +28,7 @@ public class Model implements NamedResource {
 
 	public Skeleton skeleton = new Skeleton();
 
-	public Vec3f minVector = new Vec3f();
-	public Vec3f maxVector = new Vec3f();
+	public AABB6f boundingBox = new AABB6f();
 
 	public MetaData metaData = new MetaData();
 
@@ -145,8 +145,7 @@ public class Model implements NamedResource {
 	}
 
 	private void resetBBox() {
-		minVector = new Vec3f(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
-		maxVector = new Vec3f(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE);
+		boundingBox.reset();
 	}
 
 	public void genBbox() {
@@ -160,8 +159,7 @@ public class Model implements NamedResource {
 		if (meshes.size() == 1) {
 			resetBBox();
 		} else if (meshes.isEmpty()) {
-			minVector = new Vec3f();
-			maxVector = new Vec3f();
+			boundingBox.zero();
 		}
 		Vec3f min = m.calcMinVector();
 		Vec3f max = m.calcMaxVector();
@@ -179,8 +177,8 @@ public class Model implements NamedResource {
 				}
 			}
 		}
-		minVector.min(min);
-		maxVector.max(max);
+		boundingBox.min.min(min);
+		boundingBox.max.max(max);
 	}
 
 	@Override

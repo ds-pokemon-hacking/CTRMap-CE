@@ -9,20 +9,14 @@ import xstandard.io.base.iface.DataInputEx;
 
 public class GEDisplayList implements Iterable<GECommand> {
 
-	private List<GECommand> commands = new ArrayList<>();
+	private List<GECommand> commands;
 
 	public GEDisplayList() {
+		commands = new ArrayList<>();
 	}
 
 	public GEDisplayList(DataInputEx in, int size) throws IOException {
-		int endPos = in.getPosition() + size;
-		int[] ops = new int[4];
-		while (in.getPosition() < endPos) {
-			GECommandDecoder.getPackedOpcodes(in, ops);
-			for (int i = 0; i < 4; i++) {
-				addCommand(GECommandDecoder.decode(ops[i], in));
-			}
-		}
+		commands = GECommandDecoder.decodePacked(in, size);
 	}
 
 	public final void addCommand(GECommand cmd) {
