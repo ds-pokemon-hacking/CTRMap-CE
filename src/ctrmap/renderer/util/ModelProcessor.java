@@ -62,6 +62,7 @@ public class ModelProcessor {
 		for (Vertex v : mesh.vertices) {
 			v.color = new RGBA(RGBA.WHITE);
 		}
+		mesh.createAndInvalidateBuffers();
 	}
 
 	public static void scaleModel(Model model, float factor) {

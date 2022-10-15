@@ -79,21 +79,12 @@ public class NGCSIOProvider implements G3DIOProvider {
 			return camera;
 		}
 		isCacheReady = true;
-		List<Camera> cameras = cs.getCameras();
-		if (!cameras.isEmpty()) {
-			if (cameras.size() == 1) {
-				camera = cameras.get(0);
-				return camera;
-			}
-			CameraSelectionDialog dlg = new CameraSelectionDialog(cs, true, cameras);
-			dlg.setVisible(true);
-			camera = dlg.getResult();
-			return camera;
-		} else {
+		camera = cs.callCameraSelect();
+		if (camera == null) {
 			DialogUtils.showErrorMessage(cs, "No cameras available", "This action requires a camera, however, no cameras are currently present in the scene.");
 			cameraSelectAlreadyFailed = true;
 		}
-		return null;
+		return camera;
 	}
 
 	@Override

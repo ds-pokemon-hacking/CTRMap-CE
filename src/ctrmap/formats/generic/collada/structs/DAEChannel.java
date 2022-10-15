@@ -1,25 +1,16 @@
 package ctrmap.formats.generic.collada.structs;
 
-import ctrmap.renderer.scene.animation.AbstractBoneTransform;
 import xstandard.math.vec.Vec3f;
 import ctrmap.renderer.scene.animation.KeyFrame;
 import ctrmap.renderer.scene.animation.KeyFrameList;
-import ctrmap.renderer.scene.animation.camera.CameraViewpointBoneTransform;
+import ctrmap.renderer.scene.animation.camera.CameraLookAtBoneTransform;
 import ctrmap.renderer.scene.animation.skeletal.SkeletalBoneTransform;
 import ctrmap.renderer.scene.animation.visibility.VisibilityBoneTransform;
-import xstandard.math.HermiteInterpolation;
 import xstandard.math.MathEx;
 import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.Vec2f;
 import xstandard.text.StringEx;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import org.w3c.dom.Element;
 
 public class DAEChannel implements DAEIDAble {
@@ -38,7 +29,7 @@ public class DAEChannel implements DAEIDAble {
 
 	public DAESource curve;
 
-	public CameraViewpointBoneTransform camTransform = new CameraViewpointBoneTransform();
+	public CameraLookAtBoneTransform camTransform = new CameraLookAtBoneTransform();
 	public SkeletalBoneTransform sklTransform = new SkeletalBoneTransform();
 	public VisibilityBoneTransform visTransform = new VisibilityBoneTransform();
 
@@ -49,15 +40,15 @@ public class DAEChannel implements DAEIDAble {
 		this.targetTransform = targetTransform;
 		frameTimes = new float[matrices.length];
 		interpolations = new String[matrices.length];
-		
+
 		for (int i = 0; i < matrices.length; i++) {
 			frameTimes[i] = i * _1_30;
 			interpolations[i] = "LINEAR";
 		}
-		
+
 		curve = new DAESource(matrices, sourceLabel);
 	}
-	
+
 	public DAEChannel(KeyFrameList kfl, String targetBone, String targetTransform, boolean toDegrees, String... sourceLabels) {
 		this.targetBone = targetBone;
 		this.targetTransform = targetTransform;
@@ -220,39 +211,70 @@ public class DAEChannel implements DAEIDAble {
 				float[] values = curveAccessor.getFloatArray();
 				for (int i = 0; i < Math.min(frameTimes.length, values.length); i++) {
 					float value = values[i];
-					switch (targetTransform) {
-						case "location.X":
-							sklTransform.tx.add(makeKeyframe(i, value, ci));
-							break;
-						case "location.Y":
-							sklTransform.ty.add(makeKeyframe(i, value, ci));
-							break;
-						case "location.Z":
-							sklTransform.tz.add(makeKeyframe(i, value, ci));
-							break;
-						case "scale.X":
-							sklTransform.sx.add(makeKeyframe(i, value, ci));
-							break;
-						case "scale.Y":
-							sklTransform.sy.add(makeKeyframe(i, value, ci));
-							break;
-						case "scale.Z":
-							sklTransform.sz.add(makeKeyframe(i, value, ci));
-							break;
-						case "xfov":
-						case "yfov":
-							camTransform.fov.add(makeKeyframe(i, value, ci));
-							break;
-						case "znear":
-							camTransform.zNear.add(makeKeyframe(i, value, ci));
-							break;
-						case "zfar":
-							camTransform.zFar.add(makeKeyframe(i, value, ci));
-							break;
-						case "":
-							//Hide keyframe in blender
-							visTransform.isVisible.add(new KeyFrame(i, value == 0f ? 1f : 0f, 0f, 0f, KeyFrame.InterpolationMethod.STEP));
-							break;
+					if (targetTransform.equals("")) {
+						visTransform.isVisible.add(new KeyFrame(i, value == 0f ? 1f : 0f, 0f, 0f, KeyFrame.InterpolationMethod.STEP));
+					} else {
+						KeyFrameList destKFL = null;
+						switch (targetTransform) {
+							case "location.X":
+								destKFL = sklTransform.tx;
+								break;
+							case "location.Y":
+								destKFL = sklTransform.ty;
+								break;
+							case "location.Z":
+								destKFL = sklTransform.tz;
+								break;
+							case "scale.X":
+								destKFL = sklTransform.sx;
+								break;
+							case "scale.Y":
+								destKFL = sklTransform.sy;
+								break;
+							case "scale.Z":
+								destKFL = sklTransform.sz;
+								break;
+							case "xfov":
+							case "yfov":
+								destKFL = camTransform.fov;
+								break;
+							case "znear":
+								destKFL = camTransform.zNear;
+								break;
+							case "zfar":
+								destKFL = camTransform.zFar;
+								break;
+							case "lookat.Px":
+								destKFL = camTransform.tx;
+								break;
+							case "lookat.Py":
+								destKFL = camTransform.ty;
+								break;
+							case "lookat.Pz":
+								destKFL = camTransform.tz;
+								break;
+							case "lookat.Ix":
+								destKFL = camTransform.targetTX;
+								break;
+							case "lookat.Iy":
+								destKFL = camTransform.targetTY;
+								break;
+							case "lookat.Iz":
+								destKFL = camTransform.targetTZ;
+								break;
+							case "lookat.UPx":
+								destKFL = camTransform.upX;
+								break;
+							case "lookat.UPy":
+								destKFL = camTransform.upY;
+								break;
+							case "lookat.UPz":
+								destKFL = camTransform.upZ;
+								break;
+						}
+						if (destKFL != null) {
+							destKFL.add(makeKeyframe(i, value, ci));
+						}
 					}
 				}
 			}
@@ -279,7 +301,7 @@ public class DAEChannel implements DAEIDAble {
 	private static KeyFrame makeKeyframe(int frameIndex, float value, CurveInfo ci) {
 		return makeKeyframe(frameIndex, value, ci, false);
 	}
-	
+
 	private static KeyFrame makeKeyframe(int frameIndex, float value, CurveInfo ci, boolean toRadians) {
 		float time = ci.timestamps[frameIndex] * 30;
 		if (toRadians) {
@@ -332,7 +354,7 @@ public class DAEChannel implements DAEIDAble {
 		//System.out.println("MKKEY @" + time + ": " + value + " INT " + inSlope + " OUTT " + outSlope);
 		return kf;
 	}
-	
+
 	private static final float _1_3 = 1f / 3f;
 
 	private static Vec2f bezierTangentFromHermiteSlopeOut(float timeInFrames, float nextTimeInFrames, float value, float slope) {
@@ -420,6 +442,9 @@ public class DAEChannel implements DAEIDAble {
 	}
 
 	public boolean isCamera() {
+		if (targetTransform.startsWith("lookat.")) {
+			return true;
+		}
 		switch (targetTransform) {
 			case "xfov":
 			case "yfov":

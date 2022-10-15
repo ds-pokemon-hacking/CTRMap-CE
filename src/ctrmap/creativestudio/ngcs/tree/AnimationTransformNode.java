@@ -1,5 +1,7 @@
 package ctrmap.creativestudio.ngcs.tree;
 
+import ctrmap.creativestudio.editors.IEditor;
+import ctrmap.creativestudio.ngcs.NGEditorController;
 import ctrmap.renderer.scene.animation.AbstractAnimation;
 import ctrmap.renderer.scene.animation.AbstractBoneTransform;
 import ctrmap.renderer.scene.animation.camera.CameraAnimation;
@@ -21,6 +23,15 @@ public class AnimationTransformNode extends CSNode {
 		super(tree, getContentType(bt));
 		this.anm = anm;
 		this.bt = bt;
+	}
+	
+	@Override
+	public IEditor getEditor(NGEditorController editors) {
+		switch (getContentType()) {
+			case ANIMATION_TARGET_C:
+				return editors.cameraTransformEditor;
+		}
+		return null;
 	}
 
 	@Override
@@ -46,6 +57,7 @@ public class AnimationTransformNode extends CSNode {
 				break;
 			case ANIMATION_TARGET_S:
 				getDmySkelAnm(dest, anm.frameCount).bones.add((SkeletalBoneTransform) bt);
+				break;
 		}
 	}
 

@@ -160,6 +160,18 @@ public class KeyFrameList extends ArrayList<KeyFrame> {
 		}
 		return false;
 	}
+	
+	public static final float nextFrame(float frame, KeyFrameList... list) {
+		float min = Float.MAX_VALUE;
+		for (KeyFrameList kfl : list) {
+			for (KeyFrame kf : kfl) {
+				if (kf.frame > frame && kf.frame < min) {
+					min = kf.frame;
+				}
+			}
+		}
+		return min;
+	}
 
 	public static final boolean existAnyRounddownFrame(float frame, KeyFrameList... lists) {
 		return existAnyRounddownFrame(frame, 30f, lists);

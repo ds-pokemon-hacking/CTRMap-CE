@@ -221,7 +221,7 @@ public class DAENode implements DAEIDAble, DAESerializable, DAESIDAble {
 		}
 		return false;
 	}
-	
+
 	public List<Joint> toSklJoints(DAEPostProcessConfig cfg) {
 		List<Joint> list = new ArrayList<>();
 
@@ -471,14 +471,23 @@ public class DAENode implements DAEIDAble, DAESerializable, DAESIDAble {
 		XmlFormat.setAttributeNonNull(e, "sid", sid);
 
 		if (lookAt != null) {
-			e.appendChild(XmlFormat.createSimpleTextContentElem(doc, "lookat",
-				XmlFormat.getVec3(lookAt[0]) //eye
-				+ " " + XmlFormat.getVec3(lookAt[1]) //target
-				+ " " + XmlFormat.getVec3(lookAt[2]) //up vector
-			));
-		}
-
-		if (t != null && r != null && s != null) {
+			if (bake) {
+				Element mat = doc.createElement("matrix");
+				mat.setAttribute("sid", "transform");
+				Matrix4 transformMtx = new Matrix4();
+				transformMtx.setLookAt(lookAt[0], lookAt[1], lookAt[2]);
+				mat.setTextContent(XmlFormat.getMat4(transformMtx));
+				e.appendChild(mat);
+			} else {
+				Element laElem = XmlFormat.createSimpleTextContentElem(doc, "lookat",
+					XmlFormat.getVec3(lookAt[0]) //eye
+					+ " " + XmlFormat.getVec3(lookAt[1]) //target
+					+ " " + XmlFormat.getVec3(lookAt[2]) //up vector
+				);
+				laElem.setAttribute("sid", "lookat");
+				e.appendChild(laElem);
+			}
+		} else if (t != null && r != null && s != null) {
 			//Using transform matrices is safer with shitty tools like Blender
 			if (bake) {
 				Element mat = doc.createElement("matrix");

@@ -41,12 +41,6 @@ public class NDSROMFile extends FSFileAdapter {
 			throw new RuntimeException("Source NDSROMFile inexistent!");
 		}
 	}
-	
-	public static void main(String[] args) {
-		NDSROMFile rom = new NDSROMFile(new DiskFile("D:\\_REWorkspace\\PlatTest\\rom.nds"));
-		rom.tree(System.out);
-		FSUtil.copyDirectory(rom, new DiskFile("D:\\_REWorkspace\\PlatTest\\outtest"));
-	}
 
 	@Override
 	public boolean isDirectory() {
@@ -80,15 +74,15 @@ public class NDSROMFile extends FSFileAdapter {
 
 			io.seek(header.fntOffset);
 
-			data = new NTRFSFile(romFile, NTRFSFileInfo.makeDirInfo("data"));
+			data = new NTRFSFile(romFile, "data");
 			readROMDir(data, 0xf000, io, fsFileInfo);
 
 			y9 = new InlineFile(this, "y9.bin", header.arm9OverlayOffset, header.arm9OverlayOffset + header.arm9OverlaySize);
 			y7 = new InlineFile(this, "y7.bin", header.arm7OverlayOffset, header.arm7OverlayOffset + header.arm7OverlaySize);
 			ovl9 = new OverlayTable(y9);
 			ovl7 = new OverlayTable(y7);
-			overlay = new NTRFSFile(this, NTRFSFileInfo.makeDirInfo("overlay"));
-			overlay7 = new NTRFSFile(this, NTRFSFileInfo.makeDirInfo("overlay7"));
+			overlay = new NTRFSFile(this, "overlay");
+			overlay7 = new NTRFSFile(this, "overlay7");
 
 			readOverlays(ovl9, overlay, fsFileInfo);
 			readOverlays(ovl7, overlay7, fsFileInfo);
@@ -107,10 +101,12 @@ public class NDSROMFile extends FSFileAdapter {
 
 	private void readOverlays(OverlayTable ovlTable, NTRFSFile ovlDir, Map<Integer, NTRFSFileInfo> fsFileInfo) {
 		for (int ovlIdx = 0; ovlIdx < ovlTable.overlays.size(); ovlIdx++) {
-			NTRFSFileInfo fi = fsFileInfo.get(ovlTable.overlays.get(ovlIdx).fileId);
-			fi.name = "overlay_" + FormattingUtils.getIntWithLeadingZeros(4, ovlIdx) + ".bin";
-			NTRFSFile ovlFile = new NTRFSFile(this, fi);
-			overlay.addChild(ovlFile);
+			NTRFSFile ovlFile = new NTRFSFile(
+				this,
+				"overlay_" + FormattingUtils.getIntWithLeadingZeros(4, ovlIdx) + ".bin",
+				fsFileInfo.get(ovlTable.overlays.get(ovlIdx).fileId)
+			);
+			ovlDir.addChild(ovlFile);
 		}
 	}
 
@@ -131,16 +127,13 @@ public class NDSROMFile extends FSFileAdapter {
 			if (fntIdentIsDirectory(ident)) {
 				int childDirHeader = io.readUnsignedShort();
 
-				NTRFSFile dirFsFile = new NTRFSFile(source, NTRFSFileInfo.makeDirInfo(childName));
+				NTRFSFile dirFsFile = new NTRFSFile(source, childName);
 
 				readROMDir(dirFsFile, childDirHeader, io, fsFileInfo);
 
 				dest.addChild(dirFsFile);
 			} else {
-				NTRFSFileInfo fi = fsFileInfo.get(fileId);
-				fi.name = childName;
-
-				NTRFSFile child = new NTRFSFile(source, fi);
+				NTRFSFile child = new NTRFSFile(source, childName, fsFileInfo.get(fileId));
 				dest.addChild(child);
 
 				fileId++;

@@ -6,6 +6,9 @@ import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.texturing.Material;
+import ctrmap.renderer.scenegraph.G3DResource;
+import ctrmap.renderer.util.MaterialProcessor;
 import ctrmap.renderer.util.ModelProcessor;
 import ctrmap.renderer.util.QuadstripConverter;
 import ctrmap.renderer.util.TristripConverter;
@@ -87,6 +90,7 @@ public class ModelEditor extends javax.swing.JPanel implements IEditor {
         btnCreateVCol = new javax.swing.JButton();
         btnMakeRootJoint = new javax.swing.JButton();
         btnMakeStrips = new javax.swing.JButton();
+        btnAlphaBlendByTexture = new javax.swing.JButton();
 
         scalePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Scale"));
 
@@ -249,18 +253,26 @@ public class ModelEditor extends javax.swing.JPanel implements IEditor {
             }
         });
 
+        btnAlphaBlendByTexture.setText("Automatic transparency (all materials)");
+        btnAlphaBlendByTexture.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAlphaBlendByTextureActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout miscPanelLayout = new javax.swing.GroupLayout(miscPanel);
         miscPanel.setLayout(miscPanelLayout);
         miscPanelLayout.setHorizontalGroup(
             miscPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(miscPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(miscPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnVColToAlpha, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
-                    .addComponent(btnCreateVCol, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnMakeRootJoint, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnMakeStrips, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(miscPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(btnAlphaBlendByTexture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnVColToAlpha, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnCreateVCol, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnMakeRootJoint, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnMakeStrips, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(63, Short.MAX_VALUE))
         );
         miscPanelLayout.setVerticalGroup(
             miscPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -269,6 +281,8 @@ public class ModelEditor extends javax.swing.JPanel implements IEditor {
                 .addComponent(btnCreateVCol)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnVColToAlpha)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnAlphaBlendByTexture)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnMakeRootJoint)
                 .addGap(18, 18, 18)
@@ -398,8 +412,35 @@ public class ModelEditor extends javax.swing.JPanel implements IEditor {
 		}
     }//GEN-LAST:event_btnMakeStripsActionPerformed
 
+    private void btnAlphaBlendByTextureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlphaBlendByTextureActionPerformed
+		if (model != null) {
+			G3DResource textures = new G3DResource();
+			textures.addTextures(node.getCS().getTextures());
+			MaterialProcessor.setAutoAlphaBlendByTexture(new G3DResource(model), textures);
+			for (Mesh mesh : model.meshes) {
+				if (mesh.hasColor) {
+					boolean vtxAlpha = false;
+					for (Vertex vtx : mesh.vertices) {
+						if (vtx.color.a != 255) {
+							vtxAlpha = true;
+							break;
+						}
+					}
+					if (vtxAlpha) {
+						mesh.renderLayer = 1;
+						Material mat = model.getMaterialByName(mesh.materialName);
+						if (mat != null) {
+							MaterialProcessor.setAlphaBlend(mat);
+						}
+					}
+				}
+			}
+		}
+    }//GEN-LAST:event_btnAlphaBlendByTextureActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAlphaBlendByTexture;
     private javax.swing.JButton btnApplyScale;
     private javax.swing.JButton btnApplyTranslate;
     private javax.swing.JButton btnCreateVCol;

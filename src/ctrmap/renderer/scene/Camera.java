@@ -94,15 +94,15 @@ public class Camera implements NamedResource {
 			Matrix4 mtx = new Matrix4();
 			if (null != mode) switch (mode) {
 				case PERSPECTIVE:
-					mtx.translate(translation);
+					mtx.translation(translation);
 					mtx.rotateZYXDeg(rotation.z, rotation.y, rotation.x);
 					//mtx.rotateYXZ(toRadians(rotation.y), toRadians(rotation.x), toRadians(rotation.z));
 					break;
 				case ORTHO:
-					mtx.rotate(toRadians(90f), 1.0f, 0f, 0f);
+					mtx.rotation(toRadians(90f), 1.0f, 0f, 0f);
 					break;
 				case LOOKAT:
-					mtx.lookAt(translation, lookAtTarget, lookAtUpVec).invert();
+					mtx.setLookAt(translation, lookAtTarget, lookAtUpVec).invert();
 					break;
 				default:
 					break;

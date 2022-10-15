@@ -6,6 +6,8 @@ import ctrmap.renderer.scene.animation.AbstractAnimation;
 import ctrmap.renderer.scene.animation.KeyFrame;
 import ctrmap.renderer.scene.animation.KeyFrameList;
 import ctrmap.renderer.scene.animation.camera.CameraAnimation;
+import ctrmap.renderer.scene.animation.camera.CameraBoneTransform;
+import ctrmap.renderer.scene.animation.camera.CameraLookAtBoneTransform;
 import ctrmap.renderer.scene.animation.camera.CameraViewpointBoneTransform;
 import ctrmap.renderer.scene.animation.skeletal.SkeletalAnimation;
 import ctrmap.renderer.scene.animation.skeletal.SkeletalBoneTransform;
@@ -35,7 +37,14 @@ public class DAEAnimationPacker {
 				camChannels.addAll(getChannelsByBoneId(channels, cam.getID()));
 
 				if (!camChannels.isEmpty()) {
-					CameraViewpointBoneTransform bt = new CameraViewpointBoneTransform();
+					boolean isLookAt = false;
+					for (DAEChannel ch : camChannels) {
+						if (ch.targetTransform.startsWith("lookat.")) {
+							isLookAt = true;
+							break;
+						}
+					}
+					CameraBoneTransform bt = isLookAt ? new CameraLookAtBoneTransform() : new CameraViewpointBoneTransform();
 					bt.name = cam.name;
 
 					for (DAEChannel ch : camChannels) {
@@ -56,8 +65,35 @@ public class DAEAnimationPacker {
 								case "zfar":
 									bt.zFar.set(ch.camTransform.zFar);
 									break;
+								case "lookat.Px":
+									((CameraLookAtBoneTransform) bt).tx.set(ch.camTransform.tx);
+									break;
+								case "lookat.Py":
+									((CameraLookAtBoneTransform) bt).ty.set(ch.camTransform.ty);
+									break;
+								case "lookat.Pz":
+									((CameraLookAtBoneTransform) bt).tz.set(ch.camTransform.tz);
+									break;
+								case "lookat.Ix":
+									((CameraLookAtBoneTransform) bt).targetTX.set(ch.camTransform.targetTX);
+									break;
+								case "lookat.Iy":
+									((CameraLookAtBoneTransform) bt).targetTY.set(ch.camTransform.targetTY);
+									break;
+								case "lookat.Iz":
+									((CameraLookAtBoneTransform) bt).targetTZ.set(ch.camTransform.targetTZ);
+									break;
+								case "lookat.UPx":
+									((CameraLookAtBoneTransform) bt).upX.set(ch.camTransform.upX);
+									break;
+								case "lookat.UPy":
+									((CameraLookAtBoneTransform) bt).upY.set(ch.camTransform.upY);
+									break;
+								case "lookat.UPz":
+									((CameraLookAtBoneTransform) bt).upZ.set(ch.camTransform.upZ);
+									break;
 							}
-							camAnm.frameCount = Math.max(camAnm.frameCount, ch.timeMax * 30);
+							camAnm.frameCount = Math.max(camAnm.frameCount, ch.timeMax * 30f);
 						}
 					}
 
@@ -148,7 +184,7 @@ public class DAEAnimationPacker {
 							anm.frameCount = Math.max(anm.frameCount, ch.timeMax * 30);
 						}
 					}
-					
+
 					boolean isRootAndZUP = node.parent == null && cfg.upAxis == DAEPostProcessConfig.DAEUpAxis.Z_UP;
 
 					if (isRootAndZUP && skelBT.exists()) {
@@ -185,14 +221,16 @@ public class DAEAnimationPacker {
 								//apply transform to instantiated camera animation
 								DAECamera cam = scene.cameras.getByUrl(inst.url);
 								if (cam != null) {
-									CameraViewpointBoneTransform camBT = (CameraViewpointBoneTransform) camAnm.getBoneTransform(cam.name);
+									CameraBoneTransform camBT = (CameraBoneTransform) camAnm.getBoneTransform(cam.name);
 									if (camBT == null) {
 										camBT = new CameraViewpointBoneTransform();
 										camBT.name = cam.name;
 										camAnm.transforms.add(camBT);
 									}
-									skel2CamQueue.put(skelBT, camBT);
-									skel2XRots.put(skelBT, hasMatrix || node.parent != null ? 0 : node.r.x); //todo wtf is up with blender 2.9 again
+									if (camBT instanceof CameraViewpointBoneTransform) {
+										skel2CamQueue.put(skelBT, (CameraViewpointBoneTransform) camBT);
+										skel2XRots.put(skelBT, hasMatrix || node.parent != null ? 0 : node.r.x); //todo wtf is up with blender 2.9 again
+									}
 								}
 							}
 						}
@@ -259,7 +297,7 @@ public class DAEAnimationPacker {
 
 		return list;
 	}
-	
+
 	private static String getAnmTypeSuffix(AbstractAnimation anm) {
 		if (anm instanceof SkeletalAnimation) {
 			return "_SKLA";

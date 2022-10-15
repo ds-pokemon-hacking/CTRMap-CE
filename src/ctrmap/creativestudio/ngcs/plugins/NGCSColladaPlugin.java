@@ -233,6 +233,7 @@ public class NGCSColladaPlugin implements INGCSPlugin {
 
 				DAEExportSettings daeSettings = new DAEExportSettings();
 				daeSettings.bakeAnimations = settings.anmBake && settings.exportAnm;
+				daeSettings.doNotUseLookAt = settings.doNotUseLookAt;
 
 				List<Skeleton> skeletons = new ArrayList<>();
 				for (Model mdl : contentAccessor.getModels()) {

@@ -2,16 +2,14 @@ package ctrmap.formats.ntr.rom.srl.newlib;
 
 public class NTRFSFileInfo {
 
-	public String name;
 	public boolean isDirectory;
 
 	public int offset;
 	public int endOffset;
 
-	public static NTRFSFileInfo makeDirInfo(String dirName) {
+	public static NTRFSFileInfo makeDirInfo() {
 		NTRFSFileInfo fi = new NTRFSFileInfo();
 		fi.isDirectory = true;
-		fi.name = dirName;
 		return fi;
 	}
 	

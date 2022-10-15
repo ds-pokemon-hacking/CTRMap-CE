@@ -1,5 +1,6 @@
 package ctrmap.renderer.util;
 
+import ctrmap.renderer.scene.Camera;
 import ctrmap.renderer.scene.animation.AnimatedValue;
 import ctrmap.renderer.scene.animation.KeyFrame;
 import ctrmap.renderer.scene.animation.KeyFrameList;
@@ -10,6 +11,8 @@ import ctrmap.renderer.scene.animation.camera.CameraViewpointFrame;
 import xstandard.math.vec.Vec3f;
 import java.util.ArrayList;
 import java.util.List;
+import xstandard.math.MathEx;
+import xstandard.math.vec.Matrix4;
 
 public class CameraFrameProcessor {
 
@@ -79,8 +82,30 @@ public class CameraFrameProcessor {
 		}
 		return count;
 	}
+	
+	public static CameraViewpointBoneTransform lookatToViewpoint(CameraLookAtBoneTransform la, Camera cam, float frameCount) {
+		CameraViewpointBoneTransform bt = new CameraViewpointBoneTransform();
+		bt.name = la.name;
+		bt.isRadians = true;
+		copyKeyFrames(la.fov, bt.fov, la.isRadians ? 1f : MathEx.DEGREES_TO_RADIANS);
+		copyKeyFrames(la.tx, bt.tx);
+		copyKeyFrames(la.ty, bt.ty);
+		copyKeyFrames(la.tz, bt.tz);
+		
+		cam = new Camera(cam);
+		Vec3f rotation = new Vec3f();
+		
+		for (float frame = 0f; frame <= frameCount; frame = KeyFrameList.nextFrame(frame, la.targetTX, la.targetTY, la.targetTZ, la.upX, la.upY, la.upZ)) {
+			CameraLookAtFrame f = la.getFrame(frame, false);
+			f.applyToCamera(cam);
+			cam.getTransformMatrix(false).getRotationTo(rotation);
+			bt.addVector(frame, rotation, bt.rx, bt.ry, bt.rz);
+		}
+		
+		return bt;
+	}
 
-	public static CameraLookAtBoneTransform viewpointToLookat(CameraViewpointBoneTransform vp, float frameCount) {
+	public static CameraLookAtBoneTransform viewpointToLookat(CameraViewpointBoneTransform vp, Camera cam, float frameCount) {
 		CameraLookAtBoneTransform lookat = new CameraLookAtBoneTransform();
 		lookat.name = vp.name;
 		copyKeyFrames(vp.fov, lookat.fov);
@@ -89,30 +114,36 @@ public class CameraFrameProcessor {
 		copyKeyFrames(vp.tz, lookat.tz);
 
 		Vec3f rotVec_temp = new Vec3f();
+		cam = new Camera(cam);
 
-		for (float frame = 0; frame <= frameCount; frame++) {
+		for (float frame = 0f; frame <= frameCount; frame = KeyFrameList.nextFrame(frame, vp.rx, vp.ry, vp.rz)) {
 			CameraViewpointFrame f = vp.getFrame(frame, false);
+			f.applyToCamera(cam);
 
-			if (f.rx.exists && f.ry.exists && f.rz.exists) {
-				rotVec_temp.set(f.rx.value, f.ry.value, f.rz.value);
-				rotVec_temp.getDirFromEulersDegZYX(rotVec_temp);
-				addValue(lookat.targetTX, frame, f.tx, rotVec_temp.x);
-				addValue(lookat.targetTY, frame, f.ty, rotVec_temp.y);
-				addValue(lookat.targetTZ, frame, f.tz, rotVec_temp.z);
-				rotVec_temp.set(f.rx.value, f.ry.value, f.rz.value);
-				rotVec_temp.getUpVecFromEulersDegZYX(rotVec_temp);
-				addValue(lookat.upX, frame, rotVec_temp.x);
-				addValue(lookat.upY, frame, rotVec_temp.y);
-				addValue(lookat.upZ, frame, rotVec_temp.z);
-			}
+			rotVec_temp.set(cam.rotation);
+			rotVec_temp.getDirFromEulersDegZYX(rotVec_temp);
+			addValue(lookat.targetTX, frame, f.tx, rotVec_temp.x);
+			addValue(lookat.targetTY, frame, f.ty, rotVec_temp.y);
+			addValue(lookat.targetTZ, frame, f.tz, rotVec_temp.z);
+			rotVec_temp.set(f.rx.value, f.ry.value, f.rz.value);
+			rotVec_temp.getUpVecFromEulersDegZYX(rotVec_temp);
+			addValue(lookat.upX, frame, rotVec_temp.x);
+			addValue(lookat.upY, frame, rotVec_temp.y);
+			addValue(lookat.upZ, frame, rotVec_temp.z);
 		}
 
 		return lookat;
 	}
 
 	private static void copyKeyFrames(KeyFrameList l1, KeyFrameList l2) {
+		copyKeyFrames(l1, l2, 1f);
+	}
+	
+	private static void copyKeyFrames(KeyFrameList l1, KeyFrameList l2, float mul) {
 		for (KeyFrame kf : l1) {
-			l2.add(new KeyFrame(kf));
+			KeyFrame kf2 = new KeyFrame(kf);
+			kf2.value *= mul;
+			l2.add(kf2);
 		}
 	}
 

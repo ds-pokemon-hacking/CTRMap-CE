@@ -20,6 +20,11 @@ public class JExtensionClassLoader extends URLClassLoader {
 	public Class<?> findLocalClass(String name) throws ClassNotFoundException {
 		return super.findClass(name);
 	}
+	
+	@Override
+	public URL getResource(String name) {
+		return super.findResource(name);
+	}
 
 	@Override
 	public Class<?> findClass(String name) throws ClassNotFoundException {

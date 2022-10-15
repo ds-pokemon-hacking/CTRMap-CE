@@ -16,6 +16,7 @@ public class NGEditorController {
 	public final MatAnimEditor matAnimEditor = new MatAnimEditor();
 	public final TextureEditor textureEditor = new TextureEditor();
 	public final CameraAnimeEditor cameraAnimeEditor = new CameraAnimeEditor();
+	public final CameraTransformEditor cameraTransformEditor = new CameraTransformEditor();
 	public final LightEditor lightEditor = new LightEditor();
 
 	private IEditor currentEditor = null;

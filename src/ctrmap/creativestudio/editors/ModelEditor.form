@@ -277,15 +277,16 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="btnVColToAlpha" pref="217" max="32767" attributes="0"/>
-                      <Component id="btnCreateVCol" max="32767" attributes="0"/>
-                      <Component id="btnMakeRootJoint" max="32767" attributes="0"/>
-                      <Component id="btnMakeStrips" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="btnAlphaBlendByTexture" max="32767" attributes="0"/>
+                      <Component id="btnVColToAlpha" alignment="0" max="32767" attributes="0"/>
+                      <Component id="btnCreateVCol" alignment="0" max="32767" attributes="0"/>
+                      <Component id="btnMakeRootJoint" alignment="0" max="32767" attributes="0"/>
+                      <Component id="btnMakeStrips" alignment="0" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="63" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -296,6 +297,8 @@
                   <Component id="btnCreateVCol" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnVColToAlpha" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btnAlphaBlendByTexture" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnMakeRootJoint" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -336,6 +339,14 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnMakeStripsActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnAlphaBlendByTexture">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Automatic transparency (all materials)"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAlphaBlendByTextureActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

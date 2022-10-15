@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Stack;
 
 public class AnimeProcessor {
-	
+
 	private static final float _1_30 = 1f / 30f;
-	
+
 	public static float convFpsFrom30(float value, float destFps) {
 		return value * _1_30 * destFps;
 	}
@@ -36,7 +36,7 @@ public class AnimeProcessor {
 				for (KeyFrame kf : kfl) {
 					float step = 0.25f;
 					float modBase = 0.5f;
-					
+
 					for (int lv = 0; lv < maxlevel; lv++) {
 						if (levelsDone[lv]) {
 							break;
@@ -44,8 +44,7 @@ public class AnimeProcessor {
 
 						if (MathEx.impreciseFloatEquals(kf.frame % modBase, step, 0.001f)) {
 							levelsDone[lv] = true;
-						}
-						else {
+						} else {
 							step *= 2f;
 							modBase *= 2f;
 						}
@@ -53,7 +52,7 @@ public class AnimeProcessor {
 				}
 			}
 		}
-		
+
 		int fps = 15;
 		for (int i = 0; i < maxlevel; i++) {
 			if (levelsDone[i]) {
@@ -352,14 +351,18 @@ public class AnimeProcessor {
 		}
 	}
 
+	public static void applyTempoScale(AbstractBoneTransform bt, float scale) {
+		for (KeyFrameList kfg : bt.getAllKfLists()) {
+			applyTempoScale(kfg, scale);
+		}
+	}
+
 	//Tempo change
 	public static void applyTempoScale(AbstractAnimation a, float scale) {
 		a.frameCount *= scale;
 
 		for (AbstractBoneTransform bt : a.getBones()) {
-			for (KeyFrameList kfg : bt.getAllKfLists()) {
-				applyTempoScale(kfg, scale);
-			}
+			applyTempoScale(bt, scale);
 		}
 	}
 

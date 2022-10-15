@@ -13,14 +13,19 @@ public class NTRFSFile extends FSFile {
 
 	private final FSFile rom;
 	
-	private NTRFSFileInfo fileInfo;
 	private String name;
+	private NTRFSFileInfo fileInfo;
 	private boolean isDir;
 	private NTRFSFile parent;
 	private List<NTRFSFile> children = new ArrayList<>();
+	
+	public NTRFSFile(FSFile rom, String name) {
+		this(rom, name, NTRFSFileInfo.makeDirInfo());
+	}
 
-	public NTRFSFile(FSFile rom, NTRFSFileInfo fileInfo) {
+	public NTRFSFile(FSFile rom, String name, NTRFSFileInfo fileInfo) {
 		this.fileInfo = fileInfo;
+		this.name = name;
 		this.rom = rom;
 	}
 	
@@ -80,7 +85,7 @@ public class NTRFSFile extends FSFile {
 
 	@Override
 	public String getName() {
-		return fileInfo.name;
+		return name;
 	}
 
 	@Override

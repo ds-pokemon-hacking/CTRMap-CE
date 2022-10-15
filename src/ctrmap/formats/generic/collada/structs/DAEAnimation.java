@@ -10,6 +10,7 @@ import ctrmap.renderer.scene.animation.KeyFrame;
 import ctrmap.renderer.scene.animation.KeyFrameList;
 import ctrmap.renderer.scene.animation.camera.CameraAnimation;
 import ctrmap.renderer.scene.animation.camera.CameraBoneTransform;
+import ctrmap.renderer.scene.animation.camera.CameraLookAtBoneTransform;
 import ctrmap.renderer.scene.animation.camera.CameraViewpointBoneTransform;
 import ctrmap.renderer.scene.animation.material.MaterialAnimation;
 import ctrmap.renderer.scene.animation.skeletal.InverseKinematics;
@@ -22,6 +23,7 @@ import ctrmap.renderer.scene.animation.visibility.VisibilityBoneTransform;
 import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Skeleton;
+import ctrmap.renderer.util.CameraFrameProcessor;
 import ctrmap.renderer.util.camcvt.IKBakery;
 import ctrmap.renderer.util.camcvt.SkeletalMatrixBakery;
 import xstandard.math.vec.Matrix4;
@@ -120,30 +122,54 @@ public class DAEAnimation implements DAEIDAble, DAESerializable {
 					String nodeId = node.getID();
 
 					if (!settings.bakeAnimations) {
-						putSubanimIfNonempty(bt.tx, nodeId, "location.X", false, "X");
-						putSubanimIfNonempty(bt.ty, nodeId, "location.Y", false, "Y");
-						putSubanimIfNonempty(bt.tz, nodeId, "location.Z", false, "Z");
+						CameraViewpointBoneTransform vp = null;
+						CameraLookAtBoneTransform la = null;
 
 						if (bt instanceof CameraViewpointBoneTransform) {
-							CameraViewpointBoneTransform vp = (CameraViewpointBoneTransform) bt;
+							vp = (CameraViewpointBoneTransform) bt;
+						} else if (bt instanceof CameraLookAtBoneTransform) {
+							if (settings.doNotUseLookAt) {
+								vp = CameraFrameProcessor.lookatToViewpoint((CameraLookAtBoneTransform) bt, cam, frameCount);
+							} else {
+								la = (CameraLookAtBoneTransform) bt;
+							}
+						}
+
+						if (vp != null) {
+							putSubanimIfNonempty(bt.tx, nodeId, "location.X", false, "X");
+							putSubanimIfNonempty(bt.ty, nodeId, "location.Y", false, "Y");
+							putSubanimIfNonempty(bt.tz, nodeId, "location.Z", false, "Z");
 
 							putSubanimIfNonempty(vp.rx, nodeId, "rotationX.ANGLE", vp.isRadians, "ANGLE");
 							putSubanimIfNonempty(vp.ry, nodeId, "rotationY.ANGLE", vp.isRadians, "ANGLE");
 							putSubanimIfNonempty(vp.rz, nodeId, "rotationZ.ANGLE", vp.isRadians, "ANGLE");
 						}
-					} else {
-						if (bt instanceof CameraViewpointBoneTransform) {
-							Camera dmyAnimCam = new Camera(cam);
-
-							Matrix4[] matrices = new Matrix4[frameCount + 1];
-
-							for (int frame = 0; frame <= frameCount; frame++) {
-								bt.getFrame(frame).applyToCamera(dmyAnimCam);
-								matrices[frame] = dmyAnimCam.getTransformMatrix(false);
-							}
-
-							putMtxSubanim(nodeId, matrices);
+						else if (la != null) {
+							//I don't think anyone has ever used this part of the COLLADA schema,
+							//but it should be up to the spec.
+							putSubanimIfNonempty(bt.tx, nodeId, "lookat.Px", false, "Px");
+							putSubanimIfNonempty(bt.ty, nodeId, "lookat.Py", false, "Py");
+							putSubanimIfNonempty(bt.tz, nodeId, "lookat.Pz", false, "Pz");
+							
+							putSubanimIfNonempty(la.targetTX, nodeId, "lookat.Ix", false, "Ix");
+							putSubanimIfNonempty(la.targetTY, nodeId, "lookat.Iy", false, "Iy");
+							putSubanimIfNonempty(la.targetTZ, nodeId, "lookat.Iz", false, "Iz");
+							
+							putSubanimIfNonempty(la.upX, nodeId, "lookat.UPx", false, "UPx");
+							putSubanimIfNonempty(la.upY, nodeId, "lookat.UPy", false, "UPy");
+							putSubanimIfNonempty(la.upZ, nodeId, "lookat.UPz", false, "UPz");
 						}
+					} else {
+						Camera dmyAnimCam = new Camera(cam);
+
+						Matrix4[] matrices = new Matrix4[frameCount + 1];
+
+						for (int frame = 0; frame <= frameCount; frame++) {
+							bt.getFrame(frame).applyToCamera(dmyAnimCam);
+							matrices[frame] = dmyAnimCam.getTransformMatrix(false);
+						}
+
+						putMtxSubanim(nodeId, matrices);
 					}
 
 					putSubanimIfNonempty(bt.fov, camId, "yfov", bt.isRadians, "X", "Y", "Z"); //blender again being weird, writing floats as XYZ
@@ -187,7 +213,7 @@ public class DAEAnimation implements DAEIDAble, DAESerializable {
 							SkeletalAnimationTransformRequest parentScaleReq = new SkeletalAnimationTransformRequest(0f);
 							parentScaleReq.translation = false;
 							parentScaleReq.rotation = false;
-							
+
 							req.bindJoint = skl.getJoint(bt.name);
 							if (req.bindJoint != null) {
 								Joint parentJoint = skl.getJoint(req.bindJoint.parentName);
@@ -200,8 +226,7 @@ public class DAEAnimation implements DAEIDAble, DAESerializable {
 									if (req.bindJoint.isScaleCompensate() && parentJoint != null) {
 										if (parentBT == null) {
 											matrices[frame].invScale(parentJoint.scale);
-										}
-										else {
+										} else {
 											parentScaleReq.frame = frame;
 											matrices[frame].invScale(parentBT.getFrame(parentScaleReq).getScale());
 										}

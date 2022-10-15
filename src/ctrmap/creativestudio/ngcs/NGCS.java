@@ -1,9 +1,9 @@
 package ctrmap.creativestudio.ngcs;
 
 import ctrmap.CTRMapResources;
-import ctrmap.Launc;
 import ctrmap.formats.generic.interchange.CMIFFile;
 import ctrmap.creativestudio.dialogs.CSSplashScreen;
+import ctrmap.creativestudio.dialogs.CameraSelectionDialog;
 import ctrmap.creativestudio.dialogs.ModelSelectionDialog;
 import ctrmap.util.gui.cameras.FPSCameraInputManager;
 import ctrmap.creativestudio.editors.IEditor;
@@ -28,6 +28,7 @@ import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scenegraph.G3DResourceInstance;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.scene.animation.AbstractAnimation;
+import ctrmap.renderer.scene.animation.AbstractAnimationController;
 import ctrmap.renderer.scene.animation.camera.CameraAnimation;
 import ctrmap.renderer.scene.animation.camera.CameraAnimationController;
 import ctrmap.renderer.scene.animation.material.MaterialAnimation;
@@ -370,6 +371,10 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 	}
 
 	public boolean changeCamera(Camera cam) {
+		if (!g3dViewport.scene.getLocalResCamAnimControllers().isEmpty()) {
+			//Do not change camera if an animation is playing
+			return false;
+		}
 		//System.out.println("req change to camera " + cam.name);
 		if (cam == input.cam) {
 			return false;
@@ -466,9 +471,9 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 
 	public void resetCameraToModel() {
 		changeCamera(mainCamera);
-		
+
 		AABB6f aabb = new AABB6f();
-		
+
 		if (currentTemplateScene == null) {
 			if (btnDrawAllModels.isSelected()) {
 				scene.resource.updateBBox(false);
@@ -962,7 +967,7 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 				modelNode.setExpansionState(true);
 			}
 		}
-		if (btnDrawAllModels.isSelected()) {
+		if (btnDrawAllModels.isSelected() && !rsc.models.isEmpty()) {
 			resetCameraToModel();
 		}
 	}
@@ -1066,6 +1071,23 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 	@Override
 	public G3DResource getResource() {
 		return scene.resource;
+	}
+
+	public Camera callCameraSelect() {
+		List<Camera> cameras = getCameras();
+		if (!cameras.isEmpty()) {
+			Camera camera = null;
+			if (cameras.size() == 1) {
+				camera = cameras.get(0);
+				return camera;
+			}
+			CameraSelectionDialog dlg = new CameraSelectionDialog(this, true, cameras);
+			dlg.setVisible(true);
+			camera = dlg.getResult();
+			return camera;
+		} else {
+			return null;
+		}
 	}
 
 	/*

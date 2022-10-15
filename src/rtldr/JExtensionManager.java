@@ -4,7 +4,9 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import xstandard.util.collections.IntList;
 
 public class JExtensionManager<J extends JExtensionReceiver<R>, R extends RExtensionBase<J>> {
@@ -14,6 +16,8 @@ public class JExtensionManager<J extends JExtensionReceiver<R>, R extends RExten
 
 	private final List<R> loadedExtensions = new ArrayList<>();
 	private final IntList loadedExtensionHashes = new IntList();
+	
+	private Map<Integer, String> hashLUTDebug = new HashMap<>();
 
 	private JExtensionStateListener extensionStateListener;
 
@@ -53,6 +57,10 @@ public class JExtensionManager<J extends JExtensionReceiver<R>, R extends RExten
 				if (extensionStateListener != null) {
 					extensionStateListener.onExtensionLoaded(riface);
 				}
+				hashLUTDebug.put(hash, riface + " @ " + riface.getClass().getClassLoader());
+			}
+			else {
+				System.out.println("Extension with matching bytecode already loaded, skipping... (overriden by " + hashLUTDebug.get(hash) + ")");
 			}
 		}
 	}

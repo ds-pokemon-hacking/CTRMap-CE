@@ -16,7 +16,6 @@ import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.model.Skeleton;
-import ctrmap.renderer.scene.model.Vertex;
 import ctrmap.renderer.scene.texturing.Material;
 import ctrmap.renderer.scene.texturing.MaterialParams;
 import ctrmap.renderer.scene.texturing.Texture;
@@ -24,7 +23,6 @@ import ctrmap.renderer.scene.texturing.TextureMapper;
 import ctrmap.renderer.scenegraph.G3DResourceType;
 import ctrmap.renderer.util.MeshProcessor;
 import ctrmap.renderer.util.PrimitiveConverter;
-import ctrmap.renderer.util.generators.BoundingBoxGenerator;
 import ctrmap.renderer.util.texture.TextureConverter;
 import xstandard.fs.FSFile;
 import xstandard.fs.FSUtil;
@@ -251,12 +249,15 @@ public class DAE extends XmlFormat {
 				Joint camJnt = new Joint();
 				camJnt.name = cam.name;
 				camJnt.position = cam.translation.clone();
-				camJnt.rotation = cam.rotation.clone();
+				camJnt.rotation = cam.getRotation();
 				camJnt.rotation.mul(MathEx.DEGREES_TO_RADIANS);
 				camSceneSkl.addJoint(camJnt);
 				DAENode camNode = new DAENode(camSceneSkl, camJnt, skelConv, skelConvSID, settings);
 				camNode.isNode = true;
-				if (cam.mode == Camera.Mode.LOOKAT) {
+				if (!settings.doNotUseLookAt && cam.mode == Camera.Mode.LOOKAT) {
+					//Blender: |!     LOOKAT and SKEW transformations are not supported yet.\n
+					//The result of this is that the matrix is multiplied by a zero matrix (not identity)
+					//Which messes up all of the camera's transforms
 					camNode.lookAt = new Vec3f[]{
 						cam.translation.clone(),
 						cam.lookAtTarget.clone(),
