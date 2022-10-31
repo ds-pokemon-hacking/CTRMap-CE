@@ -166,7 +166,6 @@ public class JointEditor extends javax.swing.JPanel implements ISceneBound, IEdi
 		if (joint != null) {
 			Joint newParent = joint.parentSkeleton.getJoint((String) jointParent.getSelectedItem());
 			if (newParent != joint) {
-				joint.parentName = newParent == null ? null : newParent.name;
 				node.changeParentToJoint(newParent);
 			}
 			showParent();

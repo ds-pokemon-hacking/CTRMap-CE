@@ -153,7 +153,7 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 	}
 
 	public boolean hasUV(int index) {
-		return hasUV[index];
+		return index >= 0 && index < hasUV.length && hasUV[index];
 	}
 	
 	public int getActiveUVLayerCount() {

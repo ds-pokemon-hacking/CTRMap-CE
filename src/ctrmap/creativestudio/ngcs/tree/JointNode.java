@@ -5,8 +5,12 @@ import ctrmap.creativestudio.ngcs.NGEditorController;
 import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scenegraph.NamedResource;
+import ctrmap.renderer.util.ModelProcessor;
+import java.util.ArrayList;
+import java.util.List;
 import xstandard.util.ListenableList;
 import java.util.Objects;
+import javax.swing.tree.TreeNode;
 
 public class JointNode extends CSNode {
 
@@ -54,6 +58,7 @@ public class JointNode extends CSNode {
 	}
 
 	public void changeParentToJoint(Joint newJointParent) {
+		jnt.parentName = newJointParent == null ? null : newJointParent.name;
 		ContainerNode skel = descend(ContainerNode.class);
 		if (skel != null) {
 			CSNode newParent;
@@ -70,6 +75,39 @@ public class JointNode extends CSNode {
 				newParent.addChild(this);
 			}
 			jnt.parentSkeleton.getJoints().fireModifyEvent(jnt);
+		} else {
+			System.err.println("Could not decend to skeleton container!!");
+		}
+	}
+
+	@Override
+	public void callRemove() {
+		//Do not override onNodeRemoved as it would apply recursively
+		//CALL ORDER HERE IS IMPORTANT
+		//First we change the parents while the node is still linked
+		Joint newParent = jnt.getParent();
+		List<TreeNode> childrenStatic = new ArrayList<>();
+		for (int i = 0; i < getChildCount(); i++) {
+			childrenStatic.add(getChildAt(i));
+		}
+		for (TreeNode child : childrenStatic) {
+			if (child instanceof JointNode) {
+				JointNode cj = (JointNode) child;
+				cj.changeParentToJoint(newParent);
+			}
+		}
+		int index = jnt.getIndex();
+		int replacementIndex = 0;
+		if (jnt.getParent() != null) {
+			replacementIndex = jnt.getParent().getIndex();
+		}
+		//Now we retrieve the parent model (stil linked(
+		ModelNode mn = descend(ModelNode.class);
+		//Node can now be safely unlinked, actually remove it
+		super.callRemove();
+		if (mn != null) {
+			//Only update here after the joint was actually removed
+			ModelProcessor.updateIndicesOnJointRemoved(mn.getContent(), index, replacementIndex);
 		}
 	}
 

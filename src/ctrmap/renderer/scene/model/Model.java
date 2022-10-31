@@ -23,7 +23,7 @@ public class Model implements NamedResource {
 	public ListenableList<Material> materials = new ListenableList<>();
 
 	public ListenableList<Mesh> meshes = new ListenableList<>();
-	
+
 	public ListenableList<MeshVisibilityGroup> visGroups = new ListenableList<>();
 
 	public Skeleton skeleton = new Skeleton();
@@ -63,20 +63,22 @@ public class Model implements NamedResource {
 	public String getName() {
 		return name;
 	}
-	
+
 	public void createVisGroups() {
 		HashSet<String> visGroupNames = new HashSet<>();
 		for (MeshVisibilityGroup g : visGroups) {
 			visGroupNames.add(g.name);
 		}
 		for (Mesh m : meshes) {
-			if (!visGroupNames.contains(m.visGroupName)) {
-				visGroupNames.add(m.visGroupName);
+			if (m.visGroupName != null) {
+				if (!visGroupNames.contains(m.visGroupName)) {
+					visGroupNames.add(m.visGroupName);
+				}
 			}
 		}
 		List<String> namesList = new ArrayList<>(visGroupNames);
 		Collections.sort(namesList);
-		
+
 		for (String visGroupName : namesList) {
 			visGroups.add(new MeshVisibilityGroup(visGroupName));
 		}
@@ -127,7 +129,7 @@ public class Model implements NamedResource {
 	public void addMesh(Mesh m) {
 		ArraysEx.addIfNotNullOrContains(meshes, m);
 	}
-	
+
 	public void addVisGroup(MeshVisibilityGroup visGroup) {
 		ArraysEx.addIfNotNullOrContains(visGroups, visGroup);
 	}
@@ -139,7 +141,7 @@ public class Model implements NamedResource {
 	public Material getMaterialByName(String name) {
 		return Scene.getNamedObject(name, materials);
 	}
-	
+
 	public MeshVisibilityGroup getVisGroupByName(String name) {
 		return Scene.getNamedObject(name, visGroups);
 	}
@@ -168,7 +170,7 @@ public class Model implements NamedResource {
 				Vertex vtx = m.vertices.get(0);
 				if (!vtx.boneIndices.isEmpty()) {
 					int bidx = vtx.boneIndices.get(0);
-					
+
 					if (bidx < skeleton.getJointCount()) {
 						Matrix4 rigidJointMtx = skeleton.getAbsoluteJointBindPoseMatrix(skeleton.getJoint(bidx));
 						min.mulPosition(rigidJointMtx);

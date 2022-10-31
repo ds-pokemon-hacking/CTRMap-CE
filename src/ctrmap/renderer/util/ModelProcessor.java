@@ -110,4 +110,21 @@ public class ModelProcessor {
 			model.skeleton.buildTransforms();
 		}
 	}
+
+	public static void updateIndicesOnJointRemoved(Model model, int removedIndex, int replacementIndex) {
+		for (Mesh mesh : model.meshes) {
+			for (Vertex vtx : mesh.vertices) {
+				for (int i = 0; i < vtx.boneIndices.size(); i++) {
+					int curVal = vtx.boneIndices.get(i);
+					if (curVal > removedIndex) {
+						vtx.boneIndices.set(i, curVal - 1);
+					}
+					else if (curVal == removedIndex) {
+						vtx.boneIndices.set(i, replacementIndex);
+					}
+				}
+			}
+			mesh.createAndInvalidateBuffers();
+		}
+	}
 }

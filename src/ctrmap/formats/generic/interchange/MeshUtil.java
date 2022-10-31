@@ -127,6 +127,12 @@ public class MeshUtil {
 						case NORMAL:
 							v.normal = new Vec3f(dis);
 							break;
+						case TANGENT:
+							v.tangent = new Vec3f(dis);
+							break;
+						case BITANGENT:
+							dis.skipBytes(12);
+							break;
 						case COLOR:
 							v.color = new RGBA(dis);
 							break;
@@ -167,6 +173,9 @@ public class MeshUtil {
 					switch (a.name) {
 						case NORMAL:
 							v.normal = constantVec3;
+							break;
+						case TANGENT:
+							v.tangent = constantVec3;
 							break;
 						case COLOR:
 							v.color = constantColor;
@@ -211,6 +220,9 @@ public class MeshUtil {
 				case NORMAL:
 					mesh.hasNormal = true;
 					break;
+				case TANGENT:
+					mesh.hasTangent = true;
+					break;
 				case UV0:
 					mesh.hasUV[0] = true;
 					break;
@@ -222,7 +234,7 @@ public class MeshUtil {
 					break;
 			}
 		}
-		
+
 		if (fileVersion >= Revisions.REV_INDEX_BUFFERS) {
 			mesh.useIBO = dis.readBoolean();
 			if (mesh.useIBO) {
@@ -233,7 +245,7 @@ public class MeshUtil {
 				}
 			}
 		}
-		
+
 		return mesh;
 	}
 
@@ -256,6 +268,7 @@ public class MeshUtil {
 		positions.exists = true;
 
 		VertexAttrib normals = new VertexAttrib(VertexAttribName.NORMAL);
+		VertexAttrib tangents = new VertexAttrib(VertexAttribName.TANGENT);
 		VertexAttrib colors = new VertexAttrib(VertexAttribName.COLOR);
 		VertexAttrib boneIndices = new VertexAttrib(VertexAttribName.BONE_IDX);
 		VertexAttrib boneWeights = new VertexAttrib(VertexAttribName.BONE_WEIGHT);
@@ -269,6 +282,7 @@ public class MeshUtil {
 		texCoord2.exists = mesh.hasUV(2);
 		colors.exists = mesh.hasColor;
 		normals.exists = mesh.hasNormal;
+		tangents.exists = mesh.hasTangent;
 		boneIndices.exists = mesh.hasBoneIndices;
 		boneWeights.exists = mesh.hasBoneWeights;
 
@@ -278,6 +292,9 @@ public class MeshUtil {
 			}
 			if (mesh.hasNormal) {
 				checkConstantVertex(new Vec4f(v.normal.x, v.normal.y, v.normal.z, 0f), normals);
+			}
+			if (mesh.hasTangent) {
+				checkConstantVertex(new Vec4f(v.tangent.x, v.tangent.y, v.tangent.z, 0f), tangents);
 			}
 			if (mesh.hasBoneIndices) {
 				//only do this if there is leq 3 (yes, not 4) since that's the most BCH supports for it
@@ -312,6 +329,7 @@ public class MeshUtil {
 		//Constants done, write buffer format
 		int numAttribs = 1; //positions
 		numAttribs += normals.exists ? 1 : 0;
+		numAttribs += tangents.exists ? 1 : 0;
 		numAttribs += colors.exists ? 1 : 0;
 		numAttribs += texCoord0.exists ? 1 : 0;
 		numAttribs += texCoord1.exists ? 1 : 0;
@@ -323,6 +341,7 @@ public class MeshUtil {
 
 		writeVertexAttrib(positions, dos);
 		writeVertexAttrib(normals, dos);
+		writeVertexAttrib(tangents, dos);
 		writeVertexAttrib(colors, dos);
 		writeVertexAttrib(texCoord0, dos);
 		writeVertexAttrib(texCoord1, dos);
@@ -335,6 +354,7 @@ public class MeshUtil {
 		dos.writeInt(vertexCount);
 		writeVertexAttribArray(positions, mesh.vertices, dos);
 		writeVertexAttribArray(normals, mesh.vertices, dos);
+		writeVertexAttribArray(tangents, mesh.vertices, dos);
 		writeVertexAttribArray(colors, mesh.vertices, dos);
 		writeVertexAttribArray(texCoord0, mesh.vertices, dos);
 		writeVertexAttribArray(texCoord1, mesh.vertices, dos);
@@ -384,6 +404,9 @@ public class MeshUtil {
 							break;
 						case NORMAL:
 							v.normal.write(dos);
+							break;
+						case TANGENT:
+							v.tangent.write(dos);
 							break;
 						case POSITION:
 							v.position.write(dos);
@@ -454,6 +477,8 @@ public class MeshUtil {
 		UV1,
 		UV2,
 		BONE_IDX,
-		BONE_WEIGHT
+		BONE_WEIGHT,
+		TANGENT,
+		BITANGENT
 	}
 }

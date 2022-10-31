@@ -56,12 +56,12 @@ public abstract class CSNode extends CustomJTreeNode {
 	}
 
 	public <T extends CSNode> T descend(Class<T> nodeClass) {
-		TreeNode parent = (TreeNode) getParent();
-		while (parent != null) {
-			if (parent.getClass().isAssignableFrom(nodeClass)) {
-				return (T) parent;
+		TreeNode parentNode = (TreeNode) getParent();
+		while (parentNode != null) {
+			if (parentNode.getClass().isAssignableFrom(nodeClass)) {
+				return (T) parentNode;
 			}
-			parent = parent.getParent();
+			parentNode = parentNode.getParent();
 		}
 		return null;
 	}
@@ -137,6 +137,7 @@ public abstract class CSNode extends CustomJTreeNode {
 
 	public void callRemove() {
 		getParentList().remove(getContent());
+		getCS().reloadEditor(); //will stop editing this object
 	}
 
 	public void callReplace() {

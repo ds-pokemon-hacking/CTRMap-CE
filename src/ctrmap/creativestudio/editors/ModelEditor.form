@@ -62,7 +62,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="scale" alignment="0" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace min="0" pref="209" max="32767" attributes="0"/>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           <Component id="btnApplyScale" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -277,16 +277,29 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                      <Component id="btnAlphaBlendByTexture" max="32767" attributes="0"/>
-                      <Component id="btnVColToAlpha" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnCreateVCol" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnMakeRootJoint" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnMakeStrips" alignment="0" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="btnAlphaBlendByTexture" alignment="1" max="32767" attributes="0"/>
+                              <Component id="btnVColToAlpha" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnCreateVCol" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnMakeRootJoint" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnMakeStrips" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="btnCalcTangents" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="tgtCalcUVSetLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="tgtCalcUVSet" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      </Group>
+                      <Component id="btnMakeIndexed" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="63" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -303,6 +316,14 @@
                   <Component id="btnMakeRootJoint" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="btnMakeStrips" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="btnCalcTangents" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="tgtCalcUVSetLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="tgtCalcUVSet" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btnMakeIndexed" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -347,6 +368,34 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAlphaBlendByTextureActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnCalcTangents">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Recalculate tangents"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCalcTangentsActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JLabel" name="tgtCalcUVSetLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="UV set:"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="tgtCalcUVSet">
+          <Properties>
+            <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+              <SpinnerModel initial="0" maximum="2" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnMakeIndexed">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Make indexed"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnMakeIndexedActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

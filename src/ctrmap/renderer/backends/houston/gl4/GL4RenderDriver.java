@@ -199,7 +199,12 @@ public class GL4RenderDriver implements IRenderDriver {
 		gl.glVertexAttribPointer(ATTRLOC_BONE_WEIGHTS, 4, GL4.GL_FLOAT, false, 0, mesh.buffers.vbo.bwgt.getOffset());
 
 		if (mesh.useIBO) {
-			gl.glDrawElements(getGL4PrimitiveType(mesh.primitiveType), mesh.buffers.indexCount(), GL4.GL_UNSIGNED_SHORT, 0);
+			gl.glDrawElements(
+				getGL4PrimitiveType(mesh.primitiveType),
+				mesh.buffers.indexCount(),
+				mesh.buffers.vertexCount() > 65536 ? GL4.GL_UNSIGNED_INT : GL4.GL_UNSIGNED_SHORT,
+				0
+			);
 		} else {
 			switch (mesh.vertices.getType()) {
 				case SINGLE:
@@ -439,7 +444,7 @@ public class GL4RenderDriver implements IRenderDriver {
 		}
 		return sh;
 	}
-	
+
 	public static boolean printShaderError(GL4 gl, int shader) {
 		int[] status = new int[1];
 		gl.glGetShaderiv(shader, GL4.GL_COMPILE_STATUS, status, 0);
@@ -477,7 +482,7 @@ public class GL4RenderDriver implements IRenderDriver {
 		//printProgramError(gl, programHandle); //very slow, blocking method. use printShaderError instead
 		gl.glDetachShader(programHandle, vsh);
 		gl.glDetachShader(programHandle, fsh);
-		
+
 		return programHandle;
 	}
 

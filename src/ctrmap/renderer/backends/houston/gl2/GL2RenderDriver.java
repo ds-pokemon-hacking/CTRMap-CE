@@ -212,7 +212,12 @@ public class GL2RenderDriver implements IRenderDriver {
 		gl.glVertexAttribPointer(ATTRLOC_BONE_WEIGHTS, 4, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.bwgt.getOffset());
 
 		if (mesh.useIBO) {
-			gl.glDrawElements(getGL2PrimitiveType(mesh.primitiveType), mesh.buffers.indexCount(), GL2.GL_UNSIGNED_SHORT, 0);
+			gl.glDrawElements(
+				getGL2PrimitiveType(mesh.primitiveType), 
+				mesh.buffers.indexCount(),
+				mesh.buffers.vertexCount() > 65536 ? GL2.GL_UNSIGNED_INT : GL2.GL_UNSIGNED_SHORT, 
+				0
+			);
 		} else {
 			switch (mesh.vertices.getType()) {
 				case SINGLE:

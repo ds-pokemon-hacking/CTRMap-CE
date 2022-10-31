@@ -535,6 +535,9 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 		if (n != null) {
 			editors.switchEditorOpenObject(n.getEditor(editors), n);
 		}
+		else {
+			editors.switchEditorOpenObject(null, dataTree.getRootCSNode());
+		}
 	}
 
 	private void adjustSplitPanes() {
