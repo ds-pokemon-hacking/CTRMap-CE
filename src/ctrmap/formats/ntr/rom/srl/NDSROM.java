@@ -32,20 +32,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *	Nintendo DS ROM extractor/rebuilder.
+ * Nintendo DS ROM extractor/rebuilder.
  *
- *	This class is largely a fork of jNDSTool, adapted for use with CTRMapStandardLibrary's faster IO, FS and crypto.
- * 
- *	Other improvements include:
- *		- Automatic overlay table updates
- *		- Support for normal overlay table names (y7.bin, y9.bin)
- *		- Correct checksum calculation
- *		- Resource leak fixes
+ * This class is largely a fork of jNDSTool, adapted for use with CTRMapStandardLibrary's faster IO, FS and
+ * crypto.
+ *
+ * Other improvements include: 
+ * - Automatic overlay table updates 
+ * - Support for normal overlay table names (y7.bin, y9.bin)
+ * - Correct checksum calculation 
+ * - Resource leak fixes
  */
 public class NDSROM {
 
 	public static final ExtensionFilter EXTENSION_FILTER = new ExtensionFilter("Nintendo DS ROM", "*.nds");
-	
+
 	/**
 	 * Extract the entire NDSROM in the host file system
 	 *
@@ -166,7 +167,7 @@ public class NDSROM {
 			}
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		try {
 			buildROM(new DiskFile("D:\\Emugames\\DS\\Pokemon - White Version 2 (USA, Europe) (NDSi Enhanced)_SDSME"), new DiskFile("D:\\Emugames\\DS\\mw.nds"));
@@ -212,7 +213,7 @@ public class NDSROM {
 		// Loading the actual data and the overlay and pre-calculate offsets
 		List<? extends FSFile> overlays = ovlDir.listFiles();
 		Collections.sort(overlays);
-		
+
 		NitroDirectory root = new NitroDirectory("data", 0xf000, null);
 
 		// Recursively load directories and files, getting the root nitro directory
@@ -227,7 +228,7 @@ public class NDSROM {
 		SRLHeader header = new SRLHeader(reader);
 		reader.close();
 		out.write(new byte[0x4000]); //allocate
-		
+
 		byte[] temp;
 
 		// The ARM9
@@ -238,8 +239,8 @@ public class NDSROM {
 		out.pad(4, 0xFF);
 
 		// The ARM9 overlay table
-		header.arm9OverlayOffset = out.getPosition();
 		temp = y9bin.getBytes();
+		header.arm9OverlayOffset = temp.length == 0 ? 0 : out.getPosition();
 		header.arm9OverlaySize = temp.length;
 		out.write(temp);
 		out.pad(4, 0xFF);
@@ -266,8 +267,8 @@ public class NDSROM {
 		out.pad(4, 0xFF);
 
 		// The ARM7 overlay table
-		header.arm7OverlayOffset = out.getPosition();
 		temp = y7bin.getBytes();
+		header.arm7OverlayOffset = temp.length == 0 ? 0 : temp.length;
 		header.arm7OverlaySize = temp.length;
 		out.write(temp);
 		out.pad(4, 0xFF);
@@ -307,11 +308,12 @@ public class NDSROM {
 		// The actual files
 		out.seek(fimgOffset);
 		NitroDirectory.repackFileTree(out, fimgOffset, dataDir, root);
-		
+
 		out.pad(1 << 0x13);
 		int size = out.getPosition();
 		header.ntrRomRegionEnd = size >> 0x13;
 		header.twlRomRegionStart = size >> 0x13;
+		header.usedRomSize = size;
 
 		// Write updated header
 		header.updateHeaderChecksum(out);

@@ -9,6 +9,7 @@ import xstandard.io.base.impl.ext.data.DataIOStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import xstandard.fs.accessors.DiskFile;
 
 public class SRLHeader {
 
@@ -136,8 +137,8 @@ public class SRLHeader {
 		port40001A4hKey1Command = rom.readInt();
 
 		iconOffset = rom.readInt();
-		secureAreaChecksum = rom.readShort();
-		secureAreaDelay = rom.readShort();
+		secureAreaChecksum = rom.readUnsignedShort();
+		secureAreaDelay = rom.readUnsignedShort();
 		arm9AutoLoad = rom.readInt();
 		arm7AutoLoad = rom.readInt();
 		secureAreaDisable = rom.readLong();
@@ -146,12 +147,11 @@ public class SRLHeader {
 		unknownDSi = rom.readBytes(0x8);
 		ntrRomRegionEnd = rom.readUnsignedShort();
 		twlRomRegionStart = rom.readUnsignedShort();
-		reserved2 = rom.readBytes(0x24);
+		reserved2 = rom.readBytes(0x1C);
 		reserved3 = rom.readBytes(0x10);
-
 		logo = rom.readBytes(0x9c);
-		logoChecksum = rom.readShort();
-		headerChecksum = rom.readShort();
+		logoChecksum = rom.readUnsignedShort();
+		headerChecksum = rom.readUnsignedShort();
 		debugRomOffset = rom.readInt();
 		debugSize = rom.readInt();
 		debugRamAddress = rom.readInt();
@@ -223,11 +223,11 @@ public class SRLHeader {
 	public void updateHeaderChecksum(DataIOStream rom) {
 		try {
 			logoChecksum = CRC16.CRC16(logo, 0, logo.length);
+			secureAreaChecksum = CRC16.CRC16(rom, arm9RomOffset, 0x8000 - arm9RomOffset);
 			DataIOStream buf = new DataIOStream(new byte[0x8000]);
 			write(buf);
 
 			headerChecksum = CRC16.CRC16(buf, 0x00, 0x15E);
-			secureAreaChecksum = CRC16.CRC16(rom, arm9RomOffset, 0x8000 - arm9RomOffset);
 		} catch (IOException ex) {
 			Logger.getLogger(SRLHeader.class.getName()).log(Level.SEVERE, null, ex);
 		}
