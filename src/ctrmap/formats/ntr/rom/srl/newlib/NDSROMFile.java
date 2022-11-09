@@ -3,7 +3,6 @@ package ctrmap.formats.ntr.rom.srl.newlib;
 import ctrmap.formats.ntr.rom.OverlayTable;
 import xstandard.fs.FSFile;
 import xstandard.fs.FSUtil;
-import xstandard.fs.accessors.DiskFile;
 import xstandard.fs.accessors.FSFileAdapter;
 import xstandard.fs.accessors.InlineFile;
 import xstandard.io.base.impl.ext.data.DataIOStream;

@@ -18,6 +18,7 @@
  */
 package ctrmap.formats.ntr.rom.srl;
 
+import ctrmap.formats.ntr.common.compression.BLZ;
 import xstandard.fs.FSFile;
 import xstandard.io.base.impl.ext.data.DataIOStream;
 
@@ -26,10 +27,8 @@ import java.io.IOException;
 import java.util.*;
 import ctrmap.formats.ntr.rom.OverlayTable;
 import ctrmap.formats.ntr.rom.srl.newlib.SRLHeader;
-import xstandard.fs.accessors.DiskFile;
 import xstandard.gui.file.ExtensionFilter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import xstandard.io.util.IOUtils;
 
 /**
  * Nintendo DS ROM extractor/rebuilder.
@@ -37,11 +36,8 @@ import java.util.logging.Logger;
  * This class is largely a fork of jNDSTool, adapted for use with CTRMapStandardLibrary's faster IO, FS and
  * crypto.
  *
- * Other improvements include: 
- * - Automatic overlay table updates 
- * - Support for normal overlay table names (y7.bin, y9.bin)
- * - Correct checksum calculation 
- * - Resource leak fixes
+ * Other improvements include: - Automatic overlay table updates - Support for normal overlay table names
+ * (y7.bin, y9.bin) - Correct checksum calculation - Resource leak fixes
  */
 public class NDSROM {
 
@@ -168,14 +164,6 @@ public class NDSROM {
 		}
 	}
 
-	public static void main(String[] args) {
-		try {
-			buildROM(new DiskFile("D:\\Emugames\\DS\\Pokemon - White Version 2 (USA, Europe) (NDSi Enhanced)_SDSME"), new DiskFile("D:\\Emugames\\DS\\mw.nds"));
-		} catch (IOException ex) {
-			Logger.getLogger(NDSROM.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	/**
 	 * Build the entire NDSROM from the given directory
 	 *
@@ -232,9 +220,31 @@ public class NDSROM {
 		byte[] temp;
 
 		// The ARM9
-		header.arm9RomOffset = out.getPosition();
 		temp = arm9bin.getBytes();
+		header.arm9RomOffset = out.getPosition();
 		header.arm9Size = temp.length;
+
+		DataIOStream arm9editor = new DataIOStream(temp);
+		if (seekBootstrapHeader(arm9editor)) {
+			//TwilightMenu/nds-bootstrap use this to decompress the ROM
+			//by themselves and inject their code. As such we have to adjust it
+			//when the ROM is not compressed.
+			int arm9DecompressRamAddress;
+			if (BLZ.getBLZHeader(arm9bin).valid()) {
+				//ARM9 is compressed
+				arm9DecompressRamAddress = header.arm9RamAddress + header.arm9Size;
+			} else {
+				arm9DecompressRamAddress = 0;
+			}
+			System.out.println("Writing ARM9 compression footer 0x" + Integer.toHexString(arm9DecompressRamAddress));
+			arm9editor.skipBytes(-8);
+			arm9editor.writeInt(arm9DecompressRamAddress);
+		}
+		else {
+			System.out.println("ARM9 bootstrap header not found!");
+		}
+		arm9editor.close();
+
 		out.write(temp);
 		out.pad(4, 0xFF);
 
@@ -321,5 +331,17 @@ public class NDSROM {
 		header.write(out);
 
 		out.close();
+	}
+
+	private static boolean seekBootstrapHeader(DataIOStream stream) throws IOException {
+		return IOUtils.searchForBytes(
+			stream,
+			0,
+			-1,
+			Integer.BYTES,
+			new IOUtils.SearchPattern(
+				new byte[]{(byte) 0x21, (byte) 0x06, (byte) 0xC0, (byte) 0xDE, (byte) 0xDE, (byte) 0xC0, (byte) 0x06, (byte) 0x21}
+			)
+		) != null;
 	}
 }
