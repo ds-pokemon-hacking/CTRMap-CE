@@ -5,6 +5,7 @@ import ctrmap.creativestudio.editors.IEditor;
 import ctrmap.creativestudio.ngcs.NGEditorController;
 import ctrmap.renderer.scene.metadata.MetaDataValue;
 import ctrmap.renderer.scene.model.Mesh;
+import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scenegraph.NamedResource;
 import xstandard.util.ListenableList;
@@ -72,7 +73,9 @@ public class MeshNode extends CSNode {
 	
 	@Override
 	public void putForExport(G3DResource rsc) {
-		getDmyModel(rsc).meshes.add(mesh);
+		Model mdl = getDmyModel(rsc);
+		mdl.skeleton = mesh.parentModel.skeleton;
+		mdl.meshes.add(mesh);
 	}
 
 	@Override

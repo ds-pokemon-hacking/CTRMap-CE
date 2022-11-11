@@ -35,7 +35,6 @@ import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.Vec2f;
 import xstandard.text.StringEx;
 import xstandard.util.ArraysEx;
-import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;

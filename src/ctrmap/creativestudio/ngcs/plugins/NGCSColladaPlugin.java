@@ -155,10 +155,24 @@ public class NGCSColladaPlugin implements INGCSPlugin {
 			return G3DFMT_IMPORT | G3DFMT_EXPORT | G3DFMT_EXPORT_EXDATA_NEEDS_CAMERA | G3DFMT_EXPORT_HAS_EXCONFIG;
 		}
 	};
+	
+	public static final IG3DFormatHandler COLLADA_MODEL_EX = new ColladaExporterExBase() {
+
+		@Override
+		public void exportResourceEx(G3DResource rsc, G3DIOProvider exData, FSFile target, DAEExportSettings config) {
+			new DAE(rsc, config).writeToFile(target, null);
+		}
+
+		@Override
+		public int getAttributes() {
+			return G3DFMT_IMPORT | G3DFMT_EXPORT | G3DFMT_EXPORT_HAS_EXCONFIG;
+		}
+	};
 
 	@Override
 	public void registerFormats(NGCSJulietIface j) {
-		j.registFormatSupport(COLLADA, CSG3DIOContentType.MODEL, CSG3DIOContentType.CAMERA, CSG3DIOContentType.LIGHT, CSG3DIOContentType.ANIMATION_MULTI_EX);
+		j.registFormatSupport(COLLADA_MODEL_EX, CSG3DIOContentType.MODEL);
+		j.registFormatSupport(COLLADA, CSG3DIOContentType.MULTI_EX, CSG3DIOContentType.CAMERA, CSG3DIOContentType.LIGHT, CSG3DIOContentType.ANIMATION_MULTI_EX);
 		j.registFormatSupport(COLLADA_ANIMCAM_EX, CSG3DIOContentType.ANIMATION_CAM);
 		j.registFormatSupport(COLLADA_ANIMSKL_EX, CSG3DIOContentType.ANIMATION_SKL);
 		j.registFormatSupport(COLLADA_ANIMVIS_EX, CSG3DIOContentType.ANIMATION_VIS);
@@ -232,7 +246,7 @@ public class NGCSColladaPlugin implements INGCSPlugin {
 				}
 
 				DAEExportSettings daeSettings = new DAEExportSettings();
-				daeSettings.bakeAnimations = settings.anmBake && settings.exportAnm;
+				daeSettings.bakeTransforms = settings.bakeTransforms;
 				daeSettings.doNotUseLookAt = settings.doNotUseLookAt;
 
 				List<Skeleton> skeletons = new ArrayList<>();

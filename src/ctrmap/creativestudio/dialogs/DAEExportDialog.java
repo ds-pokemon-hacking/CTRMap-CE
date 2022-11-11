@@ -37,7 +37,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		DialogOptionRemember.setRememberedCheckbox(btnIsExportLight);
 		DialogOptionRemember.setRememberedCheckbox(btnSeparateTex);
 		DialogOptionRemember.setRememberedCheckbox(btnAnmExportAllSepDir);
-		DialogOptionRemember.setRememberedCheckbox(btnAnmExportBake);
+		DialogOptionRemember.setRememberedCheckbox(btnBakeTransforms);
 		DialogOptionRemember.setRememberedCheckbox(btnTexExportMappedOnly);
 		DialogOptionRemember.setRememberedCheckbox(btnNoUseLookAt);
 		DialogOptionRemember.selectRememberedRBtnPos(mdlExportTypeGroup);
@@ -101,7 +101,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		anmSelect.setAnmBoxEnabled(btnAnmExportOne.isSelected() && exportAnm);
 		anmTypeBox.setEnabled(btnAnmExportOne.isSelected() && exportAnm);
 		btnAnmExportAllSepDir.setEnabled(btnAnmExportAllMoreFiles.isSelected() && exportAnm);
-		ComponentUtils.setComponentsEnabled(exportAnm, btnAnmExportAllMoreFiles, btnAnmExportAllOneFile, btnAnmExportBake, btnAnmExportOne);
+		ComponentUtils.setComponentsEnabled(exportAnm, btnAnmExportAllMoreFiles, btnAnmExportAllOneFile, btnAnmExportOne);
 	}
 
 	/**
@@ -135,8 +135,9 @@ public class DAEExportDialog extends javax.swing.JDialog {
         btnIsExportLight = new javax.swing.JCheckBox();
         exportBtnSep = new javax.swing.JSeparator();
         btnAnmExportAllOneFile = new javax.swing.JRadioButton();
-        btnAnmExportBake = new javax.swing.JCheckBox();
         btnTexExportMappedOnly = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
+        btnBakeTransforms = new javax.swing.JCheckBox();
         btnNoUseLookAt = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -202,14 +203,37 @@ public class DAEExportDialog extends javax.swing.JDialog {
         anmExportTypeGroup.add(btnAnmExportAllOneFile);
         btnAnmExportAllOneFile.setText("All animations (one file)");
 
-        btnAnmExportBake.setSelected(true);
-        btnAnmExportBake.setText("Bake animations");
-
         btnTexExportMappedOnly.setSelected(true);
         btnTexExportMappedOnly.setText("Mapped textures only");
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Transform mode"));
+
+        btnBakeTransforms.setSelected(true);
+        btnBakeTransforms.setText("Bake transforms");
+
         btnNoUseLookAt.setSelected(true);
         btnNoUseLookAt.setText("Do not use look-at transform");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnBakeTransforms)
+                    .addComponent(btnNoUseLookAt))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnBakeTransforms)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnNoUseLookAt)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -219,18 +243,15 @@ public class DAEExportDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(btnNoUseLookAt)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(btnIsExportLight)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(exportBtnSep, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lightSep, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(anmSep, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(exportBtnSep)
+                            .addComponent(lightSep)
+                            .addComponent(anmSep)
+                            .addGroup(layout.createSequentialGroup()
                                 .addGap(21, 21, 21)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -246,14 +267,13 @@ public class DAEExportDialog extends javax.swing.JDialog {
                                             .addComponent(btnAnmExportAllMoreFiles)
                                             .addComponent(btnAnmExportAllOneFile)
                                             .addComponent(btnAnmExportOne)
-                                            .addComponent(btnAnmExportBake)
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGap(21, 21, 21)
                                                 .addComponent(btnAnmExportAllSepDir)))
                                         .addGap(0, 0, Short.MAX_VALUE))))
-                            .addComponent(camSep)
-                            .addComponent(texSep, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addComponent(camSep, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(texSep)
+                            .addGroup(layout.createSequentialGroup()
                                 .addGap(10, 10, 10)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -264,7 +284,10 @@ public class DAEExportDialog extends javax.swing.JDialog {
                                             .addComponent(btnMdlExportOne)
                                             .addComponent(btnMdlExportAllAsOne))
                                         .addGap(0, 0, Short.MAX_VALUE))))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnExport))
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(btnIsExportAnm)
                                     .addComponent(btnIsExportCam)
@@ -277,10 +300,6 @@ public class DAEExportDialog extends javax.swing.JDialog {
                                             .addComponent(btnSeparateTex))))
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnExport)
-                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -320,19 +339,17 @@ public class DAEExportDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(anmSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnAnmExportBake)
-                .addGap(18, 18, 18)
                 .addComponent(camSep, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnIsExportCam)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnNoUseLookAt)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lightSep, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnIsExportLight)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(exportBtnSep, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnExport)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -354,7 +371,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		DialogOptionRemember.putRememberedComboBox("DAEExportAnmTypeBox", anmTypeBox);
 		DialogOptionRemember.putRememberedCheckbox(btnIsExportCam);
 		DialogOptionRemember.putRememberedCheckbox(btnIsExportLight);
-		DialogOptionRemember.putRememberedCheckbox(btnAnmExportBake);
+		DialogOptionRemember.putRememberedCheckbox(btnBakeTransforms);
 		mdlSelect.saveComboBoxValue("DAESingleModelName");
 		anmSelect.saveComboBoxValue("DAESingleAnimeName");
 
@@ -366,8 +383,8 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		result.exportLight = btnIsExportLight.isSelected();
 		result.dirSepTex = btnSeparateTex.isSelected();
 		result.dirSepAnm = btnAnmExportAllSepDir.isSelected();
-		result.anmBake = btnAnmExportBake.isSelected() && result.exportAnm;
 		result.texMappedOnly = btnTexExportMappedOnly.isSelected() && result.exportMdl;
+		result.bakeTransforms = btnBakeTransforms.isSelected();
 		result.doNotUseLookAt = btnNoUseLookAt.isSelected();
 
 		if (result.exportMdl) {
@@ -409,8 +426,8 @@ public class DAEExportDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton btnAnmExportAllMoreFiles;
     private javax.swing.JRadioButton btnAnmExportAllOneFile;
     private javax.swing.JCheckBox btnAnmExportAllSepDir;
-    private javax.swing.JCheckBox btnAnmExportBake;
     private javax.swing.JRadioButton btnAnmExportOne;
+    private javax.swing.JCheckBox btnBakeTransforms;
     private javax.swing.JButton btnExport;
     private javax.swing.JCheckBox btnIsExportAnm;
     private javax.swing.JCheckBox btnIsExportCam;
@@ -424,6 +441,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox btnTexExportMappedOnly;
     private javax.swing.JSeparator camSep;
     private javax.swing.JSeparator exportBtnSep;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator lightSep;
     private javax.swing.ButtonGroup mdlExportTypeGroup;
     private ctrmap.creativestudio.dialogs.ModelSelectionPanel mdlSelect;
@@ -442,7 +460,8 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		public List<AbstractAnimation> animeToExport = new ArrayList<>();
 
 		public boolean animeToSeparateFiles;
-		public boolean anmBake;
+		
+		public boolean bakeTransforms;
 		public boolean doNotUseLookAt;
 
 		public boolean texMappedOnly;

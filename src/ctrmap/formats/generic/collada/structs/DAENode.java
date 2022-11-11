@@ -51,7 +51,7 @@ public class DAENode implements DAEIDAble, DAESerializable, DAESIDAble {
 
 	public DAENode(Skeleton skl, Joint j, DAEConvMemory<Joint, DAENode> conv, DAESIDConvMemory<Joint, DAENode> convSID, DAEExportSettings settings) {
 		name = XmlFormat.sanitizeName(j.name);
-		bake = settings.bakeAnimations || j.kinematicsRole != Skeleton.KinematicsRole.NONE;
+		bake = settings.bakeTransforms || j.kinematicsRole != Skeleton.KinematicsRole.NONE;
 		t = j.position;
 		r = j.rotation;
 		s = j.scale;

@@ -12,7 +12,6 @@ import ctrmap.creativestudio.ngcs.rtldr.NGCSContentAccessor;
 import ctrmap.creativestudio.ngcs.rtldr.NGCSJulietIface;
 import ctrmap.creativestudio.ngcs.rtldr.NGCSUIManager;
 import ctrmap.formats.generic.source.SMD;
-import ctrmap.formats.generic.xobj.OBJFile;
 import ctrmap.renderer.scenegraph.G3DResource;
 import xstandard.fs.FSFile;
 import java.awt.Frame;
@@ -74,6 +73,7 @@ public class NGCSSMDPlugin implements INGCSPlugin {
 		j.registFormatSupport(CSG3DIOContentType.MULTI_EX, STUDIOMDL_IMPORT_BOTH);
 		j.registFormatSupport(CSG3DIOContentType.MODEL, STUDIOMDL_MDL);
 		j.registFormatSupport(CSG3DIOContentType.ANIMATION_SKL, STUDIOMDL_ANM);
+		j.registFormatSupport(CSG3DIOContentType.MESH, STUDIOMDL_MDL);
 	}
 
 	@Override

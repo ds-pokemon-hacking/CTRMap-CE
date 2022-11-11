@@ -87,7 +87,7 @@ public class DAESimpleExportDialog extends javax.swing.JDialog {
 		DialogOptionRemember.putRememberedCheckbox(btnNoUseLookAt);
 
 		result = new DAEExportSettings();
-		result.bakeAnimations = btnAnmExportBake.isSelected();
+		result.bakeTransforms = btnAnmExportBake.isSelected();
 		result.doNotUseLookAt = btnNoUseLookAt.isSelected();
 
 		dispose();

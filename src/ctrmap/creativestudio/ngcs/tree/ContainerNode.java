@@ -243,13 +243,17 @@ public class ContainerNode extends CSNode {
 					NGCSExporter.G3DResourceExportParam exportParams[] = new NGCSExporter.G3DResourceExportParam[list.size()];
 					targetDir.mkdir();
 					for (int i = 0; i < exportParams.length; i++) {
-						NamedResource namedRes = (NamedResource) list.get(i);
+						G3DResource res = new G3DResource();
+						((CSNode)getChildAt(i)).putForExport(res);
 						exportParams[i] = new NGCSExporter.G3DResourceExportParam(
-							new G3DResource(namedRes),
-							targetDir.getChild(FormattingUtils.getStrForValidFileName(namedRes.getName()) + extension)
+							res,
+							targetDir.getChild(FormattingUtils.getStrForValidFileName(((NamedResource)list.get(i)).getName()) + extension)
 						);
 					}
 					NGCSExporter.exportFiles(getCS(), formatHandler, exportParams);
+				}
+				else {
+					System.err.println("CRITICAL: Could not match export handler for filter " + result);
 				}
 			}
 		}

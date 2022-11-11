@@ -196,6 +196,7 @@ public class DAEGeometry implements DAEIDAble {
 						subMesh.hasTangent = true;
 						tangentSrc = sources.getByUrl(in.sourceUrl).accessor.getVec3fArray();
 						subMesh.tangentPointerOffset = in.offset;
+						break;
 					case "TEXCOORD":
 						if (in.setNo < 3) {
 							subMesh.hasUV[in.setNo] = true;
@@ -261,10 +262,10 @@ public class DAEGeometry implements DAEIDAble {
 				}
 			}
 
-			subMesh.createVertexBuffer(vertexSrc, colorSrc, normalSrc, tangentSrc, uvSrc, inputList);
-
 			subMesh.materialSymbol = polygonArr.getAttribute("material");
 			subMesh.index = subMeshIdx;
+			subMesh.createVertexBuffer(vertexSrc, colorSrc, normalSrc, tangentSrc, uvSrc, inputList);
+
 			faces.add(subMesh);
 			subMeshIdx++;
 		}

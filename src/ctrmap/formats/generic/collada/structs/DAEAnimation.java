@@ -121,7 +121,7 @@ public class DAEAnimation implements DAEIDAble, DAESerializable {
 					String camId = camConvMem.findByInput(cam).getID();
 					String nodeId = node.getID();
 
-					if (!settings.bakeAnimations) {
+					if (!settings.bakeTransforms) {
 						CameraViewpointBoneTransform vp = null;
 						CameraLookAtBoneTransform la = null;
 
@@ -192,7 +192,7 @@ public class DAEAnimation implements DAEIDAble, DAESerializable {
 			if (node != null) {
 				String btId = node.getID();
 
-				if (!settings.bakeAnimations && joint.kinematicsRole == Skeleton.KinematicsRole.NONE) {
+				if (!settings.bakeTransforms && joint.kinematicsRole == Skeleton.KinematicsRole.NONE) {
 					putSubanimIfNonempty(bt.tx, btId, "location.X", false, "X");
 					putSubanimIfNonempty(bt.ty, btId, "location.Y", false, "Y");
 					putSubanimIfNonempty(bt.tz, btId, "location.Z", false, "Z");
