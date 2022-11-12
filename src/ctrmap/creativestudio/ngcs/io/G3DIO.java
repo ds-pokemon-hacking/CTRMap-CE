@@ -79,6 +79,7 @@ public class G3DIO {
 				}
 			}
 		} catch (Exception ex) {
+			System.err.println("Error while reading file: " + file);
 			ex.printStackTrace();
 		}
 		return null;
