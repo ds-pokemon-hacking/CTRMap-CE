@@ -57,19 +57,19 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 	protected MatrixStack getCurMatrixStack() {
 		return matrixStacks.get(nowMatrixMode);
 	}
-	
+
 	public Matrix4 getMvStack(int index) {
 		return modelViewStack.stack[index];
 	}
-	
+
 	public void mulVertex(Vec3f vert) {
 		vert.mulPosition(modelViewStack.cur());
 	}
-	
+
 	public void mulNormal(Vec3f nor) {
 		nor.mulDirection(normalStack.cur());
 	}
-	
+
 	public void absTexture(Vec2f tex) {
 		if (nowTexW == 0 || nowTexH == 0) {
 			throw new RuntimeException("No texture loaded! - org vector " + tex + " last vtx " + lastVertex);
@@ -77,7 +77,7 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 		tex.x /= nowTexW;
 		tex.y = 1f - (tex.y / nowTexH);
 	}
-	
+
 	public void mulTexture(Vec2f tex) {
 		Vec3f vec3 = new Vec3f(tex.x, tex.y, 0f);
 		vec3.mulPosition(textureStack.cur());
@@ -158,14 +158,14 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 		nowTexW = width;
 		nowTexH = height;
 	}
-	
+
 	public abstract void vertexEx(Vec3f vertex);
-	
+
 	private final Vec3f lastVertex = new Vec3f(0, 0, 0);
 	protected final RGBA currentColor = new RGBA(255, 255, 255, 255);
 	protected final Vec3f currentNormal = new Vec3f(0f, 1f, 0f);
 	protected final Vec2f currentTexcoord = new Vec2f(0f, 0f);
-	
+
 	@Override
 	public void vertex(Vec3f vertex) {
 		lastVertex.set(vertex);
@@ -198,17 +198,24 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 		lastVertex.z = z;
 		vertexEx(lastVertex.clone());
 	}
-	
+
 	@Override
 	public void color(RGBA color) {
 		currentColor.set(color);
 	}
-	
+
+	@Override
+	public void matDiffuseAmbient(RGBA dif, RGBA amb, boolean difAsVCol) {
+		if (difAsVCol) {
+			color(dif);
+		}
+	}
+
 	@Override
 	public void normal(Vec3f normal) {
 		currentNormal.set(normal);
 	}
-	
+
 	@Override
 	public void texCoord(Vec2f texcoord) {
 		currentTexcoord.set(texcoord);
@@ -221,7 +228,7 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 		public CombMatrix(Matrix4f normal) {
 			this.normal = normal;
 		}
-		
+
 		@Override
 		public Matrix4f set4x3(Matrix4x3fc m) {
 			super.set4x3(m);
@@ -230,7 +237,7 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 			}
 			return this;
 		}
-		
+
 		@Override
 		public Matrix4f set(Matrix4fc m) {
 			super.set(m);
@@ -293,7 +300,7 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 				stack[i] = matrixCtor.newMatrix(i);
 			}
 		}
-		
+
 		public int size() {
 			return stack.length;
 		}

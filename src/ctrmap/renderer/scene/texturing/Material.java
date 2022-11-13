@@ -193,7 +193,8 @@ public class Material implements NamedResource {
 			for (MaterialParams.LUTTarget tgt : MaterialParams.LUTTarget.values()) {
 				hash = 37 * hash + Objects.hashCode(getLUTForTarget(tgt));
 			}
-			int textureIndex = 0;
+			//Should no longer be needed since we moved texcoord generation to vertex shader
+			/*int textureIndex = 0;
 			for (TextureMapper m : textures) {
 				if (m.mapMode != MaterialParams.TextureMapMode.UV_MAP) {
 					hash = 37 * hash + Objects.hashCode(m.mapMode);
@@ -202,7 +203,7 @@ public class Material implements NamedResource {
 					hash *= 37; //do not discern between uvsets 0 to 2
 				}
 				textureIndex++;
-			}
+			}*/
 		} else {
 			hash = 37 * hash + fragmentShaderName.hashCode();
 		}

@@ -1038,17 +1038,6 @@ public class DAEEffect implements DAEIDAble, DAESerializable {
 			m.mapMode = MaterialParams.TextureMapMode.UV_MAP;
 		} else {
 			m.mapMode = mapMode;
-			switch (m.mapMode) {
-				case CUBE_MAP:
-					m.uvSetNo = 3;
-					break;
-				case SPHERE_MAP:
-					m.uvSetNo = 4;
-					break;
-				case PROJECTION_MAP:
-					m.uvSetNo = 5;
-					break;
-			}
 		}
 	}
 

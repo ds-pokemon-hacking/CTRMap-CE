@@ -167,7 +167,7 @@
                       <Component id="textureFilteringPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="texturePreview" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="72" max="32767" attributes="0"/>
+                      <EmptySpace pref="74" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -351,10 +351,16 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
                               <Component id="textureWrapU" max="32767" attributes="0"/>
-                              <Component id="textureWrapV" alignment="0" pref="200" max="32767" attributes="0"/>
-                              <Component id="textureUV" max="32767" attributes="0"/>
+                              <Component id="textureWrapV" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="textureMapMode" min="-2" pref="103" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="textureUV" min="-2" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace pref="192" max="32767" attributes="0"/>
+                          <EmptySpace min="192" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -362,11 +368,13 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="textureUV" max="32767" attributes="0"/>
-                              <Component id="textureUVLabel" max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="textureUVLabel" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                              <Component id="textureMapMode" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="textureUV" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="textureWrapULabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="textureWrapU" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -395,7 +403,7 @@
                 <Component class="javax.swing.JComboBox" name="textureWrapU">
                   <Properties>
                     <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(textureMappingModes)" type="code"/>
+                      <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(textureWrapModes)" type="code"/>
                     </Property>
                   </Properties>
                   <AuxValues>
@@ -411,14 +419,45 @@
                 <Component class="javax.swing.JComboBox" name="textureWrapV">
                   <Properties>
                     <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(textureMappingModes)" type="code"/>
+                      <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(textureWrapModes)" type="code"/>
                     </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                   </AuxValues>
                 </Component>
-                <Component class="xstandard.gui.components.combobox.ComboBoxAndSpinner" name="textureUV">
+                <Component class="javax.swing.JComboBox" name="textureMapMode">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(texcoordGenModes)" type="code"/>
+                    </Property>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="textureMapModeActionPerformed"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel1">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="UV Set:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JComboBox" name="textureUV">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                      <StringArray count="4">
+                        <StringItem index="0" value="N/A"/>
+                        <StringItem index="1" value="UV0"/>
+                        <StringItem index="2" value="UV1"/>
+                        <StringItem index="3" value="UV2"/>
+                      </StringArray>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>
@@ -666,7 +705,7 @@
                       <Component id="stencilOpPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="faceCullingPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="37" max="32767" attributes="0"/>
+                      <EmptySpace pref="48" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2237,7 +2276,7 @@
                       <Component id="colorPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lutPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="325" max="32767" attributes="0"/>
+                      <EmptySpace pref="293" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2333,75 +2372,64 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Component id="ambientColorLabel" min="-2" pref="65" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="ambientColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                                      <Component id="diffuseColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                                  </Group>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="ambientColorPreview" min="-2" pref="50" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnSetAmbientColor" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" attributes="0">
-                                  <Component id="diffuseColorLabel" min="-2" pref="65" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="diffuseColorPreview" min="-2" pref="50" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnSetDiffuseColor" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="btnSetColDif" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnSetColAmb" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="spc0ColorLabel" min="-2" pref="65" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="spc1ColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                                      <Component id="spc0ColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                                      <Component id="emiColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                                  </Group>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="spc0ColorPreview" min="-2" pref="50" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnSetSpc0Color" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="spc1ColorLabel" min="-2" pref="65" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="spc1ColorPreview" min="-2" pref="50" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnSetSpc1Color" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="btnSetColSpc1" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnSetColSpc0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnSetColEmi" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
-                          <EmptySpace pref="285" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="ambientColorPreview" alignment="0" max="32767" attributes="0"/>
-                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                                  <Component id="ambientColorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnSetAmbientColor" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="btnSetColAmb" max="32767" attributes="0"/>
+                              <Component id="ambientColorLabel" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="diffuseColorPreview" alignment="0" max="32767" attributes="0"/>
-                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                                  <Component id="diffuseColorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnSetDiffuseColor" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="btnSetColDif" max="32767" attributes="0"/>
+                              <Component id="diffuseColorLabel" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="spc0ColorPreview" alignment="0" max="32767" attributes="0"/>
-                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                                  <Component id="spc0ColorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnSetSpc0Color" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="btnSetColSpc0" max="32767" attributes="0"/>
+                              <Component id="spc0ColorLabel" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="spc1ColorPreview" alignment="0" max="32767" attributes="0"/>
-                              <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                                  <Component id="spc1ColorLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnSetSpc1Color" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="btnSetColSpc1" max="32767" attributes="0"/>
+                              <Component id="spc1ColorLabel" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="btnSetColEmi" max="32767" attributes="0"/>
+                              <Component id="emiColorLabel" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -2412,104 +2440,35 @@
                     <Property name="text" type="java.lang.String" value="Ambient"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JLabel" name="ambientColorPreview">
-                  <Properties>
-                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
-                    </Property>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                        <LineBorder/>
-                      </Border>
-                    </Property>
-                    <Property name="opaque" type="boolean" value="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JButton" name="btnSetAmbientColor">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Set"/>
-                  </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSetAmbientColorActionPerformed"/>
-                  </Events>
-                </Component>
                 <Component class="javax.swing.JLabel" name="diffuseColorLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Diffuse"/>
                   </Properties>
-                </Component>
-                <Component class="javax.swing.JLabel" name="diffuseColorPreview">
-                  <Properties>
-                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
-                    </Property>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                        <LineBorder/>
-                      </Border>
-                    </Property>
-                    <Property name="opaque" type="boolean" value="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JButton" name="btnSetDiffuseColor">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Set"/>
-                  </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSetDiffuseColorActionPerformed"/>
-                  </Events>
                 </Component>
                 <Component class="javax.swing.JLabel" name="spc0ColorLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Specular 0"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JLabel" name="spc0ColorPreview">
-                  <Properties>
-                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
-                    </Property>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                        <LineBorder/>
-                      </Border>
-                    </Property>
-                    <Property name="opaque" type="boolean" value="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JButton" name="btnSetSpc0Color">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Set"/>
-                  </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSetSpc0ColorActionPerformed"/>
-                  </Events>
-                </Component>
                 <Component class="javax.swing.JLabel" name="spc1ColorLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Specular 1"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JLabel" name="spc1ColorPreview">
+                <Component class="javax.swing.JLabel" name="emiColorLabel">
                   <Properties>
-                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
-                    </Property>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                        <LineBorder/>
-                      </Border>
-                    </Property>
-                    <Property name="opaque" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="Emission"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JButton" name="btnSetSpc1Color">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Set"/>
-                  </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSetSpc1ColorActionPerformed"/>
-                  </Events>
+                <Component class="xstandard.gui.components.SimpleColorSelector" name="btnSetColAmb">
+                </Component>
+                <Component class="xstandard.gui.components.SimpleColorSelector" name="btnSetColDif">
+                </Component>
+                <Component class="xstandard.gui.components.SimpleColorSelector" name="btnSetColSpc0">
+                </Component>
+                <Component class="xstandard.gui.components.SimpleColorSelector" name="btnSetColSpc1">
+                </Component>
+                <Component class="xstandard.gui.components.SimpleColorSelector" name="btnSetColEmi">
                 </Component>
               </SubComponents>
             </Container>
@@ -2925,9 +2884,6 @@
               <Properties>
                 <Property name="maximumRowCount" type="int" value="20"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bakeTexNameActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="btnDisableAlphaBlend">
               <Properties>

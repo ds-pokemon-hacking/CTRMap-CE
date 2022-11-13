@@ -42,7 +42,7 @@ public class G3DResource {
 
 	public ListenableList<G3DSceneTemplate> sceneTemplates = new ListenableList<>();
 
-	public AABB6f boundingBox = new AABB6f();
+	public final AABB6f boundingBox = new AABB6f();
 	
 	public MetaData metaData = new MetaData();
 

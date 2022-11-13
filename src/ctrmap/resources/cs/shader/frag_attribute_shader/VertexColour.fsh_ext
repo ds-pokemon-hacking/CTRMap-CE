@@ -1,4 +1,7 @@
 //EXTENSION-CODE region=frag-post
 /*
-target = color;
+target.xyz = color.xyz;
+if (target.a > 0.0) {
+	target.a = color.a;
+}
 */

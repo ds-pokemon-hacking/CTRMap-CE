@@ -6,8 +6,6 @@
 
 uniform sampler2D textures[TEXTURE_MAX];
 
-uniform int textureMapModes[TEXTURE_MAX];
-
 uniform sampler2D LUT[LUT_MAX];
 uniform int LUTInputs[LUT_MAX];
 uniform bool LUTEnabled[LUT_MAX];
@@ -15,11 +13,6 @@ uniform bool LUTEnabled[LUT_MAX];
 //EXTENSION-frag-init
 
 //Deoxys TexEnv emulator v1.3
-
-const int TEXTURE_MAP_MODE_UV = 0;
-const int TEXTURE_MAP_MODE_CUBE = 1;
-const int TEXTURE_MAP_MODE_SPHERE = 2;
-const int TEXTURE_MAP_MODE_PROJECTION = 3;
 
 const int LUT_REFLEC_R = 0;
 const int LUT_REFLEC_G = 1;
@@ -114,13 +107,7 @@ vec4 fragmentLightingPrimaryColor = vec4(0, 0, 0, 1);
 vec4 fragmentLightingSecondaryColor = vec4(0, 0, 0, 1);
 
 vec4 getTexColor(sampler2D tex, vec2 uv, int unitIndex){
-    int mapMode = textureMapModes[unitIndex];
-    if (mapMode == TEXTURE_MAP_MODE_SPHERE){
-        return texture2D(tex, (normal * 0.5 + 0.5).xy);
-    }
-    else {
-        return texture2D(tex, uv);
-    }
+    return texture2D(tex, uv);
 }
 
 vec4 getSource(int stage, int sourceNum, bool sourceIsAlpha, vec4 previous){

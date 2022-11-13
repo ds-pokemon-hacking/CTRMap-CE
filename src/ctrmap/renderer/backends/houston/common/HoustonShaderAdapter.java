@@ -12,7 +12,7 @@ import org.joml.Matrix3f;
 import ctrmap.renderer.backends.base.flow.IShaderAdapter;
 
 public interface HoustonShaderAdapter extends IShaderAdapter {
-	
+
 	public static final HoustonShaderAdapter INSTANCE = new HoustonShaderAdapter() {
 	};
 
@@ -107,9 +107,10 @@ public interface HoustonShaderAdapter extends IShaderAdapter {
 			colors
 		);
 	}
-	
+
 	@Override
 	public default void setUpMaterialUniforms(Material mat, IRenderDriver driver, ShaderProgram program) {
+		passTextureMapperUniforms(mat, program, driver);
 		/*if (mat.vertexShaderName.contains("RailRender")){
 			((GL2RenderDriver)driver).gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
 		}
@@ -121,5 +122,15 @@ public interface HoustonShaderAdapter extends IShaderAdapter {
 	@Override
 	public default void setMaterialShadingStageCount(int count, IRenderDriver driver, ShaderProgram program) {
 		driver.uniform1i(program.getUniformLocation(HoustonUniforms.TEV_ACTIVE_STAGE_COUNT_OVERRIDE, driver), count);
+	}
+
+	public static void passTextureMapperUniforms(Material mat, ShaderProgram program, IRenderDriver gl) {
+		int[] mapModes = new int[Math.min(4, mat.textures.size())];
+		for (int i = 0; i < mapModes.length; i++) {
+			mapModes[i] = mat.textures.get(i).mapMode.ordinal();
+		}
+		if (mapModes.length > 0) {
+			gl.uniform1iv(program.getUniformLocation(HoustonUniforms.TEX_SAMPLER_MAP_MODES, gl), mapModes);
+		}
 	}
 }

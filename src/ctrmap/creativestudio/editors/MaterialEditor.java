@@ -49,12 +49,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			saveTexture();
 		}
 	};
-	private ToggleableChangeListener texClAll = new ToggleableChangeListener() {
-		@Override
-		public void onApprovedStateChange(ChangeEvent e) {
-			saveTexture();
-		}
-	};
 	private ToggleableChangeListener lightClAll = new ToggleableChangeListener() {
 		@Override
 		public void onApprovedStateChange(ChangeEvent e) {
@@ -115,8 +109,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		bakeTexName.setLUTOrNot(false);
 		bakeTexName.bindScene(scene);
 
-		textureUV.loadComboBoxValues(new String[]{"UV0", "UV1", "UV2", "Cube Map", "Sphere map", "Projection map"});
-
 		materialName.getDocument().addDocumentListener(new DocumentAdapterEx() {
 			@Override
 			public void textChangedUpdate(DocumentEvent e) {
@@ -143,8 +135,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 
 		ComponentUtils.addDocumentListenerToTFs(texSRTListener, textureRot, textureSX, textureSY, textureTX, textureTY);
 
-		ComponentUtils.addActionListener(texAlAll, textureMagFilter, textureMinFilter, textureWrapU, textureWrapV);
-		textureUV.addChangeListener(texClAll);
+		ComponentUtils.addActionListener(texAlAll, textureMagFilter, textureMinFilter, textureWrapU, textureWrapV, textureMapMode, textureUV);
 
 		ComponentUtils.addChangeListener(lightClAll, lightLayer, lightSetIndex);
 		ComponentUtils.addActionListener(rsAlAll, depthFunc, boDstFuncAlpha, boDstFuncRgb, boEqtAlpha, boEqtRgb, boSrcFuncAlpha, boSrcFuncRgb, stencilFunc, soFail, soPass, soZPass, faceCulling, alphaTestFunc);
@@ -191,7 +182,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			textureSY.setValue(1f);
 			setBlendColor();
 			setInputBufferColor();
-			setLightingColors();
+			showLighting();
 			setTEVConstantColor(0);
 			edgeGroup.setValue(255);
 			isEdgeEnabled.setSelected(true);
@@ -220,23 +211,9 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 				TextureMapper m = mat.textures.get(i);
 				String texName = textureName.getTextureName();
 				m.textureName = texName;
-				m.uvSetNo = textureUV.getValueSpinner();
+				m.uvSetNo = textureUV.getSelectedIndex() - 1;
+				m.mapMode = MaterialParams.TextureMapMode.values()[textureMapMode.getSelectedIndex()];
 				textureMapper.repaint();
-				//Since CreativeStudio is a 3DS-focused tool, we use the same UvSetNo attributes as H3D
-				switch (m.uvSetNo) {
-					case 3:
-						m.mapMode = MaterialParams.TextureMapMode.CUBE_MAP;
-						break;
-					case 4:
-						m.mapMode = MaterialParams.TextureMapMode.SPHERE_MAP;
-						break;
-					case 5:
-						m.mapMode = MaterialParams.TextureMapMode.PROJECTION_MAP;
-						break;
-					default:
-						m.mapMode = MaterialParams.TextureMapMode.UV_MAP;
-						break;
-				}
 				/*m.bindTranslation.x = (Float) textureTX.getValue();
 				m.bindTranslation.y = (Float) textureTY.getValue();
 				m.bindRotation = (Float) textureRot.getValue();
@@ -294,14 +271,26 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 	}
 
 	private void showLighting() {
+		lightClAll.setAllowEvents(false);
 		if (mat != null) {
-			lightClAll.setAllowEvents(false);
 			lightSetIndex.setValue(mat.lightSetIndex);
 			lightLayer.setValue(mat.lightingLayer);
-			lightClAll.setAllowEvents(true);
-			setLightingColors();
+			btnSetColAmb.attachColor(mat.ambientColor);
+			btnSetColDif.attachColor(mat.diffuseColor);
+			btnSetColSpc0.attachColor(mat.specular0Color);
+			btnSetColSpc1.attachColor(mat.specular1Color);
+			btnSetColEmi.attachColor(mat.emissionColor);
 			showLUT();
+		} else {
+			lightSetIndex.setValue(-1);
+			lightLayer.setValue(0);
+			btnSetColAmb.attachColor(null);
+			btnSetColDif.attachColor(null);
+			btnSetColSpc0.attachColor(null);
+			btnSetColSpc1.attachColor(null);
+			btnSetColEmi.attachColor(null);
 		}
+		lightClAll.setAllowEvents(true);
 	}
 
 	private void buildTexMapperBox() {
@@ -321,26 +310,14 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		currentTexIdx = idx;
 		if (idx != -1 && idx < mat.textures.size()) {
 			TextureMapper m = mat.textures.get(idx);
-			int uv = m.uvSetNo;
-			switch (m.mapMode) {
-				case CUBE_MAP:
-					uv = 3;
-					break;
-				case SPHERE_MAP:
-					uv = 4;
-					break;
-				case PROJECTION_MAP:
-					uv = 5;
-					break;
-			}
 			textureName.setTextureName(m.textureName);
 			if (scene != null) {
 				texturePreview.showTexture(scene.getResTexture(m.textureName));
 			}
-			texClAll.setAllowEvents(false);
 			texAlAll.setAllowEvents(false);
 			texSRTListener.setAllowEvents(false);
-			textureUV.setValue(uv);
+			textureUV.setSelectedIndex(m.uvSetNo < 3 ? m.uvSetNo + 1 : 0); //UV set -1 = no UV mapping
+			textureMapMode.setSelectedIndex(m.mapMode.ordinal());
 			textureTX.setValue(m.bindTranslation.x);
 			textureTY.setValue(m.bindTranslation.y);
 			textureSX.setValue(m.bindScale.x);
@@ -352,7 +329,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			textureMagFilter.setSelectedIndex(m.textureMagFilter.ordinal());
 			textureMinFilter.setSelectedIndex(m.textureMinFilter.ordinal());
 			texAlAll.setAllowEvents(true);
-			texClAll.setAllowEvents(true);
 			btnBumpMap.setSelected(mat.bumpTextureIndex == idx && mat.bumpMode != MaterialParams.BumpMode.NONE);
 			if (mat.bumpMode == MaterialParams.BumpMode.TANGENT) {
 				bumpMode.setSelectedIndex(1);
@@ -512,13 +488,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		constantColorPicker.attachColor(mat != null ? mat.getMaterialColor(mat.tevStages.stages[stage].constantColor) : RGBA.WHITE);
 	}
 
-	private void setLightingColors() {
-		ambientColorPreview.setBackground(mat != null ? getAlphadColor(mat.ambientColor) : Color.WHITE);
-		diffuseColorPreview.setBackground(mat != null ? getAlphadColor(mat.diffuseColor) : Color.WHITE);
-		spc0ColorPreview.setBackground(mat != null ? getAlphadColor(mat.specular0Color) : Color.BLACK);
-		spc1ColorPreview.setBackground(mat != null ? getAlphadColor(mat.specular0Color) : Color.BLACK);
-	}
-
 	private void setBumpModeEnabled() {
 		bumpMode.setEnabled(btnBumpMap.isSelected());
 	}
@@ -533,7 +502,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 	}
 
 	/**
-	 * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+	 * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this
+	 * code. The content of this method is always regenerated by the Form Editor.
 	 */
 	@SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -565,7 +535,9 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         textureWrapU = new javax.swing.JComboBox<>();
         textureWrapVLabel = new javax.swing.JLabel();
         textureWrapV = new javax.swing.JComboBox<>();
-        textureUV = new xstandard.gui.components.combobox.ComboBoxAndSpinner();
+        textureMapMode = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
+        textureUV = new javax.swing.JComboBox<>();
         textureFilteringPanel = new javax.swing.JPanel();
         textureMagFilterLabel = new javax.swing.JLabel();
         textureMagFilter = new javax.swing.JComboBox<>();
@@ -693,17 +665,15 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         lightLayer = new javax.swing.JSpinner();
         colorPanel = new javax.swing.JPanel();
         ambientColorLabel = new javax.swing.JLabel();
-        ambientColorPreview = new javax.swing.JLabel();
-        btnSetAmbientColor = new javax.swing.JButton();
         diffuseColorLabel = new javax.swing.JLabel();
-        diffuseColorPreview = new javax.swing.JLabel();
-        btnSetDiffuseColor = new javax.swing.JButton();
         spc0ColorLabel = new javax.swing.JLabel();
-        spc0ColorPreview = new javax.swing.JLabel();
-        btnSetSpc0Color = new javax.swing.JButton();
         spc1ColorLabel = new javax.swing.JLabel();
-        spc1ColorPreview = new javax.swing.JLabel();
-        btnSetSpc1Color = new javax.swing.JButton();
+        emiColorLabel = new javax.swing.JLabel();
+        btnSetColAmb = new xstandard.gui.components.SimpleColorSelector();
+        btnSetColDif = new xstandard.gui.components.SimpleColorSelector();
+        btnSetColSpc0 = new xstandard.gui.components.SimpleColorSelector();
+        btnSetColSpc1 = new xstandard.gui.components.SimpleColorSelector();
+        btnSetColEmi = new xstandard.gui.components.SimpleColorSelector();
         lutPanel = new javax.swing.JPanel();
         lutLabel = new javax.swing.JLabel();
         lut = new javax.swing.JComboBox<>();
@@ -850,12 +820,23 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 
         textureWrapULabel.setText("Wrap U");
 
-        textureWrapU.setModel(new javax.swing.DefaultComboBoxModel<>(textureMappingModes));
+        textureWrapU.setModel(new javax.swing.DefaultComboBoxModel<>(textureWrapModes));
 
         textureWrapVLabel.setText("Wrap V");
         textureWrapVLabel.setToolTipText("");
 
-        textureWrapV.setModel(new javax.swing.DefaultComboBoxModel<>(textureMappingModes));
+        textureWrapV.setModel(new javax.swing.DefaultComboBoxModel<>(textureWrapModes));
+
+        textureMapMode.setModel(new javax.swing.DefaultComboBoxModel<>(texcoordGenModes));
+        textureMapMode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                textureMapModeActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("UV Set:");
+
+        textureUV.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "N/A", "UV0", "UV1", "UV2" }));
 
         javax.swing.GroupLayout textureMappingPanelLayout = new javax.swing.GroupLayout(textureMappingPanel);
         textureMappingPanel.setLayout(textureMappingPanelLayout);
@@ -870,18 +851,25 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(textureMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(textureWrapU, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(textureWrapV, 0, 200, Short.MAX_VALUE)
-                    .addComponent(textureUV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(192, Short.MAX_VALUE))
+                    .addComponent(textureWrapV, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(textureMappingPanelLayout.createSequentialGroup()
+                        .addComponent(textureMapMode, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(textureUV, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         textureMappingPanelLayout.setVerticalGroup(
             textureMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(textureMappingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(textureMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(textureUV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(textureUVLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(textureMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(textureUVLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(textureMapMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1)
+                    .addComponent(textureUV, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(textureMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textureWrapULabel)
                     .addComponent(textureWrapU, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1058,7 +1046,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addComponent(textureFilteringPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(texturePreview, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(72, Short.MAX_VALUE))
+                .addContainerGap(74, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Texturing", texturingPanel);
@@ -1480,7 +1468,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addComponent(stencilOpPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(faceCullingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(48, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Render state", renderStatePanel);
@@ -1972,55 +1960,13 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 
         ambientColorLabel.setText("Ambient");
 
-        ambientColorPreview.setBackground(new java.awt.Color(255, 255, 255));
-        ambientColorPreview.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        ambientColorPreview.setOpaque(true);
-
-        btnSetAmbientColor.setText("Set");
-        btnSetAmbientColor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSetAmbientColorActionPerformed(evt);
-            }
-        });
-
         diffuseColorLabel.setText("Diffuse");
-
-        diffuseColorPreview.setBackground(new java.awt.Color(255, 255, 255));
-        diffuseColorPreview.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        diffuseColorPreview.setOpaque(true);
-
-        btnSetDiffuseColor.setText("Set");
-        btnSetDiffuseColor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSetDiffuseColorActionPerformed(evt);
-            }
-        });
 
         spc0ColorLabel.setText("Specular 0");
 
-        spc0ColorPreview.setBackground(new java.awt.Color(255, 255, 255));
-        spc0ColorPreview.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        spc0ColorPreview.setOpaque(true);
-
-        btnSetSpc0Color.setText("Set");
-        btnSetSpc0Color.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSetSpc0ColorActionPerformed(evt);
-            }
-        });
-
         spc1ColorLabel.setText("Specular 1");
 
-        spc1ColorPreview.setBackground(new java.awt.Color(255, 255, 255));
-        spc1ColorPreview.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        spc1ColorPreview.setOpaque(true);
-
-        btnSetSpc1Color.setText("Set");
-        btnSetSpc1Color.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSetSpc1ColorActionPerformed(evt);
-            }
-        });
+        emiColorLabel.setText("Emission");
 
         javax.swing.GroupLayout colorPanelLayout = new javax.swing.GroupLayout(colorPanel);
         colorPanel.setLayout(colorPanelLayout);
@@ -2030,59 +1976,49 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addContainerGap()
                 .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(colorPanelLayout.createSequentialGroup()
-                        .addComponent(ambientColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ambientColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(diffuseColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ambientColorPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSetAmbientColor))
+                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnSetColDif, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnSetColAmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(colorPanelLayout.createSequentialGroup()
-                        .addComponent(diffuseColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(spc1ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(spc0ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(emiColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(diffuseColorPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSetDiffuseColor))
-                    .addGroup(colorPanelLayout.createSequentialGroup()
-                        .addComponent(spc0ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spc0ColorPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSetSpc0Color))
-                    .addGroup(colorPanelLayout.createSequentialGroup()
-                        .addComponent(spc1ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spc1ColorPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSetSpc1Color)))
-                .addContainerGap(285, Short.MAX_VALUE))
+                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnSetColSpc1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnSetColSpc0, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnSetColEmi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         colorPanelLayout.setVerticalGroup(
             colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(colorPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(ambientColorPreview, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ambientColorLabel)
-                        .addComponent(btnSetAmbientColor)))
+                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnSetColAmb, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ambientColorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(diffuseColorPreview, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(diffuseColorLabel)
-                        .addComponent(btnSetDiffuseColor)))
+                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnSetColDif, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(diffuseColorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(spc0ColorPreview, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(spc0ColorLabel)
-                        .addComponent(btnSetSpc0Color)))
+                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnSetColSpc0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(spc0ColorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(spc1ColorPreview, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(spc1ColorLabel)
-                        .addComponent(btnSetSpc1Color)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnSetColSpc1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(spc1ColorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSetColEmi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(emiColorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         lutPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Lookup Tables"));
@@ -2185,7 +2121,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addComponent(colorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lutPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(325, Short.MAX_VALUE))
+                .addContainerGap(293, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Lighting", lightingPanel);
@@ -2272,11 +2208,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         bakeFormula.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Shadow", "Lightmap", "Both (R/G channels)" }));
 
         bakeTexName.setMaximumRowCount(20);
-        bakeTexName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bakeTexNameActionPerformed(evt);
-            }
-        });
 
         btnDisableAlphaBlend.setText("Disable Alpha blending");
         btnDisableAlphaBlend.addActionListener(new java.awt.event.ActionListener() {
@@ -2379,7 +2310,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(generalPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(materialEditorTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
+                    .addComponent(materialEditorTabbedPane)
                     .addComponent(saveCtrl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
@@ -2522,26 +2453,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		}
     }//GEN-LAST:event_btnSetBtlFldShaActionPerformed
 
-    private void btnSetAmbientColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetAmbientColorActionPerformed
-		if (mat != null) {
-			Color c = JColorChooser.showDialog(this, "Pick a Color", mat.ambientColor.toColor());
-			if (c != null) {
-				mat.ambientColor = new RGBA(c);
-				setLightingColors();
-			}
-		}
-    }//GEN-LAST:event_btnSetAmbientColorActionPerformed
-
-    private void btnSetDiffuseColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetDiffuseColorActionPerformed
-		if (mat != null) {
-			Color c = JColorChooser.showDialog(this, "Pick a Color", mat.diffuseColor.toColor());
-			if (c != null) {
-				mat.diffuseColor = new RGBA(c);
-				setLightingColors();
-			}
-		}
-    }//GEN-LAST:event_btnSetDiffuseColorActionPerformed
-
     private void btnAddTextureMapperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTextureMapperActionPerformed
 		if (mat != null) {
 			TextureMapper tm = new TextureMapper();
@@ -2577,26 +2488,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		}
     }//GEN-LAST:event_btnAddBakeActionPerformed
 
-    private void btnSetSpc0ColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetSpc0ColorActionPerformed
-		if (mat != null) {
-			Color c = JColorChooser.showDialog(this, "Pick a Color", mat.specular0Color.toColor());
-			if (c != null) {
-				mat.specular0Color = new RGBA(c);
-				setLightingColors();
-			}
-		}
-    }//GEN-LAST:event_btnSetSpc0ColorActionPerformed
-
-    private void btnSetSpc1ColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetSpc1ColorActionPerformed
-		if (mat != null) {
-			Color c = JColorChooser.showDialog(this, "Pick a Color", mat.specular1Color.toColor());
-			if (c != null) {
-				mat.specular1Color = new RGBA(c);
-				setLightingColors();
-			}
-		}
-    }//GEN-LAST:event_btnSetSpc1ColorActionPerformed
-
     private void textureNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textureNameActionPerformed
 		if (scene != null) {
 			String texName = textureName.getTextureName();
@@ -2627,15 +2518,17 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 	}
 
 	private void showLUT() {
-		LUT lut = mat.getLUTForTarget(MaterialParams.LUTTarget.values()[this.lut.getSelectedIndex()]);
-		btnIsLUTEnabled.setSelected(lut != null);
-		ComponentUtils.setComponentsEnabled(lut != null, lutTextureName, lutInput);
-		if (lut != null) {
-			lutTextureName.setTextureName(lut.textureName);
-			lutInput.setSelectedIndex(lut.source.ordinal());
-		} else {
-			lutTextureName.setTextureName(null);
-			lutInput.setSelectedItem(null);
+		if (mat != null) {
+			LUT lut = mat.getLUTForTarget(MaterialParams.LUTTarget.values()[this.lut.getSelectedIndex()]);
+			btnIsLUTEnabled.setSelected(lut != null);
+			ComponentUtils.setComponentsEnabled(lut != null, lutTextureName, lutInput);
+			if (lut != null) {
+				lutTextureName.setTextureName(lut.textureName);
+				lutInput.setSelectedIndex(lut.source.ordinal());
+			} else {
+				lutTextureName.setTextureName(null);
+				lutInput.setSelectedItem(null);
+			}
 		}
 	}
 
@@ -2697,16 +2590,16 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		setTEVEquations(shadingStage.getSelectedIndex());
     }//GEN-LAST:event_cModeAActionPerformed
 
-    private void bakeTexNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bakeTexNameActionPerformed
-		// TODO add your handling code here:
-    }//GEN-LAST:event_bakeTexNameActionPerformed
-
     private void btnDisableAlphaBlendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDisableAlphaBlendActionPerformed
 		if (mat != null) {
 			MaterialProcessor.unsetAlphaBlend(mat);
 			showRenderState();
 		}
     }//GEN-LAST:event_btnDisableAlphaBlendActionPerformed
+
+    private void textureMapModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textureMapModeActionPerformed
+		// TODO add your handling code here:
+    }//GEN-LAST:event_textureMapModeActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2718,7 +2611,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JFormattedTextField alphaTestReference;
     private javax.swing.JLabel alphaTestReferenceLabel;
     private javax.swing.JLabel ambientColorLabel;
-    private javax.swing.JLabel ambientColorPreview;
     private javax.swing.JComboBox<String> bakeFormula;
     private javax.swing.JLabel bakeFormulaLabel;
     private javax.swing.JLabel bakeTexLabel;
@@ -2750,12 +2642,13 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JButton btnDisableAlphaBlend;
     private javax.swing.JCheckBox btnIsLUTEnabled;
     private javax.swing.JButton btnRemoveTextureMapper;
-    private javax.swing.JButton btnSetAmbientColor;
     private javax.swing.JButton btnSetBtlFldSha;
+    private xstandard.gui.components.SimpleColorSelector btnSetColAmb;
+    private xstandard.gui.components.SimpleColorSelector btnSetColDif;
+    private xstandard.gui.components.SimpleColorSelector btnSetColEmi;
+    private xstandard.gui.components.SimpleColorSelector btnSetColSpc0;
+    private xstandard.gui.components.SimpleColorSelector btnSetColSpc1;
     private javax.swing.JButton btnSetDefaultSha;
-    private javax.swing.JButton btnSetDiffuseColor;
-    private javax.swing.JButton btnSetSpc0Color;
-    private javax.swing.JButton btnSetSpc1Color;
     private javax.swing.JPanel bumpMapPanel;
     private javax.swing.JComboBox<String> bumpMode;
     private javax.swing.JLabel bumpModeLabel;
@@ -2806,7 +2699,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JLabel depthFuncLabel;
     private javax.swing.JPanel depthTestPanel;
     private javax.swing.JLabel diffuseColorLabel;
-    private javax.swing.JLabel diffuseColorPreview;
     private javax.swing.JCheckBox dtAlphaWrite;
     private javax.swing.JCheckBox dtBlueWrite;
     private javax.swing.JCheckBox dtDepthWrite;
@@ -2815,6 +2707,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JCheckBox dtRedWrite;
     private javax.swing.JFormattedTextField edgeGroup;
     private javax.swing.JLabel edgeGroupLabel;
+    private javax.swing.JLabel emiColorLabel;
     private javax.swing.JComboBox<String> faceCulling;
     private javax.swing.JPanel faceCullingPanel;
     private javax.swing.JPanel generalPanel;
@@ -2823,6 +2716,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JButton inBufColSetButton;
     private javax.swing.JLabel inputBufferColorLabel;
     private javax.swing.JCheckBox isEdgeEnabled;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JSpinner lightLayer;
     private javax.swing.JLabel lightLayerLabel;
@@ -2859,9 +2753,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JComboBox<String> soZPass;
     private javax.swing.JLabel soZPassLabel;
     private javax.swing.JLabel spc0ColorLabel;
-    private javax.swing.JLabel spc0ColorPreview;
     private javax.swing.JLabel spc1ColorLabel;
-    private javax.swing.JLabel spc1ColorPreview;
     private javax.swing.JFormattedTextField stencilBufMask;
     private javax.swing.JLabel stencilBufMaskLabel;
     private javax.swing.JCheckBox stencilEnabled;
@@ -2876,6 +2768,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JPanel textureFilteringPanel;
     private javax.swing.JComboBox<String> textureMagFilter;
     private javax.swing.JLabel textureMagFilterLabel;
+    private javax.swing.JComboBox<String> textureMapMode;
     private javax.swing.JComboBox<TextureMapper> textureMapper;
     private javax.swing.JLabel textureMapperLabel;
     private javax.swing.JPanel textureMappingPanel;
@@ -2897,7 +2790,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JLabel textureTransformXLabel;
     private javax.swing.JLabel textureTransformYLabel;
     private javax.swing.JLabel textureTranslationLabel;
-    private xstandard.gui.components.combobox.ComboBoxAndSpinner textureUV;
+    private javax.swing.JComboBox<String> textureUV;
     private javax.swing.JLabel textureUVLabel;
     private javax.swing.JComboBox<String> textureWrapU;
     private javax.swing.JLabel textureWrapULabel;

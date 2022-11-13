@@ -374,13 +374,13 @@ public class MeshEditor extends javax.swing.JPanel implements IEditor {
 
     private void btnVColToAlphaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVColToAlphaActionPerformed
 		if (mesh != null) {
-			ModelProcessor.colorToAlpha(mesh);
+			MeshProcessor.colorToAlpha(mesh);
 		}
     }//GEN-LAST:event_btnVColToAlphaActionPerformed
 
     private void btnVColCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVColCreateActionPerformed
 		if (mesh != null) {
-			ModelProcessor.clearVCol(mesh);
+			MeshProcessor.clearVCol(mesh);
 		}
     }//GEN-LAST:event_btnVColCreateActionPerformed
 

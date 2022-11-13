@@ -31,6 +31,4 @@ public class UberUniforms {
 	
 	public static final String TEX_SAMPLER_LUT_INPUTS = "LUTInputs";
 	public static final String TEX_SAMPLER_LUT_ENABLED = "LUTEnabled";
-	
-	public static final String TEX_SAMPLER_MAP_MODE = "textureMapModes";
 }

@@ -9,6 +9,12 @@
 uniform bool needsTangent;
 
 uniform int uvAssignment[TEXTURE_MAX];
+uniform int textureMapModes[TEXTURE_MAX];
+
+const int TEXTURE_MAP_MODE_UV = 0;
+const int TEXTURE_MAP_MODE_CUBE = 1;
+const int TEXTURE_MAP_MODE_SPHERE = 2;
+const int TEXTURE_MAP_MODE_PROJECTION = 3;
 
 //SRT Material Animation support
 uniform mat4 mta_transform[TEXTURE_MAX];
@@ -21,13 +27,16 @@ uniform mat4 boneTransforms[192];
 
 vec2 getTexCoordForUv(int uvId){
     int asgn = uvAssignment[uvId];
-    if (asgn == 1){
+    if (asgn == 0) {
+        return a_texcoord;
+    }
+    else if (asgn == 1){
         return a_texcoord1;
     }
     else if (asgn == 2){
         return a_texcoord2;
     }
-    return a_texcoord;
+    return vec2(0.0);
 }
 
 vec2 rotate(vec2 v, float anglerad){
@@ -42,11 +51,35 @@ vec2 rotate(vec2 v, float anglerad){
     return vec2(x * c - y * s - txy, x * s + y * c - txy);
 }
 
-vec2 transformUV(int transformIndex){
-    return vec2(mta_transform[transformIndex] * vec4(getTexCoordForUv(transformIndex), 0.0, 1.0));
+vec3 uv_normal;
+vec3 uv_view;
+
+vec2 transformTexGen(int transformIndex, vec3 texGenSource) {
+    if (uvAssignment[transformIndex] == -1) {
+        return (mta_transform[transformIndex] * vec4(texGenSource * 0.5, 1.0) + 0.5).xy;
+    }
+    else {
+        return (mta_transform[transformIndex] * vec4(texGenSource, 1.0)).xy + getTexCoordForUv(transformIndex);
+    }
 }
 
-vec3 calcTangent(vec3 normal){
+vec2 transformUV(int transformIndex) {
+    int mapMode = textureMapModes[transformIndex];
+    if (mapMode == TEXTURE_MAP_MODE_UV) {
+        return (mta_transform[transformIndex] * vec4(getTexCoordForUv(transformIndex), 0.0, 1.0)).xy;
+    }
+    else if (mapMode == TEXTURE_MAP_MODE_SPHERE) {
+        return transformTexGen(transformIndex, uv_normal);
+    }
+    else if (mapMode == TEXTURE_MAP_MODE_PROJECTION) {
+        return transformTexGen(transformIndex, uv_view);
+    }
+    else {
+        return vec2(0.0);
+    }
+}
+
+vec3 calcTangent(vec3 normal) {
     vec3 tangent;
 
     vec3 c1 = cross(normal, vec3(0.0, 0.0, 1.0));
@@ -135,15 +168,17 @@ void main(void)
     vec4 outPosition = viewMatrix * modelMatrix * p;
 
     f_view = -vec3(outPosition);
+    uv_view = outPosition.xyz;
 
     outPosition = projectionMatrix * outPosition;
 
     //EXTENSION-vert-post target=outPosition
 
-    f_normal = normalMatrix * vec3(n);
+    uv_normal = normalMatrix * vec3(n);
+    f_normal = uv_normal;
 
     if (!hasTangent){
-        f_tangent = calcTangent(f_normal);
+        f_tangent = calcTangent(uv_normal);
     }
     else {
         f_tangent = a_tangent;
@@ -155,7 +190,7 @@ void main(void)
         color = a_color;
     }
     else {
-        color = vec4(1);
+        color = vec4(1.0);
     }
     uv0 = transformUV(0);
     uv1 = transformUV(1);

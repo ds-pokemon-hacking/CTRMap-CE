@@ -6,9 +6,9 @@ import xstandard.math.vec.Vec2f;
 public class TextureMapper {
 	public String textureName;
 	
-	public int uvSetNo = 0;
 	public MaterialParams.TextureMapMode mapMode = MaterialParams.TextureMapMode.UV_MAP;
-	
+	public int uvSetNo = 0;
+
 	public MaterialParams.TextureWrap mapU = MaterialParams.TextureWrap.REPEAT;
 	public MaterialParams.TextureWrap mapV = MaterialParams.TextureWrap.REPEAT;
 	

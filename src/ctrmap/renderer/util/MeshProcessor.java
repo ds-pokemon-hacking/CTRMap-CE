@@ -7,7 +7,9 @@ import ctrmap.renderer.scene.model.Vertex;
 import ctrmap.renderer.scene.model.draw.buffers.mesh.NormalBufferComponent;
 import java.util.ArrayList;
 import java.util.List;
+import xstandard.math.MathEx;
 import xstandard.math.vec.Matrix4;
+import xstandard.math.vec.RGBA;
 import xstandard.math.vec.Vec2f;
 import xstandard.math.vec.Vec3f;
 
@@ -122,5 +124,22 @@ public class MeshProcessor {
 			
 			mesh.createAndInvalidateBuffers();
 		}
+	}
+
+	public static void colorToAlpha(Mesh mesh) {
+		for (Vertex v : mesh.vertices) {
+			v.color = new RGBA(mesh.hasColor ? v.color : RGBA.WHITE);
+			v.color.a = (short) MathEx.average(v.color.r, v.color.g, v.color.b);
+		}
+		mesh.hasColor = true;
+		mesh.createAndInvalidateBuffers();
+	}
+
+	public static void clearVCol(Mesh mesh) {
+		mesh.hasColor = true;
+		for (Vertex v : mesh.vertices) {
+			v.color = new RGBA(RGBA.WHITE);
+		}
+		mesh.createAndInvalidateBuffers();
 	}
 }

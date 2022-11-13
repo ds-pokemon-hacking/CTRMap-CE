@@ -106,6 +106,9 @@ public class MaterialUtil {
 			m.specular0Color = new RGBA(dis);
 			m.emissionColor = new RGBA(dis);
 		}
+		if (m.lightSetIndex == 255) {
+			m.lightSetIndex = -1;
+		}
 
 		int count = dis.read();
 		for (int i = 0; i < count; i++) {

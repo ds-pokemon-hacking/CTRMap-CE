@@ -5,7 +5,6 @@ import ctrmap.renderer.scene.texturing.Material;
 import ctrmap.renderer.scene.texturing.MaterialParams;
 import ctrmap.renderer.scene.texturing.TexEnvConfig;
 import ctrmap.renderer.scene.texturing.TexEnvStage;
-import ctrmap.renderer.scene.texturing.TextureMapper;
 
 public class GLTEVShaderGenerator {
 
@@ -38,7 +37,6 @@ public class GLTEVShaderGenerator {
 		sb.append("varying vec3 f_view;\n");*/
 		boolean needsFragPriColor = false;
 		boolean needsFragSecColor = false;
-		boolean needsSphereCoord = false;
 
 		if (mat != null) {
 			Outer:
@@ -50,12 +48,6 @@ public class GLTEVShaderGenerator {
 					if (!needsFragSecColor) {
 						needsFragSecColor = s.rgbSource[i] == TexEnvConfig.PICATextureCombinerSource.FRAG_SECONDARY_COLOR || s.alphaSource[i] == TexEnvConfig.PICATextureCombinerSource.FRAG_SECONDARY_COLOR;
 					}
-				}
-			}
-			for (TextureMapper tex : mat.textures) {
-				if (tex.mapMode == MaterialParams.TextureMapMode.SPHERE_MAP) {
-					needsSphereCoord = true;
-					break;
 				}
 			}
 		}
@@ -198,7 +190,7 @@ public class GLTEVShaderGenerator {
 		sb.append("vec4 outColor = color;\n");
 
 		if (mat != null && mat.tevStages != null) {
-			if (needsSphereCoord) {
+			/*if (needsSphereCoord) {
 				//This sphere UV calculation is not the standard reflection map procedure, rather a reimplementation of the one used in 0@BattleChar (Courtesy of SPICA)
 				//reg_temp[1].xy = vec4(0.125, 0.00390625, 0.5, 0.25).zz;
 				//reg_temp[1].zw = vec4(0, 1, 2, 3).xx;
@@ -209,7 +201,7 @@ public class GLTEVShaderGenerator {
 				sb.append("vec2 ");
 				sb.append(TEXIN_SPHERE_PRECALC);
 				sb.append(" = (normal * 0.5 + 0.5).xy;\n");
-			}
+			}*/
 			if (needsFragPriColor || needsFragSecColor) {
 				sb.append("genLightingColors();");
 			}
@@ -482,7 +474,7 @@ public class GLTEVShaderGenerator {
 		return sb.toString();
 	}
 
-	private static final String TEXIN_SPHERE_PRECALC = "sphereCoord";
+	//private static final String TEXIN_SPHERE_PRECALC = "sphereCoord";
 
 	private static String getSource(TexEnvConfig.PICATextureCombinerSource src, int stageIndex, Material mat) {
 		switch (src) {
@@ -516,7 +508,7 @@ public class GLTEVShaderGenerator {
 		sb.append("textures[");
 		sb.append(samplerIndex);
 		sb.append("], ");
-		switch (mat.getMapMode(samplerIndex)) {
+		/*switch (mat.getMapMode(samplerIndex)) {
 			case UV_MAP:
 			case CUBE_MAP:
 			case PROJECTION_MAP:
@@ -526,7 +518,9 @@ public class GLTEVShaderGenerator {
 			case SPHERE_MAP:
 				sb.append(TEXIN_SPHERE_PRECALC);
 				break;
-		}
+		}*/
+		sb.append("uv");
+		sb.append(samplerIndex);
 		sb.append(")");
 		return sb.toString();
 	}

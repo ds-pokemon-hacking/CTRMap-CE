@@ -24,7 +24,8 @@ public class HoustonUniforms {
 	public static final String SHA_NEEDS_TANGENT = "needsTangent";
 	
 	public static final String TEX_SAMPLERS = "textures";
-	
+	public static final String TEX_SAMPLER_MAP_MODES = "textureMapModes";
+
 	public static final String TEX_SAMPLER_LUT = "LUT";
 	
 	public static final String SKA_TRANSFORM_ENABLE = "isAnimated";

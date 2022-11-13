@@ -4,7 +4,8 @@ package ctrmap.creativestudio.editors;
 import ctrmap.renderer.scene.texturing.TexEnvConfig;
 
 public class MaterialEditorTextRsrc {
-	public static final String[] textureMappingModes = new String[]{"Clamp to Edge", "Clamp to Border", "Repeat", "Mirrored Repeat"};
+	public static final String[] texcoordGenModes = new String[]{"UV Map", "Cube Map", "Sphere map", "Projection map"};
+	public static final String[] textureWrapModes = new String[]{"Clamp to Edge", "Clamp to Border", "Repeat", "Mirrored Repeat"};
 	public static final String[] blendFunctions = new String[]{
 		"Zero",
 		"One",

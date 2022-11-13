@@ -1,7 +1,11 @@
 package ctrmap.formats.pokemon.containers;
 
 import ctrmap.formats.pokemon.containers.util.ContentType;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import xstandard.fs.FSFile;
+import xstandard.io.base.impl.ext.data.DataInStream;
 
 public class DefaultGamefreakContainer extends GFContainer {
 
@@ -9,6 +13,21 @@ public class DefaultGamefreakContainer extends GFContainer {
 
 	private boolean isPaddingExplicit = false;
 	private boolean padding = true;
+	
+	public DefaultGamefreakContainer(FSFile f) {
+		super(f);
+		readMagicFromFile();
+	}
+	
+	private final void readMagicFromFile() {
+		try {
+			DataInStream in = getOriginFile().getDataInputStream();
+			magic = in.readPaddedString(2);
+			in.close();
+		} catch (IOException ex) {
+			Logger.getLogger(DefaultGamefreakContainer.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
 
 	public DefaultGamefreakContainer(FSFile f, String magic) {
 		super(f);

@@ -22,7 +22,6 @@ public interface HoustonUberShaderAdapter extends HoustonShaderAdapter {
 		if (mat != null) {
 			passTEVUniforms(mat.tevStages, program, driver);
 			passLUTUniforms(mat, program, driver);
-			passTextureMapperUniforms(mat, program, driver);
 		}
 	}
 
@@ -61,15 +60,5 @@ public interface HoustonUberShaderAdapter extends HoustonShaderAdapter {
 		}
 		gl.uniform1iv(program.getUniformLocation(UberUniforms.TEX_SAMPLER_LUT_ENABLED, gl), LUTTargetsEnabled);
 		gl.uniform1iv(program.getUniformLocation(UberUniforms.TEX_SAMPLER_LUT_INPUTS, gl), LUTSources);
-	}
-
-	public static void passTextureMapperUniforms(Material mat, ShaderProgram program, IRenderDriver gl) {
-		int[] mapModes = new int[Math.min(4, mat.textures.size())];
-		for (int i = 0; i < mapModes.length; i++) {
-			mapModes[i] = mat.textures.get(i).mapMode.ordinal();
-		}
-		if (mapModes.length > 0) {
-			gl.uniform1iv(program.getUniformLocation(UberUniforms.TEX_SAMPLER_MAP_MODE, gl), mapModes);
-		}
 	}
 }

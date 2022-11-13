@@ -27,7 +27,7 @@ public interface IGECommandProcessor {
 	public void scale(float x, float y, float z);
 	public void translate(float x, float y, float z);
 	
-	public void matDiffuseAmbient(RGBA dif, RGBA amb);
+	public void matDiffuseAmbient(RGBA dif, RGBA amb, boolean difAsVCol);
 	public void matSpecularEmissive(RGBA spec, RGBA emi);
 	
 	public void texImage2D(int width, int height, GETextureFormat format, int offset);

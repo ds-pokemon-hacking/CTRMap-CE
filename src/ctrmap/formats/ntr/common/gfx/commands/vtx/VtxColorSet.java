@@ -39,4 +39,8 @@ public class VtxColorSet extends GECommand {
 		processor.color(color);
 	}
 
+	@Override
+	public String toString() {
+		return "VtxColorSet(" + color + ")";
+	}
 }
