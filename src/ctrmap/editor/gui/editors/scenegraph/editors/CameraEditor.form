@@ -21,21 +21,25 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="transformPanel" max="32767" attributes="0"/>
                   <Component id="lookAtPanel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="projectionPanel" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="camModeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="camProjModeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="camViewModeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="name" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
-                              <Component id="camType" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="camViewMode" min="-2" max="-2" attributes="0"/>
+                                  <Component id="camProjMode" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="name" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="projectionPanel" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -51,16 +55,21 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="camModeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="camType" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="camProjModeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="camProjMode" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="camViewMode" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="camViewModeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
               <Component id="transformPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lookAtPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="projectionPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="66" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -190,23 +199,22 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="camModeLabel">
+    <Component class="javax.swing.JLabel" name="camProjModeLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Mode:"/>
+        <Property name="text" type="java.lang.String" value="Projection:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="camType">
+    <Component class="javax.swing.JComboBox" name="camProjMode">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="3">
+          <StringArray count="2">
             <StringItem index="0" value="Perspective"/>
             <StringItem index="1" value="Orthogonal"/>
-            <StringItem index="2" value="LookAt"/>
           </StringArray>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="camTypeActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="camProjModeActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
@@ -310,5 +318,26 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="camViewModeLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Transform:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="camViewMode">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="2">
+            <StringItem index="0" value="Rotate"/>
+            <StringItem index="1" value="LookAt"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="camViewModeActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
   </SubComponents>
 </Form>

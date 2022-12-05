@@ -33,7 +33,7 @@ public class CameraLookAtFrame extends CameraAnimationFrame {
 		if (upZ.exists){
 			cam.lookAtUpVec.z = upZ.value;
 		}
-		cam.mode = Camera.Mode.LOOKAT;
+		cam.viewMode = Camera.ViewMode.LOOK_AT;
 	}
 	
 	@Override

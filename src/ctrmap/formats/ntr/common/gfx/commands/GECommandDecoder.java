@@ -88,7 +88,7 @@ public class GECommandDecoder {
 		try {
 			Constructor<? extends GECommand> constructor = cls.getConstructor(DataInput.class);
 			GECommand cmd = constructor.newInstance(data);
-			cmd.debug_opCode = GEOpCode.valueOf(opcode);
+			cmd.opCode = GEOpCode.valueOf(opcode);
 			return cmd;
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 			throw new IOException(ex);

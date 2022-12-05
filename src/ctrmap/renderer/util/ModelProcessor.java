@@ -3,10 +3,17 @@ package ctrmap.renderer.util;
 import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
+import ctrmap.renderer.scene.model.PrimitiveType;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.texturing.Material;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import xstandard.math.MathEx;
 import xstandard.math.vec.Matrix4;
-import xstandard.math.vec.RGBA;
+import xstandard.math.vec.Quaternion;
 import xstandard.math.vec.Vec3f;
 
 public class ModelProcessor {
@@ -24,7 +31,9 @@ public class ModelProcessor {
 		for (Joint bone : mdl.skeleton) {
 			if (bone.parentName == null) {
 				vecUpZtoY(bone.position);
-				bone.rotation.x += MathEx.HALF_PI;
+				Quaternion rot = new Quaternion(bone.rotation);
+				rot.rotateLocalX(-MathEx.HALF_PI);
+				rot.getEulerRotation(bone.rotation);
 			}
 		}
 		mdl.genBbox();
@@ -41,7 +50,6 @@ public class ModelProcessor {
 			MeshProcessor.colorToAlpha(mesh);
 		}
 	}
-
 
 	public static void clearVCol(Model model) {
 		for (Mesh mesh : model.meshes) {
@@ -102,13 +110,105 @@ public class ModelProcessor {
 					int curVal = vtx.boneIndices.get(i);
 					if (curVal > removedIndex) {
 						vtx.boneIndices.set(i, curVal - 1);
-					}
-					else if (curVal == removedIndex) {
+					} else if (curVal == removedIndex) {
 						vtx.boneIndices.set(i, replacementIndex);
 					}
 				}
 			}
 			mesh.createAndInvalidateBuffers();
+		}
+	}
+
+	public static void mergeMeshesByMaterials(Model model) {
+		Map<String, List<Mesh>> map = new HashMap<>();
+		for (Mesh m : model.meshes) {
+			List<Mesh> l = map.get(m.materialName);
+			if (l == null) {
+				l = new ArrayList<>();
+				map.put(m.materialName, l);
+			}
+			l.add(m);
+		}
+
+		List<Mesh> newMeshes = new ArrayList<>();
+
+		for (Map.Entry<String, List<Mesh>> e : map.entrySet()) {
+			List<Mesh> ml = e.getValue();
+
+			Mesh allMesh = new Mesh();
+			allMesh.materialName = e.getKey();
+			allMesh.name = allMesh.materialName + "_mesh";
+			allMesh.primitiveType = null;
+
+			for (Mesh config : ml) {
+				allMesh.skinningType = config.skinningType;
+				allMesh.mergeAttributes(config);
+
+				PrimitiveType pt = null;
+
+				switch (config.primitiveType) {
+					case QUADS:
+					case QUADSTRIPS:
+						pt = PrimitiveType.QUADS;
+						break;
+					case TRIFANS:
+					case TRIS:
+					case TRISTRIPS:
+						pt = PrimitiveType.TRIS;
+						break;
+				}
+
+				if (allMesh.primitiveType == null || pt == PrimitiveType.TRIS) { //triangles are the highest possible
+					allMesh.primitiveType = pt;
+				}
+			}
+
+			for (Mesh source : ml) {
+				source = allMesh.primitiveType == PrimitiveType.TRIS ? PrimitiveConverter.getTriMesh(source) : PrimitiveConverter.getTriOrQuadMesh(source);
+				for (Vertex vtx : source) {
+					vtx.ensureMeshCompat(allMesh);
+					allMesh.vertices.add(vtx);
+				}
+			}
+
+			VBOProcessor.makeIndexed(allMesh);
+
+			model.meshes.removeAll(ml);
+			newMeshes.add(allMesh);
+		}
+
+		newMeshes.sort(new Comparator<Mesh>() {
+			@Override
+			public int compare(Mesh o1, Mesh o2) {
+				return o1.name.compareTo(o2.name);
+			}
+		});
+
+		model.meshes.addAll(newMeshes);
+	}
+
+	public static void smoothSkinningToRigid(Model mdl, boolean updateBuffers) {
+		Matrix4[] matrices = new Matrix4[mdl.skeleton.getJointCount()];
+		for (int i = 0; i < matrices.length; i++) {
+			matrices[i] = mdl.skeleton.getAbsoluteJointBindPoseMatrix(mdl.skeleton.getJoint(i)).invert();
+		}
+		Outer:
+		for (Mesh mesh : mdl.meshes) {
+			for (Vertex vtx : mesh.vertices) {
+				if (vtx.boneIndices.size() > 1) {
+					continue Outer;
+				}
+			}
+
+			for (Vertex vtx : mesh.vertices) {
+				if (!vtx.boneIndices.isEmpty()) {
+					vtx.position.mulPosition(matrices[vtx.boneIndices.get(0)]);
+				}
+			}
+			mesh.skinningType = Mesh.SkinningType.RIGID;
+			if (updateBuffers) {
+				mesh.createAndInvalidateBuffers();
+			}
 		}
 	}
 }

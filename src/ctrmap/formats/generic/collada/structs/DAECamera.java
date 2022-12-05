@@ -19,10 +19,10 @@ public class DAECamera implements DAEIDAble, DAESerializable {
 	public DAECameraProjection proj;
 
 	public DAECamera(Camera cam) {
-		type = cam.mode == Camera.Mode.ORTHO ? DAECameraType.ORTHO : DAECameraType.PERSPECTIVE;
+		type = cam.projMode == Camera.ProjectionMode.ORTHO ? DAECameraType.ORTHO : DAECameraType.PERSPECTIVE;
 		name = XmlFormat.sanitizeName(cam.name);
 
-		if (cam.mode != Camera.Mode.ORTHO) {
+		if (type == DAECameraType.PERSPECTIVE) {
 			DAECameraProjectionPerspective persp = new DAECameraProjectionPerspective();
 			persp.fovY = cam.FOV;
 			proj = persp;
@@ -181,7 +181,7 @@ public class DAECamera implements DAEIDAble, DAESerializable {
 		@Override
 		protected void setCameraEx(Camera cam) {
 			cam.FOV = fovY;
-			cam.mode = Camera.Mode.PERSPECTIVE;
+			cam.projMode = Camera.ProjectionMode.PERSPECTIVE;
 		}
 	}
 
@@ -193,7 +193,7 @@ public class DAECamera implements DAEIDAble, DAESerializable {
 		@Override
 		protected void setCameraEx(Camera cam) {
 			cam.translation.y = xMag;
-			cam.mode = Camera.Mode.ORTHO;
+			cam.projMode = Camera.ProjectionMode.ORTHO;
 		}
 	}
 }

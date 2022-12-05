@@ -1,7 +1,6 @@
 package ctrmap.renderer.scene;
 
 import ctrmap.renderer.backends.base.RenderSettings;
-import ctrmap.renderer.backends.base.ViewportInfo;
 import ctrmap.renderer.scene.metadata.MetaData;
 import ctrmap.renderer.scenegraph.NamedResource;
 import xstandard.math.MathEx;
@@ -11,42 +10,68 @@ import xstandard.math.vec.Vec3f;
 public class Camera implements NamedResource {
 
 	public String name = "Camera";
-	
-	public Mode mode = Mode.PERSPECTIVE;
+
+	public ProjectionMode projMode = ProjectionMode.PERSPECTIVE;
+	public ViewMode viewMode = ViewMode.ROTATE;
 
 	protected Matrix4 cachedTransformMatrix = null;
 
+	//rotate view
 	public Vec3f translation = new Vec3f();
-	
 	public Vec3f rotation = new Vec3f();
 
+	//lookat view
 	public Vec3f lookAtTarget = new Vec3f();
 	public Vec3f lookAtUpVec = new Vec3f(0f, 1f, 0f);
 
+	//perspective projection
 	public float FOV = RenderSettings.Defaults.FOV;
+	public float aspect = 16f / 9f;
+
+	//ortho projection
+	public float top;
+	public float bottom;
+	public float left;
+	public float right;
+
 	public float zNear = RenderSettings.Defaults.Z_NEAR;
 	public float zFar = RenderSettings.Defaults.Z_FAR;
-	
+
 	public MetaData metaData = new MetaData();
-	
-	public Camera(){
-		
+
+	public Camera() {
+
 	}
-	
-	public Camera(Camera src){
+
+	public Camera(Camera src) {
 		copy(src);
 	}
-	
-	public void copy(Camera src){
-		name = src.name;
-		mode = src.mode;
+
+	public void copyProjection(Camera src) {
+		projMode = src.projMode;
+		FOV = src.FOV;
+		aspect = src.aspect;
+		top = src.top;
+		bottom = src.bottom;
+		left = src.left;
+		right = src.right;
+		zFar = src.zFar;
+		zNear = src.zNear;
+	}
+
+	public void copyView(Camera src) {
+		viewMode = src.viewMode;
 		translation = new Vec3f(src.translation);
 		rotation = new Vec3f(src.rotation);
 		lookAtTarget = new Vec3f(src.lookAtTarget);
 		lookAtUpVec = new Vec3f(src.lookAtUpVec);
-		FOV = src.FOV;
-		zFar = src.zFar;
-		zNear = src.zNear;
+	}
+
+	public void copy(Camera src) {
+		name = src.name;
+		copyProjection(src);
+		copyView(src);
+
 		metaData = new MetaData(src.metaData);
 	}
 
@@ -60,24 +85,28 @@ public class Camera implements NamedResource {
 		this.name = name;
 	}
 
-	public static enum Mode {
+	public static enum ProjectionMode {
 		PERSPECTIVE,
-		ORTHO,
-		LOOKAT
+		ORTHO
 	}
-	
-	public Vec3f getRotationEulerToDir(){
+
+	public static enum ViewMode {
+		ROTATE,
+		LOOK_AT
+	}
+
+	public Vec3f getRotationEulerToDir() {
 		return getRotation().getDirFromEulersDegYXZ(new Vec3f());
 	}
-	
+
 	public Vec3f getRotation() {
-		switch (mode) {
-			case ORTHO:
-				return new Vec3f(90f, 0f, 0f);
-			case LOOKAT:
+		switch (viewMode) {
+			case LOOK_AT:
 				return getTransformMatrix(false).getRotation().mul(MathEx.RADIANS_TO_DEGREES);
+			case ROTATE:
+			default:
+				return rotation;
 		}
-		return rotation;
 	}
 
 	public void calcTransformMatrix() {
@@ -92,16 +121,12 @@ public class Camera implements NamedResource {
 		if (!useCache || cachedTransformMatrix == null) {
 			//System.out.println(rotation);
 			Matrix4 mtx = new Matrix4();
-			if (null != mode) switch (mode) {
-				case PERSPECTIVE:
+			switch (viewMode) {
+				case ROTATE:
 					mtx.translation(translation);
 					mtx.rotateZYXDeg(rotation.z, rotation.y, rotation.x);
-					//mtx.rotateYXZ(toRadians(rotation.y), toRadians(rotation.x), toRadians(rotation.z));
 					break;
-				case ORTHO:
-					mtx.rotation(toRadians(90f), 1.0f, 0f, 0f);
-					break;
-				case LOOKAT:
+				case LOOK_AT:
 					mtx.setLookAt(translation, lookAtTarget, lookAtUpVec).invert();
 					break;
 				default:
@@ -113,45 +138,70 @@ public class Camera implements NamedResource {
 		}
 		return cachedTransformMatrix;
 	}
-	
+
 	public static float fovYToFovX(float fovy, float aspectWH) {
-		return (float)(2 * Math.atan(Math.tan(fovy * 0.5f) * aspectWH));
-	}
-	
-	public static float fovXToFovY(float fovx, float aspectWH) {
-		return (float)(2 * Math.atan(Math.tan(fovx * 0.5f) / aspectWH));
+		return (float) (2 * Math.atan(Math.tan(fovy * 0.5f) * aspectWH));
 	}
 
-	public Matrix4 getProjectionMatrix(ViewportInfo vi) {
+	public static float fovXToFovY(float fovx, float aspectWH) {
+		return (float) (2 * Math.atan(Math.tan(fovx * 0.5f) / aspectWH));
+	}
+
+	public Matrix4 getProjectionMatrix() {
 		Matrix4 mtx = new Matrix4();
-		int height = vi.surfaceDimensions.height;
-		int width = vi.surfaceDimensions.width;
-		if (mode != Mode.ORTHO) {
-			mtx.setPerspective(toRadians(FOV), (float) width / (float) height, zNear, zFar);
+		if (projMode == ProjectionMode.PERSPECTIVE) {
+			mtx.setPerspective(toRadians(FOV), aspect, zNear, zFar);
 		} else {
-			float aspect = vi.getAspectRatio();
-			float halfW = translation.y / 2f;
-			float halfH = halfW * aspect;
-			mtx.setOrtho(translation.x - halfW, translation.x + halfW, translation.z + halfH, translation.z - halfH, zFar, -zFar);
+			mtx.setOrtho(left, right, bottom, top, -zFar, zFar);
 		}
 		return mtx;
 	}
 
-	public void makeEncompassOrtho(float top, float bottom, float left, float right, ViewportInfo vi) {
-		mode = Mode.ORTHO;
+	public void setDefaultOrtho() {
+		projMode = ProjectionMode.ORTHO;
+		rotation.set(-90f, 0f, 0f);
+		translation.zero();
+	}
+
+	public void makeZoomOrtho(float cx, float cz, float zoom, float aspect) {
+		setDefaultOrtho();
+		float halfW = zoom * 0.5f;
+		float halfH = halfW / aspect;
+		left = cx - halfW;
+		right = cx + halfW;
+		top = -(cz - halfH);
+		bottom = -(cz + halfH);
+	}
+
+	public void makeEncompassOrtho(float top, float bottom, float left, float right, float surfaceAspect) {
+		setDefaultOrtho();
 		float w = right - left;
 		float h = bottom - top;
-		translation.x = left + w / 2f;
-		translation.z = top + h / 2f;
-		//ty -> we need both 2 * halfW and 2 * halfH to be at least the window dim
-		float aspect = h / w;
-		float viewportAspect = vi.getAspectRatio();
 
-		if (aspect > viewportAspect) {
-			translation.y = h / viewportAspect;
+		//ty -> we need both 2 * halfW and 2 * halfH to be at least the window dim
+		float desiredAspect = w / h;
+		float actualAspect = surfaceAspect;
+
+		float actualW;
+
+		if (desiredAspect < actualAspect) {
+			actualW = h * actualAspect;
 		} else {
-			translation.y = w;
+			actualW = w;
 		}
+
+		float actualH = actualW / actualAspect;
+
+		float halfW = actualW * 0.5f;
+		float halfH = actualH * 0.5f;
+
+		float centerX = left + w * 0.5f;
+		float centerZ = top + h * 0.5f;
+
+		this.left = centerX - halfW;
+		this.right = centerX + halfW;
+		this.top = -(centerZ - halfH);
+		this.bottom = -(centerZ + halfH);
 	}
 
 	private static final float DEGREES_TO_RADIANS_F = 0.017453292519943295f;
@@ -163,7 +213,7 @@ public class Camera implements NamedResource {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Camera mode: ").append(mode).append("\n");
+		sb.append("Camera mode: ").append(projMode).append(" / ").append(viewMode).append("\n");
 		sb.append("Translation: ").append(translation).append("\n");
 		sb.append("Rotation: ").append(rotation).append("\n");
 		sb.append("FOV: ").append(FOV);

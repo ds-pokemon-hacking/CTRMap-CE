@@ -192,13 +192,13 @@ public class CameraTransformEditor extends javax.swing.JPanel implements IEditor
 				} else {
 					CameraBoneTransform newBT = null;
 					if (bt instanceof CameraViewpointBoneTransform) {
-						if (cam.mode != Camera.Mode.PERSPECTIVE) {
+						if (cam.viewMode != Camera.ViewMode.ROTATE) {
 							DialogUtils.showErrorMessage(this, "Incompatible camera", "This is not a rotation perspective camera!");
 						} else {
 							newBT = CameraFrameProcessor.viewpointToLookat((CameraViewpointBoneTransform) bt, cam, parent.frameCount);
 						}
 					} else if (bt instanceof CameraLookAtBoneTransform) {
-						if (cam.mode != Camera.Mode.LOOKAT) {
+						if (cam.viewMode != Camera.ViewMode.LOOK_AT) {
 							DialogUtils.showErrorMessage(this, "Incompatible camera", "This is not a look-at camera!");
 						} else {
 							newBT = CameraFrameProcessor.lookatToViewpoint((CameraLookAtBoneTransform) bt, cam, parent.frameCount);

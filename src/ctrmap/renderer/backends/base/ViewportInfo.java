@@ -19,6 +19,6 @@ public class ViewportInfo {
 	}
 
 	public float getAspectRatio() {
-		return surfaceDimensions.height / (float) surfaceDimensions.width;
+		return surfaceDimensions.width / (float) surfaceDimensions.height;
 	}
 }

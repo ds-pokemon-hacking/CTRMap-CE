@@ -16,7 +16,7 @@ import org.joml.Matrix4x3fc;
 
 public abstract class AbstractGECommandProcessor implements IGECommandProcessor {
 
-	private MtxMode.GEMatrixMode nowMatrixMode = MtxMode.GEMatrixMode.PROJECTION;
+	protected MtxMode.GEMatrixMode nowMatrixMode = MtxMode.GEMatrixMode.PROJECTION;
 
 	private final MatrixStack.MatrixCtor matrixCtorNormal = new MatrixStack.MatrixCtor() {
 		@Override
@@ -303,6 +303,10 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 
 		public int size() {
 			return stack.length;
+		}
+		
+		public int pos() {
+			return index;
 		}
 
 		public Matrix4f cur() {

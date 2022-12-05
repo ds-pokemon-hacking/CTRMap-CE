@@ -37,7 +37,7 @@ public class CameraEditor extends javax.swing.JPanel implements IEditor {
 	public void showCam(){
 		if (cam != null){
 			nameField.setText(cam.name);
-			int camIndex = cam.mode == Camera.Mode.LOOKAT ? 1 : 0;
+			int camIndex = cam.viewMode == Camera.ViewMode.LOOK_AT ? 1 : 0;
 			if (ReservedMetaData.isLookAtAsAim(cam)) {
 				camIndex = 2;
 			}
@@ -54,15 +54,15 @@ public class CameraEditor extends javax.swing.JPanel implements IEditor {
 			switch (camType.getSelectedIndex()) {
 				case 0:
 					cam.metaData.putValue(ReservedMetaData.CAM_LOOKAT_AS_AIM, 0);
-					cam.mode = Camera.Mode.PERSPECTIVE;
+					cam.viewMode = Camera.ViewMode.ROTATE;
 					break;
 				case 2:
 					cam.metaData.putValue(ReservedMetaData.CAM_LOOKAT_AS_AIM, 1);
-					cam.mode = Camera.Mode.LOOKAT;
+					cam.viewMode = Camera.ViewMode.LOOK_AT;
 					break;
 				case 1:
 					cam.metaData.putValue(ReservedMetaData.CAM_LOOKAT_AS_AIM, 0);
-					cam.mode = Camera.Mode.LOOKAT;
+					cam.viewMode = Camera.ViewMode.LOOK_AT;
 					break;
 			}
 			cam.zNear = (Float)zNear.getValue();

@@ -35,7 +35,8 @@ public class CameraEditor extends javax.swing.JPanel implements IScenegraphEdito
 		if (o != null && o instanceof Camera) {
 			Camera c = (Camera)o;
 			name.setText(c.name);
-			camType.setSelectedItem(c.mode.ordinal());
+			camProjMode.setSelectedIndex(c.projMode.ordinal());
+			camViewMode.setSelectedIndex(c.viewMode.ordinal());
 			tra.loadVec(c.translation);
 			rot.loadVec(c.rotation);
 			upVec.loadVec(c.lookAtUpVec);
@@ -66,8 +67,8 @@ public class CameraEditor extends javax.swing.JPanel implements IScenegraphEdito
         upVec = new xstandard.gui.components.Vec3fEditor();
         tgtVec = new xstandard.gui.components.Vec3fEditor();
         tgtVecLabel = new javax.swing.JLabel();
-        camModeLabel = new javax.swing.JLabel();
-        camType = new javax.swing.JComboBox<>();
+        camProjModeLabel = new javax.swing.JLabel();
+        camProjMode = new javax.swing.JComboBox<>();
         projectionPanel = new javax.swing.JPanel();
         fovLabel = new javax.swing.JLabel();
         fov = new javax.swing.JFormattedTextField();
@@ -75,6 +76,8 @@ public class CameraEditor extends javax.swing.JPanel implements IScenegraphEdito
         near = new javax.swing.JFormattedTextField();
         farLabel = new javax.swing.JLabel();
         far = new javax.swing.JFormattedTextField();
+        camViewModeLabel = new javax.swing.JLabel();
+        camViewMode = new javax.swing.JComboBox<>();
 
         nameLabel.setText("Name:");
 
@@ -146,12 +149,12 @@ public class CameraEditor extends javax.swing.JPanel implements IScenegraphEdito
                 .addContainerGap())
         );
 
-        camModeLabel.setText("Mode:");
+        camProjModeLabel.setText("Projection:");
 
-        camType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Perspective", "Orthogonal", "LookAt" }));
-        camType.addActionListener(new java.awt.event.ActionListener() {
+        camProjMode.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Perspective", "Orthogonal" }));
+        camProjMode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                camTypeActionPerformed(evt);
+                camProjModeActionPerformed(evt);
             }
         });
 
@@ -208,6 +211,15 @@ public class CameraEditor extends javax.swing.JPanel implements IScenegraphEdito
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        camViewModeLabel.setText("Transform:");
+
+        camViewMode.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Rotate", "LookAt" }));
+        camViewMode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                camViewModeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -217,17 +229,20 @@ public class CameraEditor extends javax.swing.JPanel implements IScenegraphEdito
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(transformPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(lookAtPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(projectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(nameLabel)
-                            .addComponent(camModeLabel))
+                            .addComponent(camProjModeLabel)
+                            .addComponent(camViewModeLabel))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(camType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(projectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(camViewMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(camProjMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -239,28 +254,40 @@ public class CameraEditor extends javax.swing.JPanel implements IScenegraphEdito
                     .addComponent(name))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(camModeLabel)
-                    .addComponent(camType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(camProjModeLabel)
+                    .addComponent(camProjMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(camViewMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(camViewModeLabel))
+                .addGap(16, 16, 16)
                 .addComponent(transformPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lookAtPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(projectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void camTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_camTypeActionPerformed
+    private void camProjModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_camProjModeActionPerformed
 		if (cam != null){
-			cam.mode = Camera.Mode.values()[camType.getSelectedIndex()];
+			cam.projMode = Camera.ProjectionMode.values()[camProjMode.getSelectedIndex()];
 		}
-    }//GEN-LAST:event_camTypeActionPerformed
+    }//GEN-LAST:event_camProjModeActionPerformed
+
+    private void camViewModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_camViewModeActionPerformed
+        if (cam != null){
+			cam.viewMode = Camera.ViewMode.values()[camViewMode.getSelectedIndex()];
+		}
+    }//GEN-LAST:event_camViewModeActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel camModeLabel;
-    private javax.swing.JComboBox<String> camType;
+    private javax.swing.JComboBox<String> camProjMode;
+    private javax.swing.JLabel camProjModeLabel;
+    private javax.swing.JComboBox<String> camViewMode;
+    private javax.swing.JLabel camViewModeLabel;
     private javax.swing.JFormattedTextField far;
     private javax.swing.JLabel farLabel;
     private javax.swing.JFormattedTextField fov;

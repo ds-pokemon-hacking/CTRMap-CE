@@ -1,0 +1,309 @@
+package ctrmap.util.tools.cont;
+
+import ctrmap.formats.pokemon.containers.GFContainer;
+import xstandard.fs.FSFile;
+import xstandard.fs.accessors.DiskFile;
+import xstandard.gui.DialogUtils;
+import xstandard.text.FormattingUtils;
+import xstandard.gui.components.listeners.DnDMouseListener;
+import xstandard.gui.file.XFileDialog;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.ListCellRenderer;
+import javax.swing.TransferHandler;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+
+public class ContFileView extends javax.swing.JPanel {
+
+	private ContainerUtil parent;
+	
+	private GFContainer c;
+	private int i;
+	private byte[] dataCache;
+	private AGFCIdentifyResult ident;
+
+	private Border DEFAULT_BORDER = null;
+	private Border BEVEL_BORDER = new BevelBorder(BevelBorder.LOWERED);
+
+	private static MouseListener dndMouseListener = new DnDMouseListener();
+
+	public final DataFlavor uniqueDataFlavour;
+
+	public ContFileView(ContainerUtil parent, GFContainer cont, int index) {
+		initComponents();
+		this.parent = parent;
+		c = cont;
+		i = index;
+		uniqueDataFlavour = new DataFlavor(GFContainer.class, UUID.randomUUID().toString());
+		analyze();
+		DEFAULT_BORDER = getBorder();
+
+		setDropTarget(new DropTarget() {
+			@Override
+			public synchronized void drop(DropTargetDropEvent evt) {
+				setBorder(DEFAULT_BORDER);
+				try {
+					evt.acceptDrop(DnDConstants.ACTION_COPY);
+					List<File> droppedFiles = (List<File>) evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+					if (!droppedFiles.isEmpty()) {
+						tryImport(new DiskFile(droppedFiles.get(0)));
+					}
+				} catch (UnsupportedFlavorException | IOException ex) {
+					DialogUtils.showExceptionTraceDialog(ex);
+				}
+			}
+
+			@Override
+			public synchronized void dragOver(DropTargetDragEvent evt) {
+				if (evt.getCurrentDataFlavorsAsList().contains(DataFlavor.javaFileListFlavor)) {
+					Transferable t = evt.getTransferable();
+					if (!t.isDataFlavorSupported(uniqueDataFlavour)) {
+						super.dragOver(evt);
+						setBorder(BEVEL_BORDER);
+					}
+				}
+			}
+
+			@Override
+			public synchronized void dragExit(DropTargetEvent evt) {
+				super.dragExit(evt);
+				setBorder(DEFAULT_BORDER);
+			}
+		});
+		
+		JPopupMenu popup = new JPopupMenu();
+		JMenuItem insertBefore = new JMenuItem("Add blank file before");
+		JMenuItem insertAfter = new JMenuItem("Add blank file after");
+		JMenuItem removeFile = new JMenuItem("Remove file");
+		insertBefore.addActionListener(new FileInsertListener(0));
+		insertAfter.addActionListener(new FileInsertListener(1));
+		removeFile.addActionListener((e) -> {
+			c.removeFiles(i, 1);
+			parent.removeViewForIndex(c, i);
+			parent.triggerUnsavedChanges();
+		});
+		popup.add(insertBefore);
+		popup.add(insertAfter);
+		popup.add(removeFile);
+
+		setComponentPopupMenu(popup);
+		addMouseListener(dndMouseListener);
+	}
+	
+	private class FileInsertListener implements ActionListener {
+
+		private final int indexIncrement;
+		
+		public FileInsertListener(int indexIncrement) {
+			this.indexIncrement = indexIncrement;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			c.storeFile(i + indexIncrement, new byte[0], true);
+			parent.insertViewForIndex(c, i + indexIncrement);
+			parent.triggerUnsavedChanges();
+		}
+		
+	}
+
+	@Override
+	public TransferHandler getTransferHandler() {
+		return new AGFCTransferHandler();
+	}
+
+	public void incrementIndex(int addend) {
+		i += addend;
+	}
+	
+	private void analyze() {
+		ensureDataCache();
+		ident = parent.getContentIdentifier().identify(dataCache, c, i);
+		nameLabel.setText(ident.getFullText());
+		fileSizeLabel.setText(FormattingUtils.getFriendlySize(dataCache.length));
+	}
+
+	private void tryImport(FSFile f) {
+		if (f != null && f.exists() && !f.isDirectory()) {
+			c.storeFile(i, dataCache = f.getBytes());
+			analyze();
+			parent.triggerUnsavedChanges();
+		}
+	}
+
+	private void ensureDataCache() {
+		if (dataCache == null) {
+			dataCache = c.getFile(i);
+		}
+	}
+
+	public byte[] getData() {
+		ensureDataCache();
+		return dataCache;
+	}
+
+	public String getFileName() {
+		return ident.getFileName();
+	}
+
+	/**
+	 * This method is called from within the constructor to initialize the form.
+	 * WARNING: Do NOT modify this code. The content of this method is always
+	 * regenerated by the Form Editor.
+	 */
+	@SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        nameLabel = new javax.swing.JLabel();
+        buttonPnl = new javax.swing.JPanel();
+        btnImport = new javax.swing.JButton();
+        btnExport = new javax.swing.JButton();
+        fileSizeLabel = new javax.swing.JLabel();
+        controlsSeparator = new javax.swing.JSeparator();
+        btnClear = new javax.swing.JButton();
+
+        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        setAlignmentY(0.0F);
+        setMinimumSize(new java.awt.Dimension(220, 36));
+        setOpaque(false);
+        setPreferredSize(new java.awt.Dimension(281, 36));
+        setLayout(new java.awt.BorderLayout());
+
+        nameLabel.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        nameLabel.setText("File Name");
+        nameLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 7, 0, 0));
+        add(nameLabel, java.awt.BorderLayout.CENTER);
+
+        buttonPnl.setMinimumSize(new java.awt.Dimension(130, 15));
+        buttonPnl.setOpaque(false);
+        buttonPnl.setPreferredSize(new java.awt.Dimension(285, 29));
+
+        btnImport.setText("Import");
+        btnImport.setPreferredSize(new java.awt.Dimension(70, 15));
+        btnImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnImportActionPerformed(evt);
+            }
+        });
+
+        btnExport.setText("Export");
+        btnExport.setPreferredSize(new java.awt.Dimension(70, 15));
+        btnExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExportActionPerformed(evt);
+            }
+        });
+
+        fileSizeLabel.setText("-- B");
+
+        controlsSeparator.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
+        btnClear.setText("Clear");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout buttonPnlLayout = new javax.swing.GroupLayout(buttonPnl);
+        buttonPnl.setLayout(buttonPnlLayout);
+        buttonPnlLayout.setHorizontalGroup(
+            buttonPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPnlLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(controlsSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 6, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fileSizeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnClear)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnExport, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5))
+        );
+        buttonPnlLayout.setVerticalGroup(
+            buttonPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPnlLayout.createSequentialGroup()
+                .addGap(3, 3, 3)
+                .addGroup(buttonPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(controlsSeparator)
+                    .addGroup(buttonPnlLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(fileSizeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
+                        .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnExport, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnClear)))
+                .addContainerGap(4, Short.MAX_VALUE))
+        );
+
+        add(buttonPnl, java.awt.BorderLayout.EAST);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImportActionPerformed
+		FSFile f = XFileDialog.openFileDialog();
+		tryImport(f);
+    }//GEN-LAST:event_btnImportActionPerformed
+
+    private void btnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportActionPerformed
+		FSFile dest = XFileDialog.openSaveFileDialog();
+		if (dest != null) {
+			ensureDataCache();
+			dest.setBytes(dataCache);
+			parent.triggerUnsavedChanges();
+		}
+    }//GEN-LAST:event_btnExportActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+		dataCache = new byte[0];
+		c.storeFile(i, dataCache);
+		analyze();
+		parent.triggerUnsavedChanges();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnExport;
+    private javax.swing.JButton btnImport;
+    private javax.swing.JPanel buttonPnl;
+    private javax.swing.JSeparator controlsSeparator;
+    private javax.swing.JLabel fileSizeLabel;
+    private javax.swing.JLabel nameLabel;
+    // End of variables declaration//GEN-END:variables
+
+	public static class CellRenderer implements ListCellRenderer<ContFileView> {
+
+		private static final Color REGULAR_COLOR = new Color(240, 240, 240, 255);
+		private static final Color SELECTION_COLOR = Color.BLUE;
+
+		@Override
+		public Component getListCellRendererComponent(JList<? extends ContFileView> list, ContFileView value, int index, boolean isSelected, boolean cellHasFocus) {
+			if (isSelected) {
+				value.setBackground(SELECTION_COLOR);
+			} else {
+				value.setBackground(REGULAR_COLOR);
+			}
+			return value;
+		}
+	}
+}

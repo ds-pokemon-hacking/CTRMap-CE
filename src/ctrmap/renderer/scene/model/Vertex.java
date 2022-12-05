@@ -49,6 +49,24 @@ public class Vertex {
 		}
 	}
 	
+	public void ensureMeshCompat(Mesh mesh) {
+		if (mesh.hasNormal && normal == null) {
+			normal = new Vec3f(0f, 0f, 1f);
+		}
+		if (mesh.hasColor && color == null) {
+			color = RGBA.WHITE.clone();
+		}
+		for (int i = 0; i < uv.length; i++) {
+			if (mesh.hasUV(i) && uv[i] == null) {
+				uv[i] = Vec2f.ZERO();
+			}
+		}
+		if (mesh.hasTangent && tangent == null) {
+			tangent = new Vec3f(0f, 1f, 0f);
+		}
+		//indices and weights needn't be filled as they are lists
+	}
+	
 	public int getActiveWeightCount() {
 		for (int i = weights.size() - 1; i >= 0; i--) {
 			if (weights.get(i) != 0f) {

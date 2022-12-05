@@ -22,7 +22,7 @@ public class CameraViewpointFrame extends CameraAnimationFrame {
 		if (rz.exists) {
 			cam.rotation.z = rz.value;
 		}
-		cam.mode = Camera.Mode.PERSPECTIVE;
+		cam.viewMode = Camera.ViewMode.ROTATE;
 	}
 	
 	public void loadDefaultsIfNeeded(Camera cam, boolean toRadians) {

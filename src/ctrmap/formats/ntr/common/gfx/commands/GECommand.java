@@ -7,14 +7,18 @@ import java.io.IOException;
 
 public abstract class GECommand {
 	
-	GEOpCode debug_opCode;
+	GEOpCode opCode;
 	
 	public GECommand() {
-		debug_opCode = getOpCode();
+		opCode = getOpCode();
 	}
 	
 	public GECommand(DataInput in) throws IOException {
 		
+	}
+	
+	public int sizeOf() {
+		return Integer.BYTES * (1 + getOpCode().argCount);
 	}
 	
 	public abstract void process(IGECommandProcessor processor);

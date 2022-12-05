@@ -136,7 +136,7 @@ public class ObjectSelection {
 
 		Matrix4 modelViewMatrix = instance.getAbsoluteModelViewMatrix();
 		int[] viewMatrix = vi.getViewportMatrix();
-		Matrix4 projectionMatrix = instance.getAbsoluteProjectionMatrix(vi);
+		Matrix4 projectionMatrix = instance.getAbsoluteProjectionMatrix();
 
 		//Project individual faces of the bounding box
 		Mesh bboxMesh = BoundingBoxGenerator.generateBBox(instance.resource);

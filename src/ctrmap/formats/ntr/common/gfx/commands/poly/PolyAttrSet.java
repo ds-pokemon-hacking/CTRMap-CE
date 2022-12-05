@@ -42,8 +42,8 @@ public class PolyAttrSet extends GECommand {
 			lightsEnabled[i] = BitMath.checkIntegerBit(param, i);
 		}
 		polygonMode = GEPolygonMode.values()[BitMath.getIntegerBits(param, 4, 2)];
-		drawFrontFace = BitMath.checkIntegerBit(param, 6);
-		drawBackFace = BitMath.checkIntegerBit(param, 7);
+		drawBackFace = BitMath.checkIntegerBit(param, 6);
+		drawFrontFace = BitMath.checkIntegerBit(param, 7);
 		xluDepthMode = GEXLUDepthMode.values()[BitMath.getIntegerBits(param, 11, 1)];
 		farClipMode = GEFarClipMode.values()[BitMath.getIntegerBits(param, 12, 1)];
 		dot1OverMode = GE1DotOverMode.values()[BitMath.getIntegerBits(param, 13, 1)];
@@ -65,8 +65,8 @@ public class PolyAttrSet extends GECommand {
 			param = BitMath.setIntegerBit(param, i, lightsEnabled[i]);
 		}
 		param = BitMath.setIntegerBits(param, 4, 2, polygonMode.ordinal());
-		param = BitMath.setIntegerBit(param, 6, drawFrontFace);
-		param = BitMath.setIntegerBit(param, 7, drawBackFace);
+		param = BitMath.setIntegerBit(param, 6, drawBackFace);
+		param = BitMath.setIntegerBit(param, 7, drawFrontFace);
 		param = BitMath.setIntegerBit(param, 11, xluDepthMode.ordinal());
 		param = BitMath.setIntegerBit(param, 12, farClipMode.ordinal());
 		param = BitMath.setIntegerBit(param, 13, dot1OverMode.ordinal());

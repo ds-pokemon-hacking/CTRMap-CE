@@ -11,9 +11,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-/**
- *
- */
 public class MatTexImageParamSet extends GECommand {
 
 	public int texVRAMOffs;
@@ -37,10 +34,21 @@ public class MatTexImageParamSet extends GECommand {
 		super();
 	}
 	
-	public MatTexImageParamSet(DataInput in) throws IOException {
-		int param = in.readInt();
+	public MatTexImageParamSet(int param) {
 		texVRAMOffs = BitMath.getIntegerBits(param, 0, 16);
-		
+		repeatU = BitMath.checkIntegerBit(param, 16);
+		repeatV = BitMath.checkIntegerBit(param, 17);
+		mirrorU = BitMath.checkIntegerBit(param, 18);
+		mirrorV = BitMath.checkIntegerBit(param, 19);
+		width = 1 << (BitMath.getIntegerBits(param, 20, 3) + 3);
+		height = 1 << (BitMath.getIntegerBits(param, 23, 3) + 3);
+		format = GETextureFormat.values()[BitMath.getIntegerBits(param, 26, 3)];
+		palCol0IsTransparent = BitMath.checkIntegerBit(param, 29);
+		texGenMode = GETexcoordGenMode.values()[BitMath.getIntegerBits(param, 30, 2)];
+	}
+	
+	public MatTexImageParamSet(DataInput in) throws IOException {
+		this(in.readInt());
 	}
 	
 	@Override

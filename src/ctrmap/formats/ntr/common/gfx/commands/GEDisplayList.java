@@ -9,7 +9,7 @@ import xstandard.io.base.iface.DataInputEx;
 
 public class GEDisplayList implements Iterable<GECommand> {
 
-	private List<GECommand> commands;
+	private final List<GECommand> commands;
 
 	public GEDisplayList() {
 		commands = new ArrayList<>();

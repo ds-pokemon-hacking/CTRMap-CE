@@ -43,6 +43,9 @@ public abstract class IMissionControl {
 	
 	public boolean mcInit(FSManager filesystem, GameInfo gameMan, RenderSettings vSettings, AudioSettings aSettings) {
 		mcScene.clear(true);
+		mcScene.addSceneAnimationCallback((frameAdvance) -> {
+			mcScene.setAllCameraAspectRatio(backend.getViewportInfo().getAspectRatio());
+		});
 		this.videoSettings = vSettings;
 		this.audioSettings = aSettings;
 		List<String> errors = new ArrayList<>();

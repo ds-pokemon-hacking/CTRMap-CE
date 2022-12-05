@@ -114,7 +114,7 @@ public class FPSCameraInputManager extends AbstractCameraInputManager implements
 					float leftRightSignum = keycodes.contains(KeyEvent.VK_A) ? 1f : keycodes.contains(KeyEvent.VK_D) ? -1f : 0f;
 					float verticalSignum = keycodes.contains(KeyEvent.VK_E) ? 1f : keycodes.contains(KeyEvent.VK_Q) ? -1f : 0f;
 
-					if (cam.mode == Camera.Mode.PERSPECTIVE) {
+					if (cam.viewMode == Camera.ViewMode.ROTATE) {
 						if (upDownSignum != 0f) {
 							translateX -= upDownSignum * Math.sin(Math.toRadians(cam.rotation.y)) * Math.min(1f, Math.tan(Math.toRadians(90 - Math.abs(cam.rotation.x)))) * gSpeed;
 							translateZ -= upDownSignum * Math.cos(Math.toRadians(cam.rotation.y)) * Math.min(1f, Math.tan(Math.toRadians(90 - Math.abs(cam.rotation.x)))) * gSpeed;
@@ -162,10 +162,10 @@ public class FPSCameraInputManager extends AbstractCameraInputManager implements
 				cam.translation.x -= (e.getX() - originMouseX);
 				cam.translation.y += (e.getY() - originMouseY);
 			} else if (SwingUtilities.isLeftMouseButton(e)) {
-				if (cam.mode == Camera.Mode.PERSPECTIVE) {
+				if (cam.viewMode == Camera.ViewMode.ROTATE) {
 					cam.rotation.y -= ((e.getX() - originMouseX) / 2f) % 360f;
 					cam.rotation.x = Math.max(-90f, Math.min(90f, cam.rotation.x - (e.getY() - originMouseY) / 2f)) % 360f;
-				} else if (cam.mode == Camera.Mode.LOOKAT) {
+				} else {
 					cam.lookAtTarget.y += (e.getY() - originMouseY) * 10f;
 					cam.lookAtUpVec.x -= (e.getX() - originMouseX) / 50f;
 					cam.lookAtUpVec.normalize();

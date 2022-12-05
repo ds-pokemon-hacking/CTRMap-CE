@@ -78,7 +78,7 @@ public class MeshRenderFlow {
 				bufMem.registProgram(program);
 			}
 
-			shaderHandler.setUpMatrices(resourceState.modelMatrix, resourceState.viewMatrix, resourceState.getProjectionMatrix(backend.getViewportInfo()), resourceState.normalMatrix, program, gl);
+			shaderHandler.setUpMatrices(resourceState.modelMatrix, resourceState.viewMatrix, resourceState.getProjectionMatrix(), resourceState.normalMatrix, program, gl);
 
 			passExtraUniforms(backend.getProgramManager().getExtraUniforms(), program, gl);
 

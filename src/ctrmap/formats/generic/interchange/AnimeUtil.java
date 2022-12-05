@@ -246,19 +246,32 @@ public class AnimeUtil {
 		int transformCount = dis.readShort();
 		for (int i = 0; i < transformCount; i++) {
 			String name = StringIO.readStringWithAddress(dis);
-			Camera.Mode mode = Camera.Mode.values()[dis.read()];
+			Camera.ViewMode viewMode = Camera.ViewMode.ROTATE;
+			if (fileVersion >= Revisions.REV_CAMERA_PLUS) {
+				viewMode = Camera.ViewMode.values()[dis.read()];
+			}
+			else {
+				switch (CameraModeCompat.values()[dis.read()]) {
+					case ORTHO_DEFAULT:
+					case PERSPECTIVE_ROTATE:
+						viewMode = Camera.ViewMode.ROTATE;
+						break;
+					case PERSPECTIVE_LOOKAT:
+						viewMode = Camera.ViewMode.LOOK_AT;
+						break;
+				}
+			}
 			if (fileVersion >= Revisions.REV_CAM_DEG_RAD_FIX) {
 				isRotationRad = dis.readBoolean();
 			}
 
 			CameraBoneTransform bt = null;
 
-			switch (mode) {
-				case LOOKAT:
+			switch (viewMode) {
+				case LOOK_AT:
 					bt = new CameraLookAtBoneTransform();
 					break;
-				case ORTHO:
-				case PERSPECTIVE:
+				case ROTATE:
 					bt = new CameraViewpointBoneTransform();
 					break;
 			}
@@ -277,14 +290,13 @@ public class AnimeUtil {
 
 				switch (type) {
 					case FOV:
-						switch (mode) {
-							case LOOKAT:
-								((CameraLookAtBoneTransform) bt).fov = kfl;
-								break;
-							case PERSPECTIVE:
-								((CameraViewpointBoneTransform) bt).fov = kfl;
-								break;
-						}
+						bt.fov = kfl;
+						break;
+					case Z_FAR:
+						bt.zFar = kfl;
+						break;
+					case Z_NEAR:
+						bt.zNear = kfl;
 						break;
 					case TGTX:
 						((CameraLookAtBoneTransform) bt).targetTX = kfl;
@@ -460,12 +472,13 @@ public class AnimeUtil {
 		for (CameraBoneTransform bt : a.transforms) {
 			dos.writeString(bt.name);
 			int elemCount = getExistingElementCount(bt.tx, bt.ty, bt.tz);
+			elemCount += getExistingElementCount(bt.zNear, bt.zFar, bt.fov);
 
 			if (bt instanceof CameraLookAtBoneTransform) {
 				CameraLookAtBoneTransform la = (CameraLookAtBoneTransform) bt;
-				dos.writeEnum(Camera.Mode.LOOKAT);
+				dos.writeEnum(Camera.ViewMode.LOOK_AT);
 				dos.writeBoolean(bt.isRadians);
-				elemCount += getExistingElementCount(la.targetTX, la.targetTY, la.targetTZ, la.upX, la.upY, la.upZ, la.fov);
+				elemCount += getExistingElementCount(la.targetTX, la.targetTY, la.targetTZ, la.upX, la.upY, la.upZ);
 				dos.write(elemCount);
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.TGTX, la.targetTX, dos);
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.TGTY, la.targetTY, dos);
@@ -473,21 +486,23 @@ public class AnimeUtil {
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.UPX, la.upX, dos);
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.UPY, la.upY, dos);
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.UPZ, la.upZ, dos);
-				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.FOV, la.fov, dos);
 			} else if (bt instanceof CameraViewpointBoneTransform) {
-				dos.writeEnum(Camera.Mode.PERSPECTIVE);
+				dos.writeEnum(Camera.ViewMode.ROTATE);
 				dos.writeBoolean(bt.isRadians);
 				CameraViewpointBoneTransform v = (CameraViewpointBoneTransform) bt;
-				elemCount += getExistingElementCount(v.rx, v.ry, v.rz, v.fov);
+				elemCount += getExistingElementCount(v.rx, v.ry, v.rz);
 				dos.write(elemCount);
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.RX, v.rx, dos);
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.RY, v.ry, dos);
 				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.RZ, v.rz, dos);
-				writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.FOV, v.fov, dos);
 			} else {
 				dos.writeByte(-1);
 				dos.writeBoolean(bt.isRadians);
 			}
+			
+			writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.FOV, bt.fov, dos);
+			writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.Z_NEAR, bt.zNear, dos);
+			writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.Z_FAR, bt.zFar, dos);
 
 			writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.TX, bt.tx, dos);
 			writeCamAnmFloatKeyFrameGroup(CamAnimKeyFrameType.TY, bt.ty, dos);
@@ -679,7 +694,9 @@ public class AnimeUtil {
 		UPX,
 		UPY,
 		UPZ,
-		FOV
+		FOV,
+		Z_NEAR,
+		Z_FAR
 	}
 
 	private static enum MatAnimKeyFrameType {
@@ -701,5 +718,11 @@ public class AnimeUtil {
 		SX,
 		SY,
 		SZ
+	}
+
+	public static enum CameraModeCompat {
+		PERSPECTIVE_ROTATE,
+		ORTHO_DEFAULT,
+		PERSPECTIVE_LOOKAT
 	}
 }

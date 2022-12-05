@@ -254,7 +254,7 @@ public class DAE extends XmlFormat {
 				camSceneSkl.addJoint(camJnt);
 				DAENode camNode = new DAENode(camSceneSkl, camJnt, skelConv, skelConvSID, settings);
 				camNode.isNode = true;
-				if (!settings.doNotUseLookAt && cam.mode == Camera.Mode.LOOKAT) {
+				if (!settings.doNotUseLookAt && cam.viewMode == Camera.ViewMode.LOOK_AT) {
 					//Blender: |!     LOOKAT and SKEW transformations are not supported yet.\n
 					//The result of this is that the matrix is multiplied by a zero matrix (not identity)
 					//Which messes up all of the camera's transforms

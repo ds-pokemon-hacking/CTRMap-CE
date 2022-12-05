@@ -55,6 +55,10 @@ public abstract class GFContainer {
 		}
 	}
 
+	public boolean hasMemoryHandle() {
+		return enableMemoryHandle;
+	}
+
 	public void flushMemoryHandle() {
 		source.setBytes(memoryHandle.toByteArray());
 	}
@@ -115,15 +119,13 @@ public abstract class GFContainer {
 		//This method is used for better performance compared to a sequential storeFile call as that one would reopen and close lot of streams
 		try {
 			boolean pad = getIsPadded();
-			
+
 			DataOutputEx dos = getOutputStream();
 
 			dos.writeStringUnterminated(getSignature());
 			dos.writeShort(fcount);
 			int baseOffs = 4 + (fcount + 1) * 4;
-			if (pad) {
-				baseOffs = MathEx.padInteger(baseOffs, GF_CONTAINER_PADDING);
-			}
+			baseOffs = MathEx.padInteger(baseOffs, pad ? GF_CONTAINER_PADDING : 4);
 			for (int i = 0; i < fcount + 1; i++) {
 				dos.writeInt(baseOffs);
 			}
@@ -175,44 +177,7 @@ public abstract class GFContainer {
 		if (count > fc) {
 			storeFile(count - 1, new byte[0]);
 		} else if (count < fc) {
-			try {
-				boolean pad = getIsPadded();
-				//fast mode
-				DataInputEx dis = getInputStream();
-				
-				GFContainerHeader header = new GFContainerHeader(dis);
-				
-				int endOffset = header.fileOffsets[count];
-				int startOffset = header.fileOffsets[0];
-				
-				byte[] copyData = new byte[endOffset - startOffset];
-				dis.seekNext(startOffset);
-				dis.read(copyData);
-				
-				dis.close();
-				
-				DataOutputEx out = getOutputStream();
-				
-				out.writeStringUnterminated(getSignature());
-				out.writeShort(count);
-				
-				int newContentStartOffset = 4 + (count + 1) * Integer.BYTES;
-				if (pad) {
-					newContentStartOffset = MathEx.padInteger(newContentStartOffset, GF_CONTAINER_PADDING);
-				}
-				
-				for (int i = 0; i < count; i++) {
-					out.writeInt(header.fileOffsets[i] - startOffset + newContentStartOffset);
-				}
-				out.writeInt(newContentStartOffset + copyData.length);
-				out.writePadding(newContentStartOffset - out.getPosition(), 0);
-				
-				out.write(copyData);
-				
-				out.close();
-			} catch (IOException ex) {
-				Logger.getLogger(GFContainer.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			removeFiles(fc - count, count);
 		}
 	}
 
@@ -230,7 +195,7 @@ public abstract class GFContainer {
 		}
 		return source.getDataInputStream();
 	}
-	
+
 	private DataOutputEx getOutputStream() {
 		if (enableMemoryHandle) {
 			try {
@@ -311,24 +276,32 @@ public abstract class GFContainer {
 		storeFile(num, f.getBytes());
 	}
 
-	public synchronized void storeFile(int fileIndex, byte[] data) {
+	public void storeFile(int fileIndex, byte[] data) {
+		storeFile(fileIndex, data, false);
+	}
+
+	public synchronized void storeFile(int fileIndex, byte[] data, boolean insert) {
 		try {
 			boolean pad = getIsPadded();
-			
+
 			DataInputEx dis = getInputStream();
 			DataIOStream out = new DataIOStream();
 
 			GFContainerHeader header = new GFContainerHeader(dis);
-			int offcount = Math.max(fileIndex + 1 + 1, header.fileOffsets.length);
 			int haveFcount = header.fileOffsets.length - 1;
+			if (insert && fileIndex >= haveFcount) {
+				insert = false;
+			}
+			int offcount = Math.max(fileIndex + 1 + 1, header.fileOffsets.length);
+			if (insert) {
+				offcount++;
+			}
 			int fcount = offcount - 1;
 
 			out.writeStringUnterminated(getSignature());
 			out.writeShort(fcount);
 			List<TemporaryOffset> dataOffsets = PointerTable.allocatePointerTable(offcount, out, 0, false);
-			if (pad) {
-				out.pad(GF_CONTAINER_PADDING);
-			}
+			out.pad(pad ? GF_CONTAINER_PADDING : 4);
 
 			int contentStart = out.getPosition();
 
@@ -361,14 +334,13 @@ public abstract class GFContainer {
 			dataOffsets.get(fileIndex).setHere();
 
 			out.write(data);
-			if (pad) {
-				out.pad(GF_CONTAINER_PADDING);
-			}
+			out.pad(pad ? GF_CONTAINER_PADDING : 4);
 
 			byte[] dataAfter = new byte[0];
 
 			if (fileIndex < haveFcount) {
-				int dataAfterStart = header.fileOffsets[fileIndex + 1];
+				int firstAfterFile = fileIndex + (insert ? 0 : 1);
+				int dataAfterStart = header.fileOffsets[firstAfterFile];
 				int dataAfterEnd = header.fileOffsets[header.fileOffsets.length - 1];
 				//System.out.println(dataAfterStart + "/" + dataAfterEnd);
 				if (dataAfterEnd > dataAfterStart) {
@@ -380,8 +352,8 @@ public abstract class GFContainer {
 				}
 				int newAfterInitOffset = out.getPosition();
 				int reloc = newAfterInitOffset - dataAfterStart;
-				for (int i = fileIndex + 1; i < offcount; i++) {
-					dataOffsets.get(i).set(header.fileOffsets[i] + reloc);
+				for (int i = firstAfterFile; i < header.fileOffsets.length; i++) {
+					dataOffsets.get(i + (insert ? 1 : 0)).set(header.fileOffsets[i] + reloc);
 				}
 			}
 
@@ -399,6 +371,58 @@ public abstract class GFContainer {
 			} else {
 				source.setBytes(out.toByteArray());
 			}
+		} catch (IOException ex) {
+			Logger.getLogger(GFContainer.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public void removeFiles(int firstIndex, int count) {
+		try {
+			boolean pad = getIsPadded();
+			//fast mode
+			DataInputEx dis = getInputStream();
+
+			GFContainerHeader header = new GFContainerHeader(dis);
+
+			int startOffset = header.fileOffsets[0];
+			int endOffset = header.fileOffsets[firstIndex];
+			int copySize1 = endOffset - startOffset;
+			int startOffset2 = header.fileOffsets[firstIndex + count];
+			int endOffset2 = header.fileOffsets[header.fileOffsets.length - 1];
+			int copySize2 = endOffset2 - startOffset2;
+			int oldFileCount = header.fileOffsets.length - 1;
+			int newFileCount = oldFileCount - count;
+
+			byte[] copyData = new byte[copySize1 + copySize2];
+			dis.seekNext(startOffset);
+			dis.read(copyData, 0, copySize1);
+			dis.seekNext(startOffset2);
+			dis.read(copyData, copySize1, copySize2);
+
+			dis.close();
+
+			DataOutputEx out = getOutputStream();
+
+			out.writeStringUnterminated(getSignature());
+			out.writeShort(oldFileCount - count);
+
+			int newContentStartOffset = 4 + (newFileCount + 1) * Integer.BYTES;
+			newContentStartOffset = MathEx.padInteger(newContentStartOffset, pad ? GF_CONTAINER_PADDING : 4);
+
+			for (int i = 0; i < firstIndex; i++) {
+				out.writeInt(header.fileOffsets[i] - startOffset + newContentStartOffset);
+			}
+			int removedSize = header.fileOffsets[firstIndex + count] - header.fileOffsets[firstIndex];
+			for (int i = firstIndex + count; i < oldFileCount; i++) {
+				out.writeInt(header.fileOffsets[i] - startOffset - removedSize + newContentStartOffset);
+			}
+			
+			out.writeInt(newContentStartOffset + copyData.length);
+			out.writePadding(newContentStartOffset - out.getPosition(), 0);
+
+			out.write(copyData);
+
+			out.close();
 		} catch (IOException ex) {
 			Logger.getLogger(GFContainer.class.getName()).log(Level.SEVERE, null, ex);
 		}

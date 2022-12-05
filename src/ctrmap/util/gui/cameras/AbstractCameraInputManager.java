@@ -2,13 +2,14 @@ package ctrmap.util.gui.cameras;
 
 import ctrmap.renderer.scene.Camera;
 import ctrmap.renderer.scene.Scene;
+import java.awt.Component;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import xstandard.gui.components.listeners.IKeyAdapter;
 import xstandard.gui.components.listeners.IMouseAdapter;
 import xstandard.gui.components.listeners.IMouseMotionAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -19,7 +20,7 @@ import javax.swing.JComponent;
 /**
  *
  */
-public class AbstractCameraInputManager implements IMouseAdapter, IMouseMotionAdapter, MouseWheelListener, IKeyAdapter, FocusListener {
+public class AbstractCameraInputManager implements IMouseAdapter, IMouseMotionAdapter, MouseWheelListener, IKeyAdapter, FocusListener, ComponentListener {
 
 	public Camera cam = new Camera();
 
@@ -44,6 +45,7 @@ public class AbstractCameraInputManager implements IMouseAdapter, IMouseMotionAd
 			this.parent.removeKeyListener(this);
 			this.parent.removeMouseListener(this);
 			this.parent.removeFocusListener(this);
+			this.parent.removeComponentListener(this);
 		}
 		this.parent = parent;
 		if (parent != null) {
@@ -52,6 +54,7 @@ public class AbstractCameraInputManager implements IMouseAdapter, IMouseMotionAd
 			parent.addKeyListener(this);
 			parent.addMouseListener(this);
 			parent.addFocusListener(this);
+			parent.addComponentListener(this);
 		}
 	}
 
@@ -96,6 +99,7 @@ public class AbstractCameraInputManager implements IMouseAdapter, IMouseMotionAd
 			allowMotion = allowMotionBeforeDeactivation;
 		}
 		updateCameraInAllScenes(cam, true);
+		onActivated();
 	}
 
 	public void deactivate() {
@@ -110,6 +114,10 @@ public class AbstractCameraInputManager implements IMouseAdapter, IMouseMotionAd
 		for (Scene scn : presentScenes) {
 			removeAddCameraBoolean(cam, scn, shouldExist);
 		}
+	}
+	
+	protected void onActivated() {
+		
 	}
 
 	protected static void removeAddCameraBoolean(Camera cam, Scene scn, boolean shouldExist) {
@@ -183,5 +191,23 @@ public class AbstractCameraInputManager implements IMouseAdapter, IMouseMotionAd
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
+	}
+
+	@Override
+	public void componentResized(ComponentEvent e) {
+		Component comp = e.getComponent();
+		cam.aspect = comp.getWidth() / (float) comp.getHeight();
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {
+	}
+
+	@Override
+	public void componentShown(ComponentEvent e) {
+	}
+
+	@Override
+	public void componentHidden(ComponentEvent e) {
 	}
 }

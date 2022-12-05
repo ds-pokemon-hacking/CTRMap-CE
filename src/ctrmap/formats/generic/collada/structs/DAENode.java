@@ -9,7 +9,6 @@ import ctrmap.renderer.scene.Camera;
 import ctrmap.renderer.scene.Light;
 import xstandard.math.vec.Vec3f;
 import xstandard.math.vec.Vec4f;
-import xstandard.math.MatrixUtil;
 import ctrmap.renderer.scene.metadata.MetaDataValue;
 import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scene.model.Mesh;
@@ -296,7 +295,7 @@ public class DAENode implements DAEIDAble, DAESerializable, DAESIDAble {
 						daeCam.proj.setCamera(cam);
 
 						if (lookAt != null) {
-							cam.mode = Camera.Mode.LOOKAT;
+							cam.viewMode = Camera.ViewMode.LOOK_AT;
 
 							cam.translation.set(lookAt[0]);
 							adjustVecToPPCfg(cam.translation, ppCfg);

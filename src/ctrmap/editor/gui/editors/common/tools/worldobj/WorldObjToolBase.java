@@ -106,7 +106,7 @@ public abstract class WorldObjToolBase extends BaseTool implements MaterialProvi
 				WorldObject obj = objs.get(idx);
 				setSelectedObject(obj);
 				isDragSelectedGridObj = true;
-				if (edt.dcc.getDebugCamera().mode == Camera.Mode.ORTHO || Math.abs(edt.dcc.getDebugCamera().rotation.x) > 15f) { //Do not drag when camera is too low
+				if (edt.dcc.getDebugCamera().projMode == Camera.ProjectionMode.ORTHO || Math.abs(edt.dcc.getDebugCamera().rotation.x) > 15f) { //Do not drag when camera is too low
 					dragStatus = new DragStatus(worldObjHelperMap.get(obj), edt.getWorldCollisionProvider(), edt.getInjectionScene(), info.selectionType);
 					dragStatus.beginDrag(evt, edt.getRenderer());
 				}

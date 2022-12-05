@@ -1,6 +1,5 @@
 package ctrmap.renderer.scenegraph;
 
-import ctrmap.renderer.backends.base.ViewportInfo;
 import ctrmap.renderer.scene.Camera;
 import ctrmap.renderer.scene.Light;
 import ctrmap.renderer.scene.animation.camera.CameraAnimationController;
@@ -21,7 +20,6 @@ import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.MeshVisibilityGroup;
 import xstandard.math.AABB6f;
 import xstandard.math.FAtan;
-import xstandard.math.MathEx;
 import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.Quaternion;
 import java.util.ArrayList;
@@ -287,7 +285,7 @@ public class G3DResourceState {
 			Matrix4 mv = getModelViewMatrix();
 			for (Model mdl : instance.resource.models) {
 				AABB6f aabb = new AABB6f(mdl.boundingBox);
-					
+
 				aabb.min.mulPosition(mv);
 				aabb.max.mulPosition(mv);
 
@@ -296,13 +294,13 @@ public class G3DResourceState {
 		}
 	}
 
-	public Matrix4 getProjectionMatrix(ViewportInfo vi) {
+	public Matrix4 getProjectionMatrix() {
 		if (projectionMatrix == null) {
 			if (updateProjMatrix) {
-				projectionMatrix = instance.getAbsoluteProjectionMatrix(vi);
+				projectionMatrix = instance.getAbsoluteProjectionMatrix();
 			} else {
 				if (parent != null) {
-					projectionMatrix = parent.getProjectionMatrix(vi);
+					projectionMatrix = parent.getProjectionMatrix();
 				} else {
 					projectionMatrix = new Matrix4();
 				}
@@ -440,94 +438,40 @@ public class G3DResourceState {
 				}
 			}
 			if (modelBone != null && modelBone.flags != 0) {
-				if (modelBone.isScaleCompensate()) {
-					if (parentMtx != null && parentJoint != null) {
-						//Get global animated matrix of the parent of the parent
-						Vec3f parentScale;
-						//if (!parentJoint.isScaleCompensate()) {
-						/*Matrix4 ppMtx;
-							if (parentJoint.parentName != null) {
-								ppMtx = getAnimatedJointMatrix(modelSkeleton.getJoint(parentJoint.parentName), modelSkeleton).clone();
-							} else {
-								ppMtx = new Matrix4();
-							}*/
-						//Invert the parent-parent matrix to get the local matrix of the parent
-						/*ppMtx.invert();
-							ppMtx.mul(parentMtx);
-							parentScale = ppMtx.getScale();*/
- /*}
-						else {
-							parentScale = parentMtx.getScale();
-						}*/
- /*System.out.println(modelBone.name + " this scale " + mtx.getScale() + " parent scale " + parentScale);
-						mtx.scale(parentScale.recip());
-						mtx.setTranslation(mtx.getTranslation().mul(parentScale));
-						System.out.println("after " + mtx.getScale());*/
-					}
-				}
-
 				if (modelBone.isBillboard()) {
 					//Calculate billboard rotation
-					if (!cameras.isEmpty()) {
-						Quaternion q = new Quaternion();
-						/*Matrix3f normalizedGlobalRotation = new Matrix3f();
-						Matrix4 completeMtx = modelMatrix.clone();
-						completeMtx.mul(parentMtx);
-						completeMtx.normalize3x3(normalizedGlobalRotation);
-						normalizedGlobalRotation.getNormalizedRotation(q).invert();
-						q.identity();*/
-						if (!modelBone.isBBAim()) {
-							for (Camera cam : cameras) {
-								float rx;
-								float ry;
-								float rz;
+					Quaternion q = new Quaternion();
+					if (!modelBone.isBBAim()) {
+						Vec3f rot = cameraMatrix.getRotation();
 
-								if (cam.mode == Camera.Mode.ORTHO) {
-									rx = -MathEx.HALF_PI;
-									ry = 0f;
-									rz = 0f;
-								} else if (cam.mode == Camera.Mode.PERSPECTIVE) {
-									rx = MathEx.toRadiansf(cam.rotation.x);
-									ry = MathEx.toRadiansf(cam.rotation.y);
-									rz = MathEx.toRadiansf(cam.rotation.z);
-								} else {
-									Matrix4 m = cam.getTransformMatrix(true);
-									Vec3f r = m.getRotation();
-									rx = r.x;
-									ry = r.y;
-									rz = r.z;
-								}
-
-								if (modelBone.isBBZ()) {
-									q.rotateZ(rz);
-								}
-								if (modelBone.isBBY()) {
-									q.rotateY(ry);
-								}
-								if (modelBone.isBBX()) {
-									q.rotateX(rx);
-								}
-							}
-						} else {
-							Vec3f camPos = cameraMatrix.getTranslation();
-							Vec3f modelPos = new Vec3f();
-							modelMatrix.clone().mul(mtx).getTranslation(modelPos);
-							modelPos.sub(camPos);
-
-							if (modelBone.isBBY()) {
-								q.rotateY((float) FAtan.atan2(-modelPos.x, -modelPos.z) - modelBone.rotation.y);
-							}
-							if (modelBone.isBBX()) {
-								q.rotateX((float) FAtan.atan2(modelPos.y, (float) Math.hypot(modelPos.z, modelPos.x)) - modelBone.rotation.x);
-							}
-							if (modelBone.isBBZ()) {
-								//UNIMPLEMENTED
-							}
+						if (modelBone.isBBZ()) {
+							q.rotateZ(rot.z);
 						}
+						if (modelBone.isBBY()) {
+							q.rotateY(rot.y);
+						}
+						if (modelBone.isBBX()) {
+							q.rotateX(rot.x);
+						}
+					} else {
+						Vec3f camPos = cameraMatrix.getTranslation();
+						Vec3f modelPos = new Vec3f();
+						modelMatrix.clone().mul(mtx).getTranslation(modelPos);
+						modelPos.sub(camPos);
 
-						Vec3f tra = mtx.getTranslation();
-						mtx.rotateAroundLocal(q, tra.x, tra.y, tra.z);
+						if (modelBone.isBBY()) {
+							q.rotateY((float) FAtan.atan2(-modelPos.x, -modelPos.z) - modelBone.rotation.y);
+						}
+						if (modelBone.isBBX()) {
+							q.rotateX((float) FAtan.atan2(modelPos.y, (float) Math.hypot(modelPos.z, modelPos.x)) - modelBone.rotation.x);
+						}
+						if (modelBone.isBBZ()) {
+							//UNIMPLEMENTED
+						}
 					}
+
+					Vec3f tra = mtx.getTranslation();
+					mtx.rotateAroundLocal(q, tra.x, tra.y, tra.z);
 				}
 			}
 

@@ -204,6 +204,7 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 		g3dViewport.scene.addSceneAnimationCallback(new SceneAnimationCallback() {
 			@Override
 			public void run(float frameAdvance) {
+				g3dViewport.scene.setAllCameraAspectRatio(g3dViewport.getViewportInfo().getAspectRatio());
 				anmControl.updateAllControls();
 			}
 		});
@@ -496,7 +497,8 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 			aabb.max.set(50f);
 		}
 
-		input.cam.mode = Camera.Mode.PERSPECTIVE;
+		input.cam.projMode = Camera.ProjectionMode.PERSPECTIVE;
+		input.cam.viewMode = Camera.ViewMode.ROTATE;
 		setNearFar(aabb);
 		setCameraTransRot(aabb);
 	}

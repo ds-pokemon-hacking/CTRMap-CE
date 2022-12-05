@@ -18,22 +18,22 @@ import java.util.Objects;
 public class Mesh implements NamedResource, Iterable<Vertex> {
 
 	public Model parentModel;
-	
+
 	public String name;
 	public String materialName;
 	public String visGroupName;
-	
+
 	public int renderLayer = 0;
 
 	public AbstractVertexList vertices = new VertexArrayList();
 	public IntList indices = new IntList();
-	
+
 	public final MeshBufferManager buffers;
-	
+
 	public PrimitiveType primitiveType = PrimitiveType.TRIS;
 	public VertexListUsage bufferType = VertexListUsage.STATIC;
 	public SkinningType skinningType = SkinningType.SMOOTH;
-	
+
 	public boolean useIBO = false;
 	public boolean hasNormal = false;
 	public boolean hasTangent = false;
@@ -75,6 +75,17 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 		visGroupName = source.visGroupName;
 	}
 
+	public void mergeAttributes(Mesh other) {
+		hasColor |= other.hasColor;
+		hasNormal |= other.hasNormal;
+		hasTangent |= other.hasTangent;
+		hasBoneIndices |= other.hasBoneIndices;
+		hasBoneWeights |= other.hasBoneWeights;
+		for (int i = 0; i < hasUV.length; i++) {
+			hasUV[i] |= other.hasUV[i];
+		}
+	}
+
 	public int getBoolAttribsHash() {
 		int hash = 7;
 		hash = 37 * hash + Objects.hashCode(hasColor);
@@ -84,17 +95,17 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 		hash = 37 * hash + Objects.hashCode(hasBoneWeights);
 		return hash;
 	}
-	
-	public Iterable<Face> faces(){
+
+	public Iterable<Face> faces() {
 		return new Iterable<Face>() {
 			@Override
 			public Iterator<Face> iterator() {
 				return new Iterator<Face>() {
-					
+
 					private int max = getVertexCount();
 					private int index = 0;
 					private int stride = PrimitiveType.getPrimitiveTypeSeparationSize(primitiveType, Mesh.this);
-					
+
 					@Override
 					public boolean hasNext() {
 						return index < max;
@@ -143,19 +154,19 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 	public void createBuffers() {
 		buffers.updateAll();
 	}
-	
+
 	public int getFaceCount() {
 		return getVertexCount() / PrimitiveType.getPrimitiveTypeSeparationSize(primitiveType, this);
 	}
-	
-	public int getVertexCount(){
+
+	public int getVertexCount() {
 		return useIBO ? indices.size() : vertices.size();
 	}
 
 	public boolean hasUV(int index) {
 		return index >= 0 && index < hasUV.length && hasUV[index];
 	}
-	
+
 	public int getActiveUVLayerCount() {
 		int count = 0;
 		for (int i = 0; i < hasUV.length; i++) {
@@ -177,11 +188,11 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 
 	@Override
 	public Iterator<Vertex> iterator() {
-		if (useIBO){
+		if (useIBO) {
 			return new Iterator<Vertex>() {
-				
+
 				private int idxIdx = 0;
-				
+
 				@Override
 				public boolean hasNext() {
 					return idxIdx < indices.size();
@@ -192,8 +203,7 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 					return vertices.get(indices.get(idxIdx++));
 				}
 			};
-		}
-		else {
+		} else {
 			return vertices.iterator();
 		}
 	}

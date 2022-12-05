@@ -51,7 +51,7 @@ public class DragStatus {
 			e,
 			currentConstPlaneHeight,
 			scene.getTransformMatrix().getMatrix(),
-			scene.getAbsoluteProjectionMatrix(backend.getViewportInfo()).getMatrix(),
+			scene.getAbsoluteProjectionMatrix().getMatrix(),
 			vi.getViewportMatrix()
 		);
 		setDiffVector(constPlaneContact, getDiffVectorPoint());
@@ -60,7 +60,7 @@ public class DragStatus {
 	public void updateDrag(MouseEvent e, AbstractBackend backend) {
 		float[] mtxMv = scene.getTransformMatrix().getMatrix();
 		ViewportInfo vi = backend.getViewportInfo();
-		float[] mtxProj = scene.getAbsoluteProjectionMatrix(vi).getMatrix();
+		float[] mtxProj = scene.getAbsoluteProjectionMatrix().getMatrix();
 		int[] mtxVp = vi.getViewportMatrix();
 
 		Vec3f oldWPos = obj.getWPos();

@@ -251,7 +251,7 @@ public class MinecraftCameraInputManager extends FPSCameraInputManager implement
 					xzSpeed /= Math.max(1f, Math.min(G, airTime / 30f * G)); //1 second of air time = 30 frames - max air time 1s till stall
 
 					//Actually move
-					if (cam.mode == Camera.Mode.PERSPECTIVE) {
+					if (cam.viewMode == Camera.ViewMode.ROTATE) {
 						//Check left over from FPSCameraInputManager
 						if (lastValidUDSign != 0f) {
 							translateX -= lastValidUDSign * Math.sin(Math.toRadians(cam.rotation.y)) * Math.min(1f, Math.tan(Math.toRadians(90 - Math.abs(cam.rotation.x)))) * xzSpeed;

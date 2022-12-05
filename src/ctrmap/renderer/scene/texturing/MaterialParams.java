@@ -116,7 +116,22 @@ public class MaterialParams {
 		NEVER,
 		FRONT_FACE,
 		BACK_FACE,
-		FRONT_AND_BACK
+		FRONT_AND_BACK;
+		
+		public static FaceCulling get(boolean cullFront, boolean cullBack) {
+			if (cullBack && cullFront) {
+				return FRONT_AND_BACK;
+			}
+			else if (cullBack) {
+				return BACK_FACE;
+			}
+			else if (cullFront) {
+				return FRONT_FACE;
+			}
+			else {
+				return NEVER;
+			}
+		}
 	}
 	
 	public enum BumpMode{
@@ -168,7 +183,11 @@ public class MaterialParams {
 		CLAMP_TO_EDGE,
 		CLAMP_TO_BORDER,
 		REPEAT,
-		MIRRORED_REPEAT
+		MIRRORED_REPEAT;
+		
+		public static TextureWrap get(boolean repeat, boolean mirror) {
+			return mirror ? MIRRORED_REPEAT : repeat ? REPEAT : CLAMP_TO_EDGE;
+		}
 	}
 
 	public enum TextureMagFilter {

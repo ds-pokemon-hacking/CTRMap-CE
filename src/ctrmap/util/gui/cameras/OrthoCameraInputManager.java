@@ -1,6 +1,5 @@
 package ctrmap.util.gui.cameras;
 
-import ctrmap.renderer.scene.Camera;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
@@ -13,29 +12,61 @@ public class OrthoCameraInputManager extends AbstractCameraInputManager implemen
 	private float minScale = 0f;
 	private float zoomSpeed = 1f;
 
+	private float centerX = 0f;
+	private float centerZ = 0f;
+	private float zoom = 0f;
+
 	public OrthoCameraInputManager() {
-		cam.mode = Camera.Mode.ORTHO;
+		cam.setDefaultOrtho();
 	}
 
 	public void setMinimumScale(float v) {
 		minScale = v;
 	}
-	
+
 	public void setZoomSpeed(float zoomSpeed) {
 		this.zoomSpeed = zoomSpeed;
 	}
 
+	public void setZoom(float zoom) {
+		if (allowMotion) {
+			this.zoom = zoom;
+			updateCam();
+		}
+	}
+
+	public void setCenter(float cx, float cz) {
+		if (allowMotion) {
+			centerX = cx;
+			centerZ = cz;
+			updateCam();
+		}
+	}
+
+	private void updateCam() {
+		if (parent != null) {
+			cam.makeZoomOrtho(centerX, centerZ, zoom, parent.getWidth() / (float) parent.getHeight());
+		}
+	}
+
+	@Override
+	protected void onActivated() {
+		updateCam();
+	}
+
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		setTY(Math.max(minScale, cam.translation.y + e.getWheelRotation() * (Math.max(Math.abs(cam.translation.y), 1f) / 20f * zoomSpeed)));
+		setZoom(Math.max(minScale, zoom + e.getWheelRotation() * (Math.max(Math.abs(zoom), 1f) / 20f * zoomSpeed)));
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (SwingUtilities.isRightMouseButton(e)) {
-			if (parent != null) {
-				setTX(cam.translation.x - (e.getX() - originMouseX) * Math.abs(cam.translation.y / parent.getWidth()));
-				setTZ(cam.translation.z - (e.getY() - originMouseY) * Math.abs(cam.translation.y / parent.getWidth()));
+			if (parent != null && allowMotion) {
+				setCenter(
+					centerX - (e.getX() - originMouseX) * Math.abs(zoom / parent.getWidth()),
+					centerZ - (e.getY() - originMouseY) * Math.abs(zoom / parent.getWidth())
+				);
 			}
 		}
 		setOrigins(e);

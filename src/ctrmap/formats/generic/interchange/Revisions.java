@@ -40,6 +40,7 @@ public class Revisions {
 	public static final int REV_INDEX_BUFFERS = 20;     //Writing mesh IBOs separately.
 	public static final int REV_EXT_FSH_INFO = 20;      //Extended fragment shader parameters in materials
 	public static final int REV_TBN = 21;				//Tangent/bitangent vertex attribute support
+	public static final int REV_CAMERA_PLUS = 22;		//Serialization of the new camera structure
 	
 	public static final int REV_NDS_RESERVED = 4269;
 }

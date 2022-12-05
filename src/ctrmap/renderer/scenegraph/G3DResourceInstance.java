@@ -168,6 +168,15 @@ public class G3DResourceInstance {
 
 		return max;
 	}
+	
+	public void setAllCameraAspectRatio(float aspect) {
+		for (Camera cam : cameraInstances) {
+			cam.aspect = aspect;
+		}
+		for (G3DResourceInstance child : getChildrenSync()) {
+			child.setAllCameraAspectRatio(aspect);
+		}
+	}
 
 	public void instantiateCamera(Camera cam) {
 		ArraysEx.addIfNotNullOrContains(cameraInstances, cam);
@@ -330,13 +339,13 @@ public class G3DResourceInstance {
 		return !cameraInstances.isEmpty();
 	}
 
-	public Matrix4 getAbsoluteProjectionMatrix(ViewportInfo vi) {
+	public Matrix4 getAbsoluteProjectionMatrix() {
 		for (Camera cam : cameraInstances) {
 			//There can only be one applied at a time
-			return cam.getProjectionMatrix(vi);
+			return cam.getProjectionMatrix();
 		}
 		if (parent != null) {
-			return parent.getAbsoluteProjectionMatrix(vi);
+			return parent.getAbsoluteProjectionMatrix();
 		}
 		return new Matrix4();
 	}
@@ -501,6 +510,7 @@ public class G3DResourceInstance {
 	public void clear(boolean force) {
 		if (!persistent || force) {
 			resource.clear();
+			sceneAnimationListeners.clear();
 		}
 		clearChildren(force);
 	}
