@@ -6,11 +6,9 @@ import ctrmap.renderer.backends.base.RenderSettings;
 import ctrmap.renderer.backends.base.RenderTarget;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLProfile;
+import ctrmap.renderer.backends.base.RenderCapabilities;
 import ctrmap.renderer.backends.base.RenderState;
-import ctrmap.renderer.backends.base.ViewportInfo;
 import ctrmap.renderer.backends.base.flow.BufferObjectMemory;
 import ctrmap.renderer.backends.base.shaderengine.ShaderDefinition;
 import ctrmap.renderer.backends.base.shaderengine.UserShaderManager;
@@ -43,7 +41,7 @@ public class HoustonGL4 extends GLBackendBase {
 		super(settings);
 	}
 
-	public HoustonGL4(RenderSettings settings, GLCapabilities caps) {
+	public HoustonGL4(RenderSettings settings, RenderCapabilities caps) {
 		super(settings, caps);
 	}
 
@@ -214,11 +212,6 @@ public class HoustonGL4 extends GLBackendBase {
 		driver.drawMesh(FILL_SCREEN_QUAD);
 
 		gl.glUseProgram(0);
-	}
-
-	@Override
-	public ViewportInfo getViewportInfo() {
-		return new ViewportInfo(getSize(), settings.Z_NEAR, settings.Z_FAR);
 	}
 
 	@Override

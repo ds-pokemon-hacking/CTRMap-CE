@@ -1,5 +1,6 @@
 package ctrmap.formats.generic.source;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.scene.animation.AbstractBoneTransform;
 import ctrmap.renderer.scene.animation.AnimatedValue;
@@ -321,6 +322,8 @@ public class SMD {
 
 				apply.position = new Vec3f(frm.tx.value, frm.ty.value, frm.tz.value);
 				apply.rotation = new Vec3f(frm.rx.value, frm.ry.value, frm.rz.value);
+				
+				frm.free();
 			}
 		}
 
@@ -437,7 +440,7 @@ public class SMD {
 		Vec3f t = new Vec3f();
 		Vec3f r = new Vec3f();
 
-		SkeletalAnimationTransformRequest rotReq = new SkeletalAnimationTransformRequest(0);
+		SkeletalAnimationTransformRequest rotReq = new SkeletalAnimationTransformRequest(0, true);
 		rotReq.scale = false;
 		rotReq.translation = false;
 
@@ -474,8 +477,9 @@ public class SMD {
 						rotReq.frame = frame;
 						rotReq.bindJoint = bindJnt;
 
-						Matrix4 matrix = bt.getTransformMatrix(rotReq);
+						Matrix4 matrix = bt.getTransformMatrix(rotReq, RenderAllocator.allocMatrix());
 						matrix.getRotationTo(r);
+						RenderAllocator.freeMatrix(matrix);
 					} else {
 						r.set(bindJnt.rotation);
 					}

@@ -74,8 +74,8 @@ public class MeshNode extends CSNode {
 	@Override
 	public void putForExport(G3DResource rsc) {
 		Model mdl = getDmyModel(rsc);
-		mdl.skeleton = mesh.parentModel.skeleton;
-		mdl.meshes.add(mesh);
+		mdl.skeleton.addJoints(mesh.parentModel.skeleton.getJoints());
+		mdl.meshes.add(Mesh.mirror(mesh)); //prevent unparenting
 	}
 
 	@Override

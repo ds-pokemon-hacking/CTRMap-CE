@@ -6,6 +6,7 @@ import xstandard.math.vec.Vec3f;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import xstandard.io.util.BitConverter;
 
 public class MetaDataValue implements INamed {
 
@@ -183,13 +184,13 @@ public class MetaDataValue implements INamed {
 					switch (type) {
 						case FLOAT: {
 							byte[] b = new byte[Float.BYTES];
-							IOUtils.integerToByteArrayLE(Float.floatToIntBits((Float) val), b, 0);
+							BitConverter.fromInt32LE(Float.floatToIntBits((Float) val), b, 0);
 							val = b;
 							break;
 						}
 						case INT: {
 							byte[] b = new byte[Integer.BYTES];
-							IOUtils.integerToByteArrayLE((Integer) val, b, 0);
+							BitConverter.fromInt32LE((Integer) val, b, 0);
 							val = b;
 							break;
 						}
@@ -199,7 +200,7 @@ public class MetaDataValue implements INamed {
 						}
 						case VEC3: {
 							byte[] b = new byte[3 * Float.BYTES];
-							IOUtils.floatArrayToByteArray(((Vec3f) val).toFloatUniform(), 0, b, 0, 3);
+							BitConverter.fromFloatArrayLE(((Vec3f) val).toFloatUniform(), 0, b, 0, 3);
 							val = b;
 							break;
 						}

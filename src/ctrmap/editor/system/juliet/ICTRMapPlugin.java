@@ -1,5 +1,6 @@
 package ctrmap.editor.system.juliet;
 
+import ctrmap.formats.common.GameInfo;
 import rtldr.RExtensionBase;
 
 public interface ICTRMapPlugin extends RExtensionBase<CTRMapPluginInterface> {
@@ -27,7 +28,7 @@ public interface ICTRMapPlugin extends RExtensionBase<CTRMapPluginInterface> {
 	 *
 	 * @param j
 	 */
-	public default void registUI(CTRMapPluginInterface j) {
+	public default void registUI(CTRMapPluginInterface j, GameInfo game) {
 
 	}
 }

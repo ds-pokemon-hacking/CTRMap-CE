@@ -20,17 +20,17 @@ public class Model implements NamedResource {
 
 	public boolean isVisible = true;
 
-	public ListenableList<Material> materials = new ListenableList<>();
+	public final ListenableList<Material> materials = new ListenableList<>();
 
-	public ListenableList<Mesh> meshes = new ListenableList<>();
+	public final ListenableList<Mesh> meshes = new ListenableList<>();
 
-	public ListenableList<MeshVisibilityGroup> visGroups = new ListenableList<>();
+	public final ListenableList<MeshVisibilityGroup> visGroups = new ListenableList<>();
 
 	public Skeleton skeleton = new Skeleton();
 
-	public AABB6f boundingBox = new AABB6f();
+	public final AABB6f boundingBox = new AABB6f();
 
-	public MetaData metaData = new MetaData();
+	public final MetaData metaData = new MetaData();
 
 	public Model() {
 		materials.addListener(new ListenableList.ElementChangeListener() {

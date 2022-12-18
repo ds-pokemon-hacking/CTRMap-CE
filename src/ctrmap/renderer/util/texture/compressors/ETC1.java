@@ -2,6 +2,7 @@ package ctrmap.renderer.util.texture.compressors;
 
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
 import ctrmap.renderer.util.texture.TextureCodec;
+import xstandard.io.util.BitConverter;
 import xstandard.io.util.IOUtils;
 import xstandard.math.MathEx;
 
@@ -41,10 +42,10 @@ public class ETC1 {
 					for (int x2 = 0; x2 < 8; x2 += 4) {
 						long alpha = -1L;
 						if (hasAlpha) {
-							alpha = IOUtils.byteArrayToLongLE(data, offs);
+							alpha = BitConverter.toInt64LE(data, offs);
 							offs += 8;
 						}
-						long block = IOUtils.byteArrayToLongLE(data, offs);
+						long block = BitConverter.toInt64LE(data, offs);
 						boolean diffbit = ((block >> 33) & 1) == 1;
 						boolean flipbit = ((block >> 32) & 1) == 1; //0: |||, 1: |-|
 						int r1;

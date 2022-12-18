@@ -106,10 +106,11 @@ public abstract class AbstractAnimationController implements INamed {
 	private boolean doCallback = false;
 
 	public void callback() {
-		if (doCallback) {
-			callback.run();
+		if (doCallback && callback != null) {
+			Runnable c = callback;
+			callback = null; //prevent recursion
+			c.run();
 			doCallback = false;
-			callback = null;
 		}
 	}
 
@@ -135,7 +136,13 @@ public abstract class AbstractAnimationController implements INamed {
 
 	public void stopAnimation() {
 		paused = true;
-		frame = 0;
+		if (callback != null) {
+			doCallback = true;
+			callback();
+		}
+		else if (loop) {
+			frame = 0;
+		}
 	}
 
 	public void pauseAnimation() {

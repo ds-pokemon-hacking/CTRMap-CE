@@ -1,5 +1,6 @@
 package ctrmap.renderer.backends.houston.gl2.uber;
 
+import ctrmap.renderer.backends.base.RenderCapabilities;
 import ctrmap.renderer.backends.base.RenderSettings;
 import ctrmap.renderer.backends.houston.gl2.HoustonGL2;
 import ctrmap.renderer.backends.houston.common.HoustonShaderAdapter;
@@ -14,8 +15,8 @@ public class HoustonGL2Uber extends HoustonGL2 implements HoustonShaderAdapter {
 		super();
 	}
 	
-	public HoustonGL2Uber(RenderSettings settings) {
-		super(settings);
+	public HoustonGL2Uber(RenderSettings settings, RenderCapabilities caps) {
+		super(settings, caps);
 	}
 
 	@Override

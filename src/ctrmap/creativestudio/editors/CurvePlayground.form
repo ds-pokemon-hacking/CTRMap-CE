@@ -55,6 +55,9 @@
   </Layout>
   <SubComponents>
     <Component class="ctrmap.renderer.backends.RenderSurface" name="renderer">
+      <Properties>
+        <Property name="syncAspectRatio" type="boolean" value="true"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>

@@ -3,7 +3,6 @@ package ctrmap.editor.gui.editors.scenegraph.tree;
 
 import ctrmap.renderer.scene.Scene;
 import xstandard.gui.components.tree.CustomJTree;
-import xstandard.res.ResourceAccess;
 import javax.swing.tree.MutableTreeNode;
 
 public class ScenegraphJTree extends CustomJTree {

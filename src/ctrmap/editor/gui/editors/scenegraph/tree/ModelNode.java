@@ -5,6 +5,7 @@ import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.texturing.Material;
+import xstandard.util.ListenableList;
 
 public class ModelNode extends ScenegraphExplorerNode {
 
@@ -12,6 +13,9 @@ public class ModelNode extends ScenegraphExplorerNode {
 	public static final int RESID_SKELETON = 0x421101;
 	
 	private Model mdl;
+	
+	private ListenableList.ElementChangeListener meshListener;
+	private ListenableList.ElementChangeListener matListener;
 
 	public ModelNode(Model mdl, ScenegraphJTree tree) {
 		super(tree);
@@ -38,18 +42,26 @@ public class ModelNode extends ScenegraphExplorerNode {
 			}
 		}
 		
-		mdl.meshes.addListener(new ScenegraphListener<Mesh>(meshListNode) {
+		mdl.meshes.addListener(meshListener = new ScenegraphListener<Mesh>(meshListNode) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Mesh elem) {
 				return new MeshNode(elem, tree);
 			}
 		});
-		mdl.materials.addListener(new ScenegraphListener<Material>(materialList) {
+		mdl.materials.addListener(matListener = new ScenegraphListener<Material>(materialList) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Material elem) {
 				return new MaterialNode(elem, tree);
 			}
 		});
+	}
+	
+	@Override
+	public void freeListeners() {
+		mdl.meshes.removeListener(meshListener);
+		mdl.materials.removeListener(matListener);
+		meshListener = null;
+		matListener = null;
 	}
 	
 	@Override

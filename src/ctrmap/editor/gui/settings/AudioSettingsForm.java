@@ -117,4 +117,9 @@ public class AudioSettingsForm extends javax.swing.JPanel implements SettingsPan
     private javax.swing.JSlider masterVol;
     private javax.swing.JLabel masterVolLabel;
     // End of variables declaration//GEN-END:variables
+
+	@Override
+	public String getTitle() {
+		return "Audio";
+	}
 }

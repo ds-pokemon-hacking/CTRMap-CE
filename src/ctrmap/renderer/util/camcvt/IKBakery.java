@@ -25,7 +25,7 @@ public class IKBakery {
 		in.effector = skeleton.getJoint(effectorBT.name);
 		if (in.chain != null && in.joint != null && in.effector != null) {
 			req.bindJoint = in.joint;
-			in.localJointMatrix = jointBT.getTransformMatrix(req);
+			in.localJointMatrix = jointBT.getTransformMatrix(req, new Matrix4());
 			in.localEffectorMatrix = new Matrix4();
 			in.localEffectorMatrix.translation(in.effector.position); //local
 			req.bindJoint = in.effector;

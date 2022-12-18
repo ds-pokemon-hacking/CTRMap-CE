@@ -61,7 +61,11 @@ import java.awt.Component;
 import xstandard.math.vec.RGBA;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import xstandard.gui.components.ComponentUtils;
 import xstandard.thread.ThreadingUtils;
 
@@ -284,7 +288,7 @@ public class CTRMap extends JFrame {
 
 		mcInUse.addGameInfoListener(new CTRMapGameInfoListener());
 	}
-	
+
 	private void loadSupportedPerspectives() {
 		for (AbstractPerspective p : editorMgr.getPerspectives()) {
 			if (p.isGameSupported(getGame())) {
@@ -316,6 +320,7 @@ public class CTRMap extends JFrame {
 	}
 
 	public AbstractPerspective currentPerspective = null;
+	public final Map<Class<? extends AbstractSubEditor>, AbstractSubEditor> sharedInstanceEditors = new HashMap<>();
 
 	public void openPerspective(AbstractPerspective perspective) {
 		if (!perspective.isLoaded()) {
@@ -423,11 +428,26 @@ public class CTRMap extends JFrame {
 	public void closeProject() {
 		mcInUse.unload();
 		mcInUse.log = new McLogger.StdOutLogger();
+		int perspCount = 0;
 		for (AbstractPerspective perspective : getPerspectives()) {
 			if (perspective.isGameSupported(mcInUse.game)) {
-				perspective.onProjectUnloaded(project);
-				perspective.release();
+				perspCount++;
 			}
+		}
+		final CountDownLatch waiter = new CountDownLatch(perspCount);
+		for (AbstractPerspective perspective : getPerspectives()) {
+			if (perspective.isGameSupported(mcInUse.game)) {
+				ThreadingUtils.runOnEDT((() -> { //separate into multiple events
+					perspective.onProjectUnloaded(project);
+					perspective.release();
+					waiter.countDown();
+				}));
+			}
+		}
+		try {
+			waiter.await();
+		} catch (InterruptedException ex) {
+			Logger.getLogger(CTRMap.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		mcInUse = null;
 		project.free();
@@ -468,6 +488,7 @@ public class CTRMap extends JFrame {
 		loadSupportedPerspectives();
 
 		SwingUtilities.invokeLater(() -> {
+			CTRMapPluginControl.onProjectLoaded(plugins);
 			getMissionControl().callGameInfoListeners();
 
 			AbstractPerspective firstAvailEditor = null;
@@ -595,6 +616,16 @@ public class CTRMap extends JFrame {
 		}
 	}
 
+	private final Map<String, Object> sharedStorage = new HashMap<>();
+
+	public Object getSharedStorageItem(String name) {
+		return sharedStorage.get(name);
+	}
+
+	public void saveToSharedStorage(String name, Object value) {
+		sharedStorage.put(name, value);
+	}
+
 	private class CTRMapGameInfoListener implements GameInfoListener {
 
 		@Override
@@ -615,58 +646,6 @@ public class CTRMap extends JFrame {
 		}
 	}
 
-	/*private class CTRMapMCDebugger extends McDebugger {
-
-		public CTRMapMCDebugger() {
-			fieldDebugger = new FieldDebugger();
-			fieldDebugger.freeCam = levelEditor.dcc;
-			fieldDebugger.areaDebuggers.add(levelEditor.mCamEditForm);
-			fieldDebugger.areaDebuggers.add(levelEditor.zones);
-			fieldDebugger.areaDebuggers.add(levelEditor.newMatrixEditor);
-			fieldDebugger.areaDebuggers.add(levelEditor.lightingEditor);
-			fieldDebugger.playerDebuggers.add(levelEditor.m3DInput);
-			fieldDebugger.playerDebuggers.add(levelEditor.mWarpEditForm);
-			fieldDebugger.playerDebuggers.add(levelEditor.mPlayerControlForm);
-			fieldDebugger.playerDebuggers.add(levelEditor.mNPCEditForm);
-			fieldDebugger.mapDebuggers.add(levelEditor.mTileEditForm);
-			fieldDebugger.mapDebuggers.add(levelEditor.collEditor);
-			fieldDebugger.mapDebuggers.add(levelEditor.matrixEditor);
-			fieldDebugger.mapDebuggers.add(levelEditor.railEditor);
-			fieldDebugger.mapDebuggers.add(levelEditor.mPropEditForm);
-			fieldDebugger.mapDebuggers.add(levelEditor.newMatrixEditor);
-			fieldDebugger.mapDebuggers.add(levelEditor.encEditor);
-			//These have to take priority because they have to have the zones loaded before other forms make use of them
-			fieldDebugger.zoneDebuggers.add(levelEditor.objUIDAssigner);
-			fieldDebugger.zoneDebuggers.add(levelEditor.ideStateMng);
-			fieldDebugger.zoneDebuggers.add(levelEditor.mNPCEditForm.scriptPnl);
-			fieldDebugger.zoneDebuggers.add(levelEditor.mTriggerEditForm.scriptPnl);
-			fieldDebugger.zoneDebuggers.add(levelEditor.mScriptingAssistant);
-			//End of priority forms
-			fieldDebugger.zoneDebuggers.add(levelEditor.zones);
-			fieldDebugger.zoneDebuggers.add(levelEditor.scriptEditor);
-			fieldDebugger.zoneDebuggers.add(levelEditor.mNPCEditForm);
-			fieldDebugger.zoneDebuggers.add(levelEditor.mFurnitureEditForm);
-			fieldDebugger.zoneDebuggers.add(levelEditor.mTriggerEditForm);
-			fieldDebugger.zoneDebuggers.add(levelEditor.mWarpEditForm);
-			fieldDebugger.zoneDebuggers.add(levelEditor.itemInjector);
-			fieldDebugger.zoneDebuggers.add(levelEditor.trainerInjector);
-			fieldDebugger.zoneDebuggers.add(levelEditor.encEditor);
-			fieldDebugger.zoneDebuggers.add(levelEditor.diveEditor);
-			if (skyTripEditor.lze != null) {
-				fieldDebugger.zoneDebuggers.add(skyTripEditor.lze);
-			}
-			skyTripDebugger = new SkyTripDebugger();
-			skyTripDebugger.camDebugger = skyTripEditor.cam;
-			skyTripDebugger.mapDebuggers.add(levelEditor.collEditor);
-			skyTripDebugger.mapDebuggers.add(skyTripEditor.lze);
-			skyTripDebugger.mapDebuggers.add(skyTripEditor.cam);
-			skyTripDebugger.dataDebuggers.add(skyTripEditor.stge);
-			skyTripDebugger.mapDebuggers.add(skyTripEditor.stoe);
-			seqDebugger = new SequenceDebugger();
-			seqDebugger.playbackDebuggers.add(seqEditor.seqControl);
-			seqDebugger.camDebugger = seqEditor.debugCamera;
-		}
-	}*/
 	private class ToolActionListener implements ActionListener {
 
 		@Override

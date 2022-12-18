@@ -24,6 +24,7 @@ package ctrmap.formats.exl;
 
 import xstandard.io.util.IOUtils;
 import java.util.Arrays;
+import xstandard.io.util.BitConverter;
 
 public class FastLZ5 {
 
@@ -56,7 +57,7 @@ public class FastLZ5 {
 	}
 
 	private static int flz_readu32(BytePtr ptr) {
-		return IOUtils.byteArrayToIntegerLE(ptr.array, ptr.offset);
+		return BitConverter.toInt32LE(ptr.array, ptr.offset);
 	}
 
 	private static void flz_copy8bytes(BytePtr dest, BytePtr src, int count) {

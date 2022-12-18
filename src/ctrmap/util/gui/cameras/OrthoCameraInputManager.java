@@ -1,5 +1,6 @@
 package ctrmap.util.gui.cameras;
 
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
@@ -44,9 +45,15 @@ public class OrthoCameraInputManager extends AbstractCameraInputManager implemen
 	}
 
 	private void updateCam() {
-		if (parent != null) {
+		if (parent != null && parent.getHeight() != 0) {
 			cam.makeZoomOrtho(centerX, centerZ, zoom, parent.getWidth() / (float) parent.getHeight());
 		}
+	}
+	
+	@Override
+	public void componentResized(ComponentEvent e) {
+		super.componentResized(e);
+		updateCam();
 	}
 
 	@Override

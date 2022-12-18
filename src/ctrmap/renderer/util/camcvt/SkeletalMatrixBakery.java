@@ -54,7 +54,7 @@ public class SkeletalMatrixBakery implements Iterable<Matrix4> {
 	public Matrix4 manualBakeLocal(float frame) {
 		req.frame = frame;
 		req.bindJoint = jointList.get(jointList.size() - 1);
-		return transformList.get(transformList.size() - 1).getTransformMatrix(req);
+		return transformList.get(transformList.size() - 1).getTransformMatrix(req, new Matrix4());
 	}
 
 	private void bakeNext() {
@@ -67,7 +67,7 @@ public class SkeletalMatrixBakery implements Iterable<Matrix4> {
 		Matrix4 lastMtx = null;
 		for (int jidx = 0; jidx < jointList.size(); jidx++) {
 			req.bindJoint = jointList.get(jidx);
-			Matrix4 mtx = transformList.get(jidx).getTransformMatrix(req);
+			Matrix4 mtx = transformList.get(jidx).getTransformMatrix(req, new Matrix4());
 			mat_tmp.mul(mtx);
 			if (req.bindJoint.isScaleCompensate() && lastMtx != null) {
 				mat_tmp.scale(lastMtx.getScale().recip());

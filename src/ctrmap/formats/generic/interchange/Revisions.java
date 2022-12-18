@@ -1,8 +1,8 @@
 package ctrmap.formats.generic.interchange;
 
 public class Revisions {
-	public static final int REV_CURRENT = 21;
-	public static final int REV_CURRENT_BW_COMPAT = 21;
+	public static final int REV_CURRENT = 22;
+	public static final int REV_CURRENT_BW_COMPAT = 22;
 	
 	public static final int REV_FOUNDATION = 1;			//First version of the IF
 	public static final int REV_OTHER_FILES = 2;		//Add support for generic embedded files - new pointer table

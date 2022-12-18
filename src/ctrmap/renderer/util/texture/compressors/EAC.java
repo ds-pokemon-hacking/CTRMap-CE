@@ -2,6 +2,7 @@ package ctrmap.renderer.util.texture.compressors;
 
 import xstandard.io.util.IOUtils;
 import static ctrmap.renderer.util.texture.TextureCodec.*;
+import xstandard.io.util.BitConverter;
 
 /**
  * Ericsson EAC texture decoding, ported from Detex.
@@ -135,7 +136,7 @@ public class EAC {
  /* EAC_R11 format. */
 	public static boolean detexDecompressBlockEAC_R11(byte[] bitstring, int bitstring_offs, int mode_mask,
 		int flags, byte[] pixel_buffer, int pbuf_offs) {
-		long qword = IOUtils.byteArrayToLongLE(bitstring, bitstring_offs);
+		long qword = BitConverter.toInt64LE(bitstring, bitstring_offs);
 		decodeBlockEAC11Bit(qword, 0, 0, pixel_buffer, pbuf_offs);
 		return true;
 	}
@@ -144,9 +145,9 @@ public class EAC {
  /* EAC_RG11 format. */
 	boolean detexDecompressBlockEAC_RG11(byte[] bitstring, int bitstring_offs, int mode_mask,
 		int flags, byte[] pixel_buffer, int pbuf_offs) {
-		long red_qword = IOUtils.byteArrayToLongBE(bitstring, bitstring_offs);
+		long red_qword = BitConverter.toInt64BE(bitstring, bitstring_offs);
 		decodeBlockEAC11Bit(red_qword, 1, 0, pixel_buffer, pbuf_offs);
-		long green_qword = IOUtils.byteArrayToLongBE(bitstring, bitstring_offs + 8);
+		long green_qword = BitConverter.toInt64BE(bitstring, bitstring_offs + 8);
 		decodeBlockEAC11Bit(green_qword, 1, 1, pixel_buffer, pbuf_offs);
 		return true;
 	}
@@ -197,7 +198,7 @@ public class EAC {
  /* EAC_SIGNED_R11 format. */
 	public static boolean detexDecompressBlockEAC_SIGNED_R11(byte[] bitstring, int bitstring_offs,
 		int mode_mask, int flags, byte[] pixel_buffer, int pbuf_offs) {
-		long qword = IOUtils.byteArrayToLongBE(bitstring, bitstring_offs);
+		long qword = BitConverter.toInt64BE(bitstring, bitstring_offs);
 		return decodeBlockEACSigned11Bit(qword, 0, 0, pixel_buffer, pbuf_offs);
 	}
 
@@ -205,13 +206,13 @@ public class EAC {
  /* EAC_SIGNED_RG11 format. */
 	public static boolean detexDecompressBlockEAC_SIGNED_RG11(byte[] bitstring, int bitstring_offs,
 		int mode_mask, int flags, byte[] pixel_buffer, int pbuf_offs) {
-		long red_qword = IOUtils.byteArrayToLongBE(bitstring, bitstring_offs);
+		long red_qword = BitConverter.toInt64BE(bitstring, bitstring_offs);
 
 		boolean r = decodeBlockEACSigned11Bit(red_qword, 1, 0, pixel_buffer, pbuf_offs);
 		if (!r) {
 			return false;
 		}
-		long green_qword = IOUtils.byteArrayToLongBE(bitstring, bitstring_offs + 8);
+		long green_qword = BitConverter.toInt64BE(bitstring, bitstring_offs + 8);
 		return decodeBlockEACSigned11Bit(green_qword, 1, 1, pixel_buffer, pbuf_offs);
 	}
 }

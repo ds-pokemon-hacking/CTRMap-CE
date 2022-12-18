@@ -6,7 +6,9 @@ import ctrmap.editor.gui.editors.common.AbstractPerspective;
 import ctrmap.editor.gui.editors.common.AbstractTabbedEditor;
 import ctrmap.editor.gui.editors.common.AbstractToolbarEditor;
 import ctrmap.editor.gui.settings.SettingsPanel;
+import ctrmap.formats.common.GameInfo;
 import javax.swing.JMenuItem;
+import rtldr.JExtensionManager;
 import rtldr.JExtensionStateListener;
 import rtldr.JGarbageCollector;
 import rtldr.JRTLDRCore;
@@ -16,6 +18,7 @@ import rtldr.JExtensionReceiver;
 public class CTRMapPluginInterface implements JExtensionReceiver<ICTRMapPlugin> {
 
 	private final CTRMap cm;
+	private JExtensionManager<CTRMapPluginInterface, ICTRMapPlugin> extMgr;
 
 	private final JGarbageCollector<Class<? extends AbstractPerspective>> perspectiveGc = new JGarbageCollector<>();
 	private final JGarbageCollector<Class<? extends AbstractToolbarEditor>> toolbarEditorGc = new JGarbageCollector<>();
@@ -28,22 +31,47 @@ public class CTRMapPluginInterface implements JExtensionReceiver<ICTRMapPlugin> 
 		this.cm = cm;
 	}
 
+	void registAllUI() {
+		for (ICTRMapPlugin p : extMgr.getLoadedExtensions()) {
+			registNewPluginUI(p);
+		}
+	}
+
+	private void registNewPluginUI(ICTRMapPlugin ext) {
+		GameInfo game = cm.getGame();
+		JGarbageCollector.startListening(ext, menuItemGc, settingPanelGc, aboutDialogStringsGc);
+		gcUI(ext); //remove already added UI elements
+		ext.registUI(CTRMapPluginInterface.this, game);
+		JGarbageCollector.stopListening(menuItemGc, settingPanelGc, aboutDialogStringsGc);
+	}
+
+	private void gcUI(ICTRMapPlugin ext) {
+		menuItemGc.collect(ext, (t) -> {
+			cm.getUIManager().removeMenuItem(t);
+		});
+		settingPanelGc.collect(ext, (t) -> {
+			cm.getEditorManager().unregistSettingsPane(t);
+		});
+		aboutDialogStringsGc.collect(ext, (t) -> {
+			cm.getEditorManager().removeAboutDialogString(t);
+		});
+	}
+
 	void ready() {
 		System.out.println("CTRMapPlugin receiver ready");
-		JRTLDRCore.bindExtensionManager("CTRMapPlugin", this, new JExtensionStateListener<ICTRMapPlugin>() {
+		extMgr = JRTLDRCore.bindExtensionManager("CTRMapPlugin", this, new JExtensionStateListener<ICTRMapPlugin>() {
 			@Override
 			public void onExtensionLoaded(ICTRMapPlugin ext) {
-				aboutDialogStringsGc.startListening(ext);
 				perspectiveGc.startListening(ext);
 				ext.registPerspectives(CTRMapPluginInterface.this);
 				perspectiveGc.stopListening();
-				JGarbageCollector.startListening(ext, toolbarEditorGc, tabbedEditorGc, settingPanelGc);
+				JGarbageCollector.startListening(ext, toolbarEditorGc, tabbedEditorGc);
 				ext.registEditors(CTRMapPluginInterface.this);
-				JGarbageCollector.stopListening(toolbarEditorGc, tabbedEditorGc, settingPanelGc);
-				menuItemGc.startListening(ext);
-				ext.registUI(CTRMapPluginInterface.this);
-				menuItemGc.stopListening();
-				aboutDialogStringsGc.stopListening();
+				JGarbageCollector.stopListening(toolbarEditorGc, tabbedEditorGc);
+				//for plugins loaded after project is initialized, otherwise UI will be loaded when ready
+				if (cm.getProject() != null) {
+					registNewPluginUI(ext);
+				}
 			}
 
 			@Override
@@ -61,12 +89,7 @@ public class CTRMapPluginInterface implements JExtensionReceiver<ICTRMapPlugin> 
 					tabbedEditorGc.collect(ext, (t) -> {
 						cm.getEditorManager().unregistTabbedEditor(t);
 					});
-					settingPanelGc.collect(ext, (t) -> {
-						cm.getEditorManager().unregistSettingsPane(t);
-					});
-					aboutDialogStringsGc.collect(ext, (t) -> {
-						cm.getEditorManager().removeAboutDialogString(t);
-					});
+					gcUI(ext);
 				}));
 			}
 		});

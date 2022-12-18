@@ -55,7 +55,7 @@ public class MatAnimController extends AbstractAnimationController {
 	public void makeAnimationVectors(float frame) {
 		for (MatAnimBoneTransform bt : ((MaterialAnimation) anim).bones) {
 			for (int i = 0; i < 3; i++) {
-				MaterialAnimationFrame frm = bt.getFrame(frame, i);
+				MaterialAnimationFrame frm = bt.getFrame(frame, i, true);
 
 				if (frm.tx.exists) translationX[i].put(bt.name, -frm.tx.value);
 				if (frm.ty.exists) translationY[i].put(bt.name, -frm.ty.value);
@@ -63,6 +63,8 @@ public class MatAnimController extends AbstractAnimationController {
 				if (frm.sy.exists) scaleY[i].put(bt.name, frm.sy.value);
 				if (frm.r.exists) rotation[i].put(bt.name, frm.r.value);
 				textureName[i].put(bt.name, frm.textureName);
+				
+				frm.free();
 			}
 			colors.put(bt.name, bt.getColorFrame(frame));
 		}

@@ -5,7 +5,6 @@ import ctrmap.formats.pokemon.text.crypto.MessageTextCrypto;
 import xstandard.fs.FSFile;
 import xstandard.io.base.impl.ext.data.DataIOStream;
 import xstandard.io.structs.TemporaryOffset;
-import xstandard.io.structs.TemporaryValue;
 import xstandard.io.structs.TemporaryValueShort;
 import xstandard.util.ListenableList;
 import java.io.IOException;
@@ -18,8 +17,6 @@ public class TextFileRW {
 
 	public static void readLinesForFile(TextFile target, FSFile fsf, MessageHandler handler) {
 		try {
-			ListenableList<MsgStr> lines = new ListenableList<>();
-
 			GFMessageStream io = new GFMessageStream(fsf.getIO(), handler);
 			int sectCount = io.readShort();
 
@@ -39,12 +36,10 @@ public class TextFileRW {
 					int charCount = io.readUnsignedShort();
 					int extra = io.readUnsignedShort();
 					io.seek(offs + sectionStart);
-					lines.add(io.readString(charCount));
+					target.lines.add(io.readString(charCount));
 				}
 			}
 			io.close();
-
-			target.lines = lines;
 		} catch (IOException ex) {
 			Logger.getLogger(TextFileRW.class.getName()).log(Level.SEVERE, null, ex);
 		}

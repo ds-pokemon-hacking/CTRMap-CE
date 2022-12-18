@@ -85,6 +85,14 @@ public abstract class GFContainer {
 	public static boolean isContainer(byte[] data) {
 		return isContainer(new DataIOStream(data));
 	}
+	
+	public static boolean isContainer(FSFile fsf) {
+		try (DataInputEx in = fsf.getDataInputStream()) {
+			return isContainer(in);
+		} catch (IOException ex) { 
+			return false;
+		}
+	}
 
 	public static boolean isContainer(DataInputEx io) {
 		boolean r = false;

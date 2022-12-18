@@ -63,9 +63,7 @@ public class CTRMapMenuActions {
 
 		//Settings
 		uiMgr.addMenuItem(menuName_Options, "Settings", (cm) -> {
-			if (!SettingsForm.GLOBAL_SETTINGS_PANEL_LOCK) {
-				new SettingsForm(cm).setVisible(true);
-			}
+			SettingsForm.open(cm);
 		});
 
 		//Issue tracker
@@ -93,8 +91,6 @@ public class CTRMapMenuActions {
 			dlg.setSpecialThanks(cm.getEditorManager().getSpecialThanks());
 			dlg.setLocationRelativeTo(cm);
 			dlg.setVisible(true);
-
-			cm.broadcastGlobalEvent(AboutDialog.GEVENT_OPEN_ID);
 		});
 	}
 }

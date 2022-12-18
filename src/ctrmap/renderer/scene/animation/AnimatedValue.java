@@ -22,11 +22,16 @@ public class AnimatedValue {
 		this.exists = exists;
 		value = v;
 	}
+	
+	public AnimatedValue set(float newValue) {
+		value = newValue;
+		exists = true;
+		return this;
+	}
 
 	public void setIfNotExists(float newValue) {
 		if (!exists) {
-			value = newValue;
-			exists = true;
+			set(newValue);
 		}
 	}
 

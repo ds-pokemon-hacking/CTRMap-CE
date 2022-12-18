@@ -51,11 +51,12 @@ public class GL4RenderDriver implements IRenderDriver {
 		backend.flushFramebuffer(gl, this, state);
 	}
 
+	private final int[] bufferGenTemp = new int[1];
+
 	@Override
-	public int genBuffer() {
-		int[] buffers = new int[1];
-		gl.glGenBuffers(1, buffers, 0);
-		return buffers[0];
+	public synchronized int genBuffer() {
+		gl.glGenBuffers(1, bufferGenTemp, 0);
+		return bufferGenTemp[0];
 	}
 
 	@Override
@@ -137,7 +138,7 @@ public class GL4RenderDriver implements IRenderDriver {
 		gl.glFlush();
 	}
 
-	private int[] texBuf = new int[1];
+	private final int[] texBuf = new int[1];
 
 	@Override
 	public synchronized int genTexture() {
@@ -264,30 +265,36 @@ public class GL4RenderDriver implements IRenderDriver {
 		return backend.getProgramManager().getShaderProgram(this, mat);
 	}
 
-	@Override
-	public void uniformMatrix4fv(int location, Matrix4... matrices) {
-		if (matrices.length == 1) {
-			gl.glUniformMatrix4fv(location, 1, false, matrices[0].getMatrix(), 0);
-		} else {
-			float[] array = new float[matrices.length * 16];
-			for (int i = 0; i < matrices.length; i++) {
-				matrices[i].get(array, i * 16);
-			}
-			gl.glUniformMatrix4fv(location, matrices.length, false, array, 0);
-		}
-	}
+	private final float[] matrix4Fast = new float[256 * 16];
 
 	@Override
-	public void uniformMatrix3fv(int location, Matrix3f... matrices) {
-		if (matrices.length == 1) {
-			gl.glUniformMatrix3fv(location, 1, false, matrices[0].get(new float[9]), 0);
+	public synchronized void uniformMatrix4fv(int location, Matrix4... matrices) {
+		float[] array;
+		if (matrices.length * 16 <= matrix4Fast.length) {
+			array = matrix4Fast;
 		} else {
-			float[] array = new float[matrices.length * 9];
-			for (int i = 0; i < matrices.length; i++) {
-				matrices[i].get(array, i * 9);
-			}
-			gl.glUniformMatrix3fv(location, matrices.length, false, array, 0);
+			array = new float[matrices.length * 16];
 		}
+		for (int i = 0; i < matrices.length; i++) {
+			matrices[i].get(array, i * 16);
+		}
+		gl.glUniformMatrix4fv(location, matrices.length, false, array, 0);
+	}
+	
+	private final float[] matrix3Fast = new float[256 * 16];
+
+	@Override
+	public synchronized void uniformMatrix3fv(int location, Matrix3f... matrices) {
+		float[] array;
+		if (matrices.length * 12 <= matrix3Fast.length) {
+			array = matrix3Fast;
+		} else {
+			array = new float[matrices.length * 12];
+		}
+		for (int i = 0; i < matrices.length; i++) {
+			matrices[i].get(array, i * 12);
+		}
+		gl.glUniformMatrix3fv(location, matrices.length, false, array, 0);
 	}
 
 	@Override
@@ -299,18 +306,22 @@ public class GL4RenderDriver implements IRenderDriver {
 	public void uniform1iv(int location, int... values) {
 		gl.glUniform1iv(location, values.length, values, 0);
 	}
+	
+	private final float[] vec4fast = new float[256 * 4];
 
 	@Override
-	public void uniform4fv(int location, Vec4f... values) {
-		if (values.length == 1) {
-			gl.glUniform4fv(location, 1, values[0].toFloatUniform(), 0);
-		} else {
-			float[] floats = new float[values.length * 4];
-			for (int i = 0; i < values.length; i++) {
-				values[i].get(floats, i * 4);
-			}
-			gl.glUniform4fv(location, values.length, floats, 0);
+	public synchronized void uniform4fv(int location, Vec4f... values) {
+		float[] floats;
+		if (values.length * 4 <= vec4fast.length) {
+			floats = vec4fast;
 		}
+		else {
+			floats = new float[values.length * 4];
+		}
+		for (int i = 0; i < values.length; i++) {
+			values[i].get(floats, i * 4);
+		}
+		gl.glUniform4fv(location, values.length, floats, 0);
 	}
 
 	@Override
@@ -322,18 +333,22 @@ public class GL4RenderDriver implements IRenderDriver {
 	public void uniform1fv(int location, float... values) {
 		gl.glUniform1fv(location, values.length, values, 0);
 	}
+	
+	private final float[] vec3fast = new float[256 * 3];
 
 	@Override
-	public void uniform3fv(int location, Vec3f... values) {
-		if (values.length == 1) {
-			gl.glUniform3fv(location, 1, values[0].toFloatUniform(), 0);
-		} else {
-			float[] floats = new float[values.length * 3];
-			for (int i = 0; i < values.length; i++) {
-				values[i].get(floats, i * 3);
-			}
-			gl.glUniform3fv(location, values.length, floats, 0);
+	public synchronized void uniform3fv(int location, Vec3f... values) {
+		float[] floats;
+		if (values.length * 3 <= vec3fast.length) {
+			floats = vec3fast;
 		}
+		else {
+			floats = new float[values.length * 3];
+		}
+		for (int i = 0; i < values.length; i++) {
+			values[i].get(floats, i * 3);
+		}
+		gl.glUniform3fv(location, values.length, floats, 0);
 	}
 
 	@Override

@@ -30,21 +30,21 @@ import xstandard.math.AABB6f;
 
 public class G3DResource {
 
-	public ListenableList<Model> models = new ListenableList<>();
-	public ListenableList<Texture> textures = new ListenableList<>();
-	public ListenableList<Camera> cameras = new ListenableList<>();
-	public ListenableList<Light> lights = new ListenableList<>();
+	public final ListenableList<Model> models = new ListenableList<>();
+	public final ListenableList<Texture> textures = new ListenableList<>();
+	public final ListenableList<Camera> cameras = new ListenableList<>();
+	public final ListenableList<Light> lights = new ListenableList<>();
 
-	public ListenableList<MaterialAnimation> materialAnimations = new ListenableList<>();
-	public ListenableList<SkeletalAnimation> skeletalAnimations = new ListenableList<>();
-	public ListenableList<VisibilityAnimation> visibilityAnimations = new ListenableList<>();
-	public ListenableList<CameraAnimation> cameraAnimations = new ListenableList<>();
+	public final ListenableList<MaterialAnimation> materialAnimations = new ListenableList<>();
+	public final ListenableList<SkeletalAnimation> skeletalAnimations = new ListenableList<>();
+	public final ListenableList<VisibilityAnimation> visibilityAnimations = new ListenableList<>();
+	public final ListenableList<CameraAnimation> cameraAnimations = new ListenableList<>();
 
-	public ListenableList<G3DSceneTemplate> sceneTemplates = new ListenableList<>();
+	public final ListenableList<G3DSceneTemplate> sceneTemplates = new ListenableList<>();
 
 	public final AABB6f boundingBox = new AABB6f();
 	
-	public MetaData metaData = new MetaData();
+	public final MetaData metaData = new MetaData();
 
 	public G3DResource() {
 

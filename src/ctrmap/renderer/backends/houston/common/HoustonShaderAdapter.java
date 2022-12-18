@@ -1,5 +1,6 @@
 package ctrmap.renderer.backends.houston.common;
 
+import ctrmap.renderer.backends.RenderConstants;
 import ctrmap.renderer.backends.base.flow.IRenderDriver;
 import ctrmap.renderer.backends.base.shaderengine.ShaderProgram;
 import ctrmap.renderer.scene.Light;
@@ -49,14 +50,17 @@ public interface HoustonShaderAdapter extends IShaderAdapter {
 		driver.uniform1iv(program.getUniformLocation(HoustonUniforms.TEX_SAMPLER_LUT, driver), assignments);
 	}
 
+	final int[] boolUniforms = new int[HoustonUniforms.MESH_BOOLUNIFORMS_COUNT];
+
 	@Override
 	public default void setUpMeshBoolUniforms(Mesh mesh, IRenderDriver driver, ShaderProgram program) {
-		int[] boolUniforms = new int[HoustonUniforms.MESH_BOOLUNIFORMS_COUNT];
-		boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_COLOR_IDX] = mesh.hasColor ? 1 : 0;
-		boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_NORMAL_IDX] = mesh.hasNormal ? 1 : 0;
-		boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_TANGENT_IDX] = mesh.hasTangent ? 1 : 0;
-		boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_SKINNING_IDX] = mesh.hasBoneIndices ? 1 : 0;
-		driver.uniform1iv(program.getUniformLocation(HoustonUniforms.MESH_BOOLUNIFORMS, driver), boolUniforms);
+		synchronized (boolUniforms) {
+			boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_COLOR_IDX] = mesh.hasColor ? 1 : 0;
+			boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_NORMAL_IDX] = mesh.hasNormal ? 1 : 0;
+			boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_TANGENT_IDX] = mesh.hasTangent ? 1 : 0;
+			boolUniforms[HoustonUniforms.MESH_BOOLUNIFORMS_SKINNING_IDX] = mesh.hasBoneIndices ? 1 : 0;
+			driver.uniform1iv(program.getUniformLocation(HoustonUniforms.MESH_BOOLUNIFORMS, driver), boolUniforms);
+		}
 	}
 
 	@Override
@@ -124,13 +128,16 @@ public interface HoustonShaderAdapter extends IShaderAdapter {
 		driver.uniform1i(program.getUniformLocation(HoustonUniforms.TEV_ACTIVE_STAGE_COUNT_OVERRIDE, driver), count);
 	}
 
+	final int[] mapModes = new int[RenderConstants.TEXTURE_MAX];
+
 	public static void passTextureMapperUniforms(Material mat, ShaderProgram program, IRenderDriver gl) {
-		int[] mapModes = new int[Math.min(4, mat.textures.size())];
-		for (int i = 0; i < mapModes.length; i++) {
-			mapModes[i] = mat.textures.get(i).mapMode.ordinal();
-		}
-		if (mapModes.length > 0) {
-			gl.uniform1iv(program.getUniformLocation(HoustonUniforms.TEX_SAMPLER_MAP_MODES, gl), mapModes);
+		synchronized (mapModes) {
+			for (int i = 0; i < mat.textures.size(); i++) {
+				mapModes[i] = mat.textures.get(i).mapMode.ordinal();
+			}
+			if (mapModes.length > 0) {
+				gl.uniform1iv(program.getUniformLocation(HoustonUniforms.TEX_SAMPLER_MAP_MODES, gl), mapModes);
+			}
 		}
 	}
 }

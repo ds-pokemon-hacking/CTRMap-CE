@@ -29,6 +29,10 @@ public class MeshRenderFlow {
 
 	private static final Matrix4 SCALING_0 = Matrix4.createScale(0f, 0f, 0f);
 
+	//allocation free + thread safe
+	private static final int[] LUTTextureUnitsLUT = new int[MaterialParams.LUTTarget.values().length];
+	private static final int[] textureUvSetNos = new int[RenderConstants.TEXTURE_MAX];
+
 	public static void setUpDrawForModelMesh(
 		G3DResourceState resourceState,
 		Model model,
@@ -43,31 +47,6 @@ public class MeshRenderFlow {
 		Material mat = mesh.getMaterial(model);
 
 		G3DResourceInstance instance = resourceState.instance;
-
-		boolean isTexturingSuccess = false;
-		int[] LUTTextureUnitsLUT = new int[MaterialParams.LUTTarget.values().length];
-		boolean isLUTNeedsTangent = false;
-
-		if (mat != null && !renderState.hasFlag(RenderState.Flag.UNTEXTURED)) {
-			isTexturingSuccess = setupMaterialTextures(instance, mat, bufMem, gl);
-
-			int textureMax = RenderConstants.getTextureMax(mat);
-			int lutUnitIndex = textureMax;
-			for (int i = 0; i < mat.LUTs.size(); i++, lutUnitIndex++) {
-				LUT lut = mat.LUTs.get(i);
-				if (lut.textureName != null) {
-					Texture lutTexture = instance.getResTexture(lut.textureName);
-					if (lutTexture != null) {
-						setUpTexture(gl, lutTexture, lut, lutUnitIndex);
-						bufMem.registTexture(lutTexture);
-						LUTTextureUnitsLUT[lut.target.ordinal()] = lutUnitIndex;
-						isLUTNeedsTangent |= lut.source == MaterialParams.LUTSource.PHI;
-					}
-				}
-			}
-		} else {
-			gl.setTexturingEnable(false);
-		}
 
 		ShaderProgram program = gl.getShaderProgram(mat);
 
@@ -84,9 +63,38 @@ public class MeshRenderFlow {
 
 			passFragShaderUniforms(resourceState, mat, program, shaderHandler, gl);
 
-			shaderHandler.setUpLUTAssignments(LUTTextureUnitsLUT, gl, program);
+			boolean isTexturingSuccess = false;
 
-			shaderHandler.setLUTNeedsTangentUniform(isLUTNeedsTangent, gl, program);
+			if (mat != null) {
+				boolean isLUTNeedsTangent = false;
+
+				if (!renderState.hasFlag(RenderState.Flag.UNTEXTURED)) {
+					isTexturingSuccess = setupMaterialTextures(instance, mat, bufMem, gl);
+				} else {
+					gl.setTexturingEnable(false);
+				}
+
+				synchronized (LUTTextureUnitsLUT) {
+					int lutUnitIndex = RenderConstants.getTextureMax(mat);
+					for (int i = 0; i < mat.LUTs.size(); i++, lutUnitIndex++) {
+						LUT lut = mat.LUTs.get(i);
+						if (lut.textureName != null) {
+							Texture lutTexture = instance.getResTexture(lut.textureName);
+							if (lutTexture != null) {
+								setUpTexture(gl, lutTexture, lut, lutUnitIndex);
+								bufMem.registTexture(lutTexture);
+								LUTTextureUnitsLUT[lut.target.ordinal()] = lutUnitIndex;
+								isLUTNeedsTangent |= lut.source == MaterialParams.LUTSource.PHI;
+							}
+						}
+					}
+					shaderHandler.setUpLUTAssignments(LUTTextureUnitsLUT, gl, program);
+				}
+
+				shaderHandler.setLUTNeedsTangentUniform(isLUTNeedsTangent, gl, program);
+			} else {
+				gl.setTexturingEnable(false);
+			}
 
 			shaderHandler.setUpMeshBoolUniforms(mesh, gl, program);
 
@@ -182,9 +190,9 @@ public class MeshRenderFlow {
 
 	protected static void setUpTexture(IRenderDriver gl, Texture tex, TextureMapper mapper, int textureUnit) {
 		if (tex != null) {
-			uploadTexture(gl, tex);
-			gl.activeTexture(textureUnit);
 			gl.setTexturingEnable(true);
+			gl.activeTexture(textureUnit);
+			uploadTexture(gl, tex);
 			gl.bindTexture(tex.getPointer(gl));
 			gl.setUpTextureMapper(mapper);
 		}
@@ -316,13 +324,17 @@ public class MeshRenderFlow {
 
 				adapter.setUpTextureTransforms(transformMatrixBuf, gl, program);
 
-				int[] textureUvSetNos = new int[textureMax];
-				for (int i = 0; i < textureMax; i++) {
-					TextureMapper m = mat.textures.get(i);
-					textureUvSetNos[i] = m.uvSetNo;
-				}
+				synchronized (textureUvSetNos) {
+					for (int i = 0; i < textureMax; i++) {
+						TextureMapper m = mat.textures.get(i);
+						textureUvSetNos[i] = m.uvSetNo;
+					}
+					for (int i = textureMax; i < textureUvSetNos.length; i++) {
+						textureUvSetNos[i] = -1;
+					}
 
-				adapter.setUpMeshUVAssignments(textureUvSetNos, gl, program);
+					adapter.setUpMeshUVAssignments(textureUvSetNos, gl, program);
+				}
 			}
 
 			Vec4f[] lightingColors = new Vec4f[5];

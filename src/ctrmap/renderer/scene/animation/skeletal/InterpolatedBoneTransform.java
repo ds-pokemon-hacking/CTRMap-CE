@@ -24,7 +24,7 @@ public class InterpolatedBoneTransform extends SkeletalBoneTransform {
 	}
 
 	@Override
-	public Matrix4 getTransformMatrix(SkeletalAnimationTransformRequest req) {
+	public Matrix4 getTransformMatrix(SkeletalAnimationTransformRequest req, Matrix4 dest) {
 		float weight = timer.getInterpolationWeight();
 		req.frame = ctrlL.frame;
 		SkeletalAnimationFrame left = leftBT.getFrame(req);
@@ -32,24 +32,25 @@ public class InterpolatedBoneTransform extends SkeletalBoneTransform {
 		SkeletalAnimationFrame right = rightBT.getFrame(req);
 
 		if (weight == 1f) {
-			return right.createTransformMatrix();
+			right.getTransformMatrix(dest);
+		} else if (weight == 0f) {
+			left.getTransformMatrix(dest);
+		} else {
+			Vec3f translation = new Vec3f(left.getTranslation(), right.getTranslation(), weight);
+			Vec3f scale = new Vec3f(left.getScale(), right.getScale(), weight);
+			Quaternionf quat = left.getRotation();
+			quat.slerp(right.getRotation(), weight);
+			quat.normalize();
+
+			dest.translation(translation);
+			dest.rotate(quat);
+			dest.scale(scale);
 		}
-		if (weight == 0f) {
-			return left.createTransformMatrix();
-		}
+		
+		left.free();
+		right.free();
 
-		Vec3f translation = new Vec3f(left.getTranslation(), right.getTranslation(), weight);
-		Vec3f scale = new Vec3f(left.getScale(), right.getScale(), weight);
-		Quaternionf quat = left.getRotation();
-		quat.slerp(right.getRotation(), weight);
-		quat.normalize();
-
-		Matrix4 mtx = new Matrix4();
-		mtx.translate(translation);
-		mtx.rotate(quat);
-		mtx.scale(scale);
-
-		return mtx;
+		return dest;
 	}
 
 	@Override
@@ -61,13 +62,15 @@ public class InterpolatedBoneTransform extends SkeletalBoneTransform {
 		SkeletalAnimationFrame right = rightBT.getFrame(req);
 
 		if (weight == 1f) {
+			left.free();
 			return right;
 		}
 		if (weight == 0f) {
+			right.free();
 			return left;
 		}
 
-		SkeletalAnimationFrame frm = new SkeletalAnimationFrame();
+		SkeletalAnimationFrame frm = new SkeletalAnimationFrame(req.useManualAllocation);
 		if (req.translation) {
 			Vec3f translation = new Vec3f(left.getTranslation(), right.getTranslation(), weight);
 			frm.tx.setIfNotExists(translation.x);
@@ -89,6 +92,9 @@ public class InterpolatedBoneTransform extends SkeletalBoneTransform {
 			frm.sy.setIfNotExists(scale.y);
 			frm.sz.setIfNotExists(scale.z);
 		}
+
+		left.free();
+		right.free();
 
 		return frm;
 	}

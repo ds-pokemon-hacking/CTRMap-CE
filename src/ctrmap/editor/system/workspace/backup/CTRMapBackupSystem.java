@@ -63,13 +63,7 @@ public class CTRMapBackupSystem {
 
 				if (man.isProjectLaunchSuccess()) {
 					CTRMapProject oldProject = project;
-					try {
-						SwingUtilities.invokeAndWait((() -> {
-							cm.closeProject();
-						}));
-					} catch (InterruptedException | InvocationTargetException ex) {
-						Logger.getLogger(CTRMapBackupSystem.class.getName()).log(Level.SEVERE, null, ex);
-					}
+					cm.closeProject();
 
 					FSFile oldProjectRoot = oldProject.prjCfgFile.getParent();
 

@@ -204,7 +204,6 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 		g3dViewport.scene.addSceneAnimationCallback(new SceneAnimationCallback() {
 			@Override
 			public void run(float frameAdvance) {
-				g3dViewport.scene.setAllCameraAspectRatio(g3dViewport.getViewportInfo().getAspectRatio());
 				anmControl.updateAllControls();
 			}
 		});
@@ -983,9 +982,6 @@ public class NGCS extends javax.swing.JFrame implements NGCSContentAccessor {
 			overwriteINamedList(mdl.materials, target.materials);
 			overwriteINamedList(mdl.meshes, target.meshes);
 			if (mdl.skeleton != null) {
-				if (target.skeleton == null) {
-					target.skeleton = new Skeleton();
-				}
 				overwriteINamedList(mdl.skeleton.getJoints(), target.skeleton.getJoints());
 			}
 

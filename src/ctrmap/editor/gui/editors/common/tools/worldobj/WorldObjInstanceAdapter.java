@@ -60,8 +60,6 @@ public class WorldObjInstanceAdapter extends ModelInstance {
 		return arr;
 	}
 
-	protected static final Skeleton dimGizmoSkeleton = new Skeleton();
-
 	protected static final G3DResource dimGizmoCompassRoseResource = new CMVD(CTRMapResources.ACCESSOR.getStream("navigator/CompassRose.cmvd")).toGeneric();
 
 	protected WorldObject obj;
@@ -87,7 +85,6 @@ public class WorldObjInstanceAdapter extends ModelInstance {
 
 	private static G3DResource getGizmoModel(MaterialProvider matProvider, float unitSize) {
 		Model model = new Model();
-		model.skeleton = dimGizmoSkeleton;
 		Mesh[] meshes = getDimGizmoMeshes(unitSize);
 		model.addMesh(meshes[0]);
 		model.addMesh(meshes[1]);

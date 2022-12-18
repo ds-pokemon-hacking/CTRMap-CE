@@ -5,13 +5,9 @@ import java.awt.Dimension;
 public class ViewportInfo {
 
 	public final Dimension surfaceDimensions;
-	public final float zNear;
-	public final float zFar;
 
-	public ViewportInfo(Dimension surfaceDim, float zNear, float zFar) {
+	public ViewportInfo(Dimension surfaceDim) {
 		surfaceDimensions = surfaceDim;
-		this.zNear = zNear;
-		this.zFar = zFar;
 	}
 
 	public int[] getViewportMatrix() {

@@ -223,6 +223,8 @@ public class CurvePlayground extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        renderer.setSyncAspectRatio(true);
+
         jLabel1.setText("Tangent:");
 
         tangent.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));

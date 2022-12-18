@@ -85,6 +85,7 @@ public class CameraViewpointBoneTransform extends CameraBoneTransform {
 
 		float frameDiff = frame - floorFrame;
 		CameraViewpointFrame frm;
+		doNotInterpolate = true;
 		if (doNotInterpolate || frameDiff == 0f || (rx.isEmpty() || ry.isEmpty() || rz.isEmpty())) {
 			frm = getRotationExact(frame);
 		} else {
@@ -102,8 +103,9 @@ public class CameraViewpointBoneTransform extends CameraBoneTransform {
 			CameraViewpointFrame right = getRotationExact(ceilFrame);
 
 			Quaternion q = left.getRotationQuat(false);
-			q.slerp(right.getRotationQuat(false), frameDiff / (ceilFrame - floorFrame));
+			q.slerp(right.getRotationQuat(false), MathEx.clamp(0f, 1f, frameDiff / (ceilFrame - floorFrame)));
 			Vec3f eulers = q.getEulerRotation();
+			frm.rotQuat = q;
 			frm.rx = new AnimatedValue(MathEx.toDegreesf(eulers.x));
 			frm.ry = new AnimatedValue(MathEx.toDegreesf(eulers.y));
 			frm.rz = new AnimatedValue(MathEx.toDegreesf(eulers.z));

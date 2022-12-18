@@ -5,6 +5,7 @@ import ctrmap.renderer.scene.metadata.MetaData;
 import ctrmap.renderer.scenegraph.NamedResource;
 import xstandard.math.MathEx;
 import xstandard.math.vec.Matrix4;
+import xstandard.math.vec.Quaternion;
 import xstandard.math.vec.Vec3f;
 
 public class Camera implements NamedResource {
@@ -19,6 +20,7 @@ public class Camera implements NamedResource {
 	//rotate view
 	public Vec3f translation = new Vec3f();
 	public Vec3f rotation = new Vec3f();
+	public Quaternion rotQuat; //ugly workaround for animation. should really be rewritten
 
 	//lookat view
 	public Vec3f lookAtTarget = new Vec3f();
@@ -124,7 +126,11 @@ public class Camera implements NamedResource {
 			switch (viewMode) {
 				case ROTATE:
 					mtx.translation(translation);
-					mtx.rotateZYXDeg(rotation.z, rotation.y, rotation.x);
+					if (rotQuat != null) {
+						mtx.rotate(rotQuat);
+					} else {
+						mtx.rotateZYXDeg(rotation.z, rotation.y, rotation.x);
+					}
 					break;
 				case LOOK_AT:
 					mtx.setLookAt(translation, lookAtTarget, lookAtUpVec).invert();
@@ -148,13 +154,16 @@ public class Camera implements NamedResource {
 	}
 
 	public Matrix4 getProjectionMatrix() {
-		Matrix4 mtx = new Matrix4();
+		return getProjectionMatrix(new Matrix4());
+	}
+
+	public Matrix4 getProjectionMatrix(Matrix4 dest) {
 		if (projMode == ProjectionMode.PERSPECTIVE) {
-			mtx.setPerspective(toRadians(FOV), aspect, zNear, zFar);
+			dest.setPerspective(toRadians(FOV), aspect, zNear, zFar);
 		} else {
-			mtx.setOrtho(left, right, bottom, top, -zFar, zFar);
+			dest.setOrtho(left, right, bottom, top, -zFar, zFar);
 		}
-		return mtx;
+		return dest;
 	}
 
 	public void setDefaultOrtho() {

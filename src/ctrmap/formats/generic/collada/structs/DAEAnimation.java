@@ -209,7 +209,7 @@ public class DAEAnimation implements DAEIDAble, DAESerializable {
 						case NONE:
 							Matrix4[] matrices = new Matrix4[(int) frameCount + 1];
 
-							SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(0f);
+							SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(0f, true);
 							SkeletalAnimationTransformRequest parentScaleReq = new SkeletalAnimationTransformRequest(0f);
 							parentScaleReq.translation = false;
 							parentScaleReq.rotation = false;
@@ -222,7 +222,7 @@ public class DAEAnimation implements DAEIDAble, DAESerializable {
 
 								for (int frame = 0; frame <= frameCount; frame++) {
 									req.frame = frame;
-									matrices[frame] = bt.getTransformMatrix(req);
+									matrices[frame] = bt.getTransformMatrix(req, new Matrix4());
 									if (req.bindJoint.isScaleCompensate() && parentJoint != null) {
 										if (parentBT == null) {
 											matrices[frame].invScale(parentJoint.scale);

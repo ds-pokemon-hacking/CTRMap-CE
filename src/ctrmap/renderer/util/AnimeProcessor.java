@@ -1,5 +1,6 @@
 package ctrmap.renderer.util;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import xstandard.math.vec.Vec3f;
 import ctrmap.renderer.scene.animation.*;
 import ctrmap.renderer.scene.animation.camera.*;
@@ -126,18 +127,20 @@ public class AnimeProcessor {
 			Vec3f t = new Vec3f();
 			Vec3f r = new Vec3f();
 
-			SkeletalAnimationTransformRequest transformReq = new SkeletalAnimationTransformRequest(0f);
+			SkeletalAnimationTransformRequest transformReq = new SkeletalAnimationTransformRequest(0f, true);
 			transformReq.bindJoint = jnt;
 
 			for (int i = 0; i < anime.frameCount; i++) {
 				for (int j = 0; j < transformList.size(); j++) {
 					transformReq.bindJoint = jointList.get(j);
 					transformReq.frame = i;
-					mtxStack.push(transformList.get(j).getTransformMatrix(transformReq));
+					mtxStack.push(transformList.get(j).getTransformMatrix(transformReq, RenderAllocator.allocMatrix()));
 				}
 				Matrix4 mtx = new Matrix4();
 				while (!mtxStack.empty()) {
-					mtx.mul(mtxStack.pop());
+					Matrix4 mul = mtxStack.pop();
+					mtx.mul(mul);
+					RenderAllocator.freeMatrix(mul);
 				}
 
 				mtx.getTranslation(t);
@@ -198,12 +201,12 @@ public class AnimeProcessor {
 
 								SkeletalMatrixBakery jointBakery = new SkeletalMatrixBakery(anm, anm.skeleton, joint);
 
-								SkeletalAnimationTransformRequest reqEff = new SkeletalAnimationTransformRequest(0f);
+								SkeletalAnimationTransformRequest reqEff = new SkeletalAnimationTransformRequest(0f, true);
 								reqEff.bindJoint = effector;
 								reqEff.rotation = false;
 								reqEff.scale = false;
 
-								SkeletalAnimationTransformRequest reqJnt = new SkeletalAnimationTransformRequest(0f);
+								SkeletalAnimationTransformRequest reqJnt = new SkeletalAnimationTransformRequest(0f, true);
 								reqJnt.bindJoint = joint;
 								reqJnt.rotation = false;
 								reqJnt.scale = false;
@@ -212,13 +215,17 @@ public class AnimeProcessor {
 									Matrix4 jointMtxG = jointBakery.manualBake(frame).invert(); //inverse parent matrix
 									reqEff.frame = frame;
 									reqJnt.frame = frame;
-									Vec3f effTransGlobal = btE.getFrame(reqEff).getTranslation();
+									SkeletalAnimationFrame frameE = btE.getFrame(reqEff);
+									SkeletalAnimationFrame frameJ = btJ.getFrame(reqJnt);
+									Vec3f effTransGlobal = frameE.getTranslation();
 									effTransGlobal.mulPosition(jointMtxG);
-									Vec3f jntTransLocal = btJ.getFrame(reqJnt).getTranslation();
+									Vec3f jntTransLocal = frameJ.getTranslation();
 									tempRotQuat.rotationTo(jntTransLocal, effTransGlobal);
 									jointR[frame] = tempRotQuat.getEulerRotation();
 									effTransGlobal.rotate(tempRotQuat.invert());
 									localT[frame] = effTransGlobal;
+									frameE.free();
+									frameJ.free();
 								}
 
 								joint.kinematicsRole = Skeleton.KinematicsRole.NONE;
@@ -265,9 +272,10 @@ public class AnimeProcessor {
 
 		for (KeyFrameTuple t : tuples) {
 			dummyCtrl.frame = t.frame;
-			dummyCtrl.makeAnimationMatrices(dummyCtrl.frame, anime.skeleton);
+			dummyCtrl.makeAnimationMatrices(dummyCtrl.frame, anime.skeleton, true);
 			G3DResourceState dummyState = new G3DResourceState(dummyG3DInstance);
 			Matrix4 mtx = dummyState.getAnimatedJointMatrix(dummyModel.skeleton.getJoint(bt.name), dummyState.getFastSkeleton(dummyModel.skeleton));
+			dummyState.destroy();
 			if (mtx != null) {
 				Vec3f globalTrans = mtx.getTranslation();
 				if (t.x != null) {
@@ -603,7 +611,10 @@ public class AnimeProcessor {
 					if (ang > 0.5f) {
 						/*System.out.println("last " + prev.x + " / " + prev.y + " / " + prev.z);
 						System.out.println("now " + t.x + " / " + t.y + " / " + t.z);*/
-						prev.setStepInterp();
+						prev.setInterp(KeyFrame.InterpolationMethod.STEP);
+						if (prev.isHermite() && t.isHermite()) {
+							t.setInterp(KeyFrame.InterpolationMethod.LINEAR);
+						}
 					}
 				}
 
@@ -638,16 +649,29 @@ public class AnimeProcessor {
 			this.kfY = kfY;
 			this.kfZ = kfZ;
 		}
-
-		public void setStepInterp() {
+		
+		public boolean isHermite() {
 			if (kfX != null) {
-				kfX.interpolation = KeyFrame.InterpolationMethod.STEP;
+				return kfX.interpolation == KeyFrame.InterpolationMethod.HERMITE;
 			}
 			if (kfY != null) {
-				kfY.interpolation = KeyFrame.InterpolationMethod.STEP;
+				return kfY.interpolation == KeyFrame.InterpolationMethod.HERMITE;
 			}
 			if (kfZ != null) {
-				kfZ.interpolation = KeyFrame.InterpolationMethod.STEP;
+				return kfZ.interpolation == KeyFrame.InterpolationMethod.HERMITE;
+			}
+			return false;
+		}
+
+		public void setInterp(KeyFrame.InterpolationMethod interp) {
+			if (kfX != null) {
+				kfX.interpolation = interp;
+			}
+			if (kfY != null) {
+				kfY.interpolation = interp;
+			}
+			if (kfZ != null) {
+				kfZ.interpolation = interp;
 			}
 		}
 	}
@@ -803,7 +827,7 @@ public class AnimeProcessor {
 			KeyFrame thisKF = l.get(i);
 			KeyFrame nextKF = l.get(i + 1);
 
-			if (nextKF.frame - thisKF.frame < 1.05f) {
+			if (nextKF.frame - thisKF.frame < 2.05f) {
 				/*float divided25 = Math.abs(nextKF.value - thisKF.value) / 0.25f;
 				float divided10 = Math.abs(nextKF.value - thisKF.value) / 0.10f;
 				boolean isCloseTo25Mult = divided25 != 0 && Math.abs(divided25 - Math.round(divided25)) < (0.01 * divided25);
@@ -812,12 +836,11 @@ public class AnimeProcessor {
 					thisKF.interpolation = KeyFrame.InterpolationMethod.STEP;
 				}*/
 				if (Math.abs(nextKF.value - thisKF.value) > 0.11f) {
-					thisKF.interpolation = KeyFrame.InterpolationMethod.STEP;
-				}
+					if (thisKF.interpolation == KeyFrame.InterpolationMethod.HERMITE && nextKF.interpolation == KeyFrame.InterpolationMethod.HERMITE) {
+						nextKF.interpolation = KeyFrame.InterpolationMethod.LINEAR;
+					}
 
-				if (thisKF.interpolation == KeyFrame.InterpolationMethod.HERMITE && nextKF.interpolation == KeyFrame.InterpolationMethod.HERMITE) {
-					thisKF.interpolation = KeyFrame.InterpolationMethod.LINEAR;
-					nextKF.interpolation = KeyFrame.InterpolationMethod.LINEAR;
+					thisKF.interpolation = KeyFrame.InterpolationMethod.STEP;
 				}
 			}
 		}
@@ -858,11 +881,12 @@ public class AnimeProcessor {
 
 	public static int createKeyframes(List<KeyFrame> l, float threshold) {
 		int count = 0;
+		AnimatedValue temp = RenderAllocator.allocAnimatedValue();
 		for (int i = 0; i < l.size() - 2; i++) {
 			KeyFrame thisKF = l.get(i);
 			KeyFrame nextKF = l.get(i + 1);
 			KeyFrame afterKF = l.get(i + 2);
-			AnimatedValue interpValue = AbstractBoneTransform.getValueInterpolated(thisKF, afterKF, nextKF.frame);
+			AnimatedValue interpValue = AbstractBoneTransform.getValueInterpolated(thisKF, afterKF, nextKF.frame, temp);
 			if (interpValue.exists) { //it always should, but why not check it
 				if (MathEx.impreciseFloatEquals(interpValue.value, nextKF.value, threshold)) {
 					l.remove(i + 1);
@@ -877,6 +901,7 @@ public class AnimeProcessor {
 				l.remove(1);
 			}
 		}
+		RenderAllocator.freeAnimatedValue(temp);
 
 		return count;
 	}

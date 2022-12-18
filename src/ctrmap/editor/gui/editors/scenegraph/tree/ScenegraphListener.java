@@ -10,6 +10,10 @@ public abstract class ScenegraphListener<T> implements ListenableList.ElementCha
 		this.node = node;
 	}
 	
+	public void free() {
+		node = null;
+	}
+	
 	protected abstract ScenegraphExplorerNode createNode(T elem);
 
 	@Override

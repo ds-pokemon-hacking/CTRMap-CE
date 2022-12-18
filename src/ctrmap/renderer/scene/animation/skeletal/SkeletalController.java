@@ -1,5 +1,6 @@
 package ctrmap.renderer.scene.animation.skeletal;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import ctrmap.renderer.scene.model.Skeleton;
 import ctrmap.renderer.backends.base.RenderSettings;
 import ctrmap.renderer.scene.animation.AbstractAnimation;
@@ -65,6 +66,15 @@ public class SkeletalController extends AbstractAnimationController {
 		animatedTransform.clear();
 	}
 	
+	public void freeMatrices() {
+		for (Map<String, Matrix4> map : animatedTransform.values()) {
+			for (Matrix4 mat : map.values()) {
+				RenderAllocator.freeMatrix(mat);
+			}
+		}
+		animatedTransform.clear();
+	}
+	
 	protected float advanceFrameImpl(float globalStep, RenderSettings settings){
 		super.advanceFrame(globalStep, settings);
 		
@@ -82,7 +92,7 @@ public class SkeletalController extends AbstractAnimationController {
 		return frameFinal;
 	}
 
-	public void makeAnimationMatrices(float frame, Skeleton skeleton) {
+	public void makeAnimationMatrices(float frame, Skeleton skeleton, boolean manualAllocation) {
 		if (this.skeleton != null) {
 			skeleton = this.skeleton;
 		}
@@ -94,7 +104,7 @@ public class SkeletalController extends AbstractAnimationController {
 			skeleton.buildTransforms();
 		}
 		
-		SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(frame);
+		SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(frame, manualAllocation);
 		
 		Map<String, Matrix4> mtxMap = new HashMap<>();
 		
@@ -103,16 +113,16 @@ public class SkeletalController extends AbstractAnimationController {
 
 			if (anim.getBoneTransform(j.name) != null){
 				req.bindJoint = j;
-				mtxMap.put(j.name, getJointMatrix(req));
+				mtxMap.put(j.name, getJointMatrix(req, manualAllocation ? RenderAllocator.allocMatrix() : new Matrix4()));
 			}
 		}
 		
 		animatedTransform.put(skeleton, mtxMap);
 	}
 
-	protected Matrix4 getJointMatrix(SkeletalAnimationTransformRequest req) {
+	protected Matrix4 getJointMatrix(SkeletalAnimationTransformRequest req, Matrix4 dest) {
 		SkeletalBoneTransform bt = getBoneTransform(req.bindJoint.name);
-		return bt.getTransformMatrix(req);
+		return bt.getTransformMatrix(req, dest);
 	}
 	
 	public SkeletalBoneTransform getBoneTransform(String name){

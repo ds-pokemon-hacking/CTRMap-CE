@@ -34,6 +34,7 @@ public class CSG3DSurface extends RenderSurface {
 		scene = getScene();
 
 		scene.addChild(grid);
+		setSyncAspectRatio(true);
 	}
 
 	public void setAttrShader(String name) {
@@ -51,8 +52,6 @@ public class CSG3DSurface extends RenderSurface {
 
 		public CSG3DRenderSettings() {
 			super();
-			Z_NEAR = 10f;
-			Z_FAR = 3000;
 			FRAMERATE_CAP = 240;
 			ANIMATION_USE_30FPS_SKL = false;
 			CLEAR_COLOR = new RGBA(65, 65, 65, 255);

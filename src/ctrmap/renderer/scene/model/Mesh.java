@@ -57,6 +57,16 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 		useIBO = source.useIBO;
 		metaData = source.metaData;
 	}
+	
+	public static Mesh mirror(Mesh source) {
+		Mesh m2 = new Mesh();
+		m2.setAttributes(source);
+		m2.vertices = source.vertices;
+		m2.indices = source.indices;
+		m2.useIBO = source.useIBO;
+		m2.metaData = source.metaData;
+		return m2;
+	}
 
 	public void setAttributes(Mesh source) {
 		name = source.name;

@@ -1,5 +1,6 @@
 package ctrmap.renderer.scene.animation.skeletal;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import ctrmap.renderer.backends.base.RenderSettings;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.scene.model.Joint;
@@ -101,7 +102,7 @@ public class InterpolatedSkeletalController extends SkeletalController {
 	}
 	
 	@Override
-	public void makeAnimationMatrices(float frame, Skeleton skeleton) {
+	public void makeAnimationMatrices(float frame, Skeleton skeleton, boolean manualAllocation) {
 		if (this.skeleton != null) {
 			skeleton = this.skeleton;
 		}
@@ -113,14 +114,14 @@ public class InterpolatedSkeletalController extends SkeletalController {
 			skeleton.buildTransforms();
 		}
 
-		SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(frame);
+		SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(frame, manualAllocation);
 		
 		Map<String, Matrix4> mtxMap = new HashMap<>();
 		
 		for (int i = 0; i < skeleton.getJoints().size(); i++) {
 			Joint j = skeleton.getJoint(i);
 			req.bindJoint = j;
-			mtxMap.put(j.name, getJointMatrix(req));
+			mtxMap.put(j.name, getJointMatrix(req, manualAllocation ? RenderAllocator.allocMatrix() : new Matrix4()));
 		}
 		
 		animatedTransform.put(skeleton, mtxMap);

@@ -1,5 +1,6 @@
 package ctrmap.renderer.scenegraph;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import ctrmap.renderer.scene.Camera;
 import ctrmap.renderer.scene.Light;
 import ctrmap.renderer.scene.animation.camera.CameraAnimationController;
@@ -23,7 +24,7 @@ import xstandard.math.FAtan;
 import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.Quaternion;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.List;
 import java.util.Map;
 import org.joml.Matrix3f;
@@ -38,16 +39,17 @@ public class G3DResourceState {
 	public final Matrix4 modelMatrix;
 	public final Matrix4 viewMatrix;
 
-	public final Matrix3f normalMatrix = new Matrix3f();
+	public final Matrix3f normalMatrix;
 
 	private Matrix4 projectionMatrix = null;
 
 	private Matrix4 modelViewMatrix;
 
 	public final List<Camera> cameras = new ArrayList<>();
+	private final List<Matrix4> camMatrices = new ArrayList<>();
 
 	public List<Light> lights = new ArrayList<>();
-	public Map<Light, Matrix4> lightMatrices = new HashMap<>();
+	public Map<Light, Matrix4> lightMatrices = new WeakHashMap<>();
 
 	public List<MatAnimController> materialAnimations = new ArrayList<>();
 	public List<SkeletalController> skeletalAnimations = new ArrayList<>();
@@ -55,24 +57,24 @@ public class G3DResourceState {
 	public List<CameraAnimationController> cameraAnimations = new ArrayList<>();
 	public List<KinematicsController> kinematics = new ArrayList<>();
 
-	public Map<Skeleton, FastSkeleton> fastSkeletons = new HashMap<>();
+	public Map<Skeleton, FastSkeleton> fastSkeletons = new WeakHashMap<>();
 
-	public Map<Joint, Matrix4> animatedTransforms = new HashMap<>();
-	private Map<Joint, Matrix4> localBindTransforms = new HashMap<>();
-	public Map<Joint, Matrix4> globalBindTransforms = new HashMap<>();
+	public Map<Joint, Matrix4> animatedTransforms = new WeakHashMap<>();
+	private Map<Joint, Matrix4> localBindTransforms = new WeakHashMap<>();
+	public Map<Joint, Matrix4> globalBindTransforms = new WeakHashMap<>();
 
-	public Map<String, CameraAnimationFrame> cameraTransforms = new HashMap<>();
+	public Map<String, CameraAnimationFrame> cameraTransforms = new WeakHashMap<>();
 
-	public Map<String, Boolean> meshVisibilities = new HashMap<>();
-	public Map<String, Boolean> visGroupVisibilities = new HashMap<>();
-	public Map<String, Boolean> jointVisibilities = new HashMap<>();
+	public Map<String, Boolean> meshVisibilities = new WeakHashMap<>();
+	public Map<String, Boolean> visGroupVisibilities = new WeakHashMap<>();
+	public Map<String, Boolean> jointVisibilities = new WeakHashMap<>();
 
 	public G3DResourceInstance instance;
 
 	public G3DResourceState parent;
 	public List<G3DResourceState> children = new ArrayList<>();
 
-	public Map<Model, AABB6f> boundingBoxes = new HashMap<>();
+	public Map<Model, AABB6f> boundingBoxes = new WeakHashMap<>();
 
 	public G3DResourceState(G3DResourceInstance instance) {
 		this(instance, null);
@@ -84,9 +86,14 @@ public class G3DResourceState {
 
 		//Local matrices
 		updateProjMatrix = instance.hasProjectionMatrix();
-		localModelMatrix = instance.getModelMatrix();
-		cameraMatrix = parent == null ? new Matrix4() : parent.cameraMatrix.clone();
-		modelMatrix = parent == null ? new Matrix4() : parent.modelMatrix.clone();
+		localModelMatrix = mallocMatrix();
+		instance.getModelMatrix(localModelMatrix);
+		cameraMatrix = mallocMatrix();
+		modelMatrix = mallocMatrix();
+		if (parent != null) {
+			cameraMatrix.set(parent.cameraMatrix);
+			modelMatrix.set(parent.modelMatrix);
+		}
 
 		//Local animation controllers
 		materialAnimations = instance.getLocalResMatAnimControllers();
@@ -112,7 +119,12 @@ public class G3DResourceState {
 				case ALL:
 					break;
 				case TRANSLATION:
-					modelMatrix.mul(parent.localModelMatrix.clone().clearTranslation().invert());
+					Matrix4 temp = mallocMatrix();
+					temp.set(parent.localModelMatrix);
+					temp.clearTranslation();
+					temp.invert();
+					modelMatrix.mul(temp);
+					RenderAllocator.freeMatrix(temp);
 					break;
 				case TRANSLATION_AND_ROTATION:
 					modelMatrix.scale(parent.instance.getScale().recip());
@@ -146,8 +158,11 @@ public class G3DResourceState {
 
 		modelMatrix.mul(localModelMatrix);
 		cameraMatrix.multiplyRight(instance.getCameraMatrix(false));
-		viewMatrix = cameraMatrix.clone().invert();
-		modelViewMatrix = getModelViewMatrix();
+		viewMatrix = mallocMatrix();
+		viewMatrix.set(cameraMatrix);
+		viewMatrix.invert();
+		modelViewMatrix = createModelViewMatrix();
+		normalMatrix = RenderAllocator.allocMatrix3f();
 		modelViewMatrix.normal(normalMatrix);
 
 		for (Light l : lights) {
@@ -166,23 +181,59 @@ public class G3DResourceState {
 		}
 	}
 
+	private Matrix4 mallocMatrix() {
+		return RenderAllocator.allocMatrix();
+	}
+
+	private Matrix4 cloneMatrix(Matrix4 m) {
+		Matrix4 m2 = mallocMatrix();
+		m2.set(m);
+		return m2;
+	}
+
+	private void destroyMatrixMap(Map<?, Matrix4> map) {
+		for (Matrix4 m : map.values()) {
+			RenderAllocator.freeMatrix(m);
+		}
+		map.clear();
+	}
+
+	public void destroy() {
+		for (Camera cam : cameras) {
+			cam.rotQuat = null;
+		}
+		RenderAllocator.freeMatrices(localModelMatrix, cameraMatrix, modelMatrix, viewMatrix, modelViewMatrix, projectionMatrix);
+		RenderAllocator.freeMatrix3f(normalMatrix);
+
+		//destroyMatrixMap(lightMatrices); //- light matrices are just copies of the modelview matrix - do not waste time destroying
+		destroyMatrixMap(animatedTransforms);
+		destroyMatrixMap(globalBindTransforms);
+		destroyMatrixMap(localBindTransforms);
+		lightMatrices = null;
+		animatedTransforms = null;
+		globalBindTransforms = null;
+		localBindTransforms = null;
+
+		for (SkeletalController sc : skeletalAnimations) {
+			sc.freeMatrices();
+		}
+
+		for (G3DResourceState ch : children) {
+			ch.destroy();
+		}
+	}
+
 	private void mergeParentSceneData(G3DResourceState parent) {
 		if (parent != null) {
 			materialAnimations.addAll(parent.materialAnimations);
 			if (skeletalAnimations.isEmpty()) {
 				skeletalAnimations.addAll(parent.skeletalAnimations); //only add parent skeletal animations if not local animation is bound
 			}
-			for (SkeletalController sc : skeletalAnimations) {
-				if (instance.resource != null) {
-					for (Model mdl : instance.resource.models) {
-						sc.makeAnimationMatrices(sc.frame, mdl.skeleton);
-					}
-				}
-			}
+
 			cameraAnimations.addAll(parent.cameraAnimations);
 			visibilityAnimations.addAll(parent.visibilityAnimations);
 			for (Map.Entry<Joint, Matrix4> e : parent.animatedTransforms.entrySet()) {
-				putAnimatedTransform(e.getKey(), e.getValue().clone());
+				putAnimatedTransform(e.getKey(), e.getValue());
 			}
 			for (Map.Entry<String, CameraAnimationFrame> e : parent.cameraTransforms.entrySet()) {
 				cameraTransforms.put(e.getKey(), e.getValue());
@@ -256,6 +307,13 @@ public class G3DResourceState {
 	}
 
 	private void applySkeletalAnimation() {
+		for (SkeletalController sc : skeletalAnimations) {
+			if (instance.resource != null) {
+				for (Model mdl : instance.resource.models) {
+					sc.makeAnimationMatrices(sc.frame, mdl.skeleton, true);
+				}
+			}
+		}
 		if (instance.resource != null) {
 			for (Model mdl : instance.resource.models) {
 				if (mdl.isVisible) {
@@ -271,18 +329,17 @@ public class G3DResourceState {
 		}
 	}
 
-	public final Matrix4 getModelViewMatrix() {
-		if (modelViewMatrix != null) {
-			return modelViewMatrix;
-		}
-		Matrix4 mv = viewMatrix.clone();
+	public final Matrix4 createModelViewMatrix() {
+		Matrix4 mv = mallocMatrix();
+		mv.set(viewMatrix);
 		mv.mul(modelMatrix);
+		modelViewMatrix = mv;
 		return mv;
 	}
 
 	public final void setupBBoxes() {
 		if (instance.resource != null) {
-			Matrix4 mv = getModelViewMatrix();
+			Matrix4 mv = modelViewMatrix;
 			for (Model mdl : instance.resource.models) {
 				AABB6f aabb = new AABB6f(mdl.boundingBox);
 
@@ -297,12 +354,13 @@ public class G3DResourceState {
 	public Matrix4 getProjectionMatrix() {
 		if (projectionMatrix == null) {
 			if (updateProjMatrix) {
-				projectionMatrix = instance.getAbsoluteProjectionMatrix();
+				projectionMatrix = mallocMatrix();
+				instance.getAbsoluteProjectionMatrix(projectionMatrix);
 			} else {
 				if (parent != null) {
 					projectionMatrix = parent.getProjectionMatrix();
 				} else {
-					projectionMatrix = new Matrix4();
+					projectionMatrix = mallocMatrix();
 				}
 			}
 		}
@@ -329,10 +387,9 @@ public class G3DResourceState {
 
 	public Matrix4 getAnimatedJointMatrix(Joint modelBone, FastSkeleton modelSkeleton) {
 		Matrix4 mtx = animatedTransforms.get(modelBone);
-		Matrix4 parentMtx = new Matrix4();
 		Joint parentJoint = null;
 		if (mtx == null) {
-			mtx = new Matrix4();
+			mtx = mallocMatrix();
 			if (modelBone != null) {
 				boolean isAnimated = false;
 				List<LocRotScaleSet> processedLRS = new ArrayList<>();
@@ -340,8 +397,7 @@ public class G3DResourceState {
 				processedLRS.add(bindLRS);
 				parentJoint = modelBone.getParent();
 				if (parentJoint != null) {
-					parentMtx = getAnimatedJointMatrix(parentJoint, modelSkeleton);
-					mtx.mul(parentMtx);
+					mtx.mul(getAnimatedJointMatrix(parentJoint, modelSkeleton));
 				}
 				MainLoop:
 				for (SkeletalController ctrl : skeletalAnimations) {
@@ -357,7 +413,7 @@ public class G3DResourceState {
 					Matrix4 animatedTransform = ctrl.getAnimatedTransform(skeleton.source, motionBone.name);
 
 					if (animatedTransform != null) {
-						animatedTransform = animatedTransform.clone();
+						animatedTransform = cloneMatrix(animatedTransform);
 
 						if (modelBone.isScaleCompensate()) {
 							if (motionBone.parentName != null) {
@@ -374,6 +430,8 @@ public class G3DResourceState {
 						LocRotScaleSet lrs = new LocRotScaleSet(animatedTransform);
 						for (LocRotScaleSet p : processedLRS) {
 							if (p.equals(lrs)) {
+								RenderAllocator.freeMatrix3f(lrs.rotationMatrix);
+								RenderAllocator.freeMatrix(animatedTransform);
 								continue MainLoop;
 							}
 						}
@@ -418,23 +476,26 @@ public class G3DResourceState {
 
 											InverseKinematics.IKOutput out = InverseKinematics.transformIK(input);
 
-											mtx = out.chainMatrix;
+											mtx.set(out.chainMatrix);
 											removeChildMatrices(modelBone, modelSkeleton);
-											putAnimatedTransform(jointBone.name, modelSkeleton, out.jointMatrix);
-											putAnimatedTransform(effectorBone.name, modelSkeleton, out.effectorMatrix);
+											putAnimatedTransform(jointBone.name, modelSkeleton, cloneMatrix(out.jointMatrix));
+											putAnimatedTransform(effectorBone.name, modelSkeleton, cloneMatrix(out.effectorMatrix));
 											putAnimatedTransform(modelBone, mtx);
 											calculateChildMatrices(modelBone, modelSkeleton);
 										}//otherwise bind pose effector - transforms are local (non-IK)
 									}
 								}
-
 								break;
 						}
+						RenderAllocator.freeMatrix(animatedTransform);
 						isAnimated = true;
 					}
 				}
 				if (!isAnimated) {
 					mtx.mul(getLocalJointMatrix(modelBone));
+				}
+				for (LocRotScaleSet lrs : processedLRS) {
+					RenderAllocator.freeMatrix3f(lrs.rotationMatrix);
 				}
 			}
 			if (modelBone != null && modelBone.flags != 0) {
@@ -456,7 +517,10 @@ public class G3DResourceState {
 					} else {
 						Vec3f camPos = cameraMatrix.getTranslation();
 						Vec3f modelPos = new Vec3f();
-						modelMatrix.clone().mul(mtx).getTranslation(modelPos);
+						Matrix4 temp = cloneMatrix(modelMatrix);
+						temp.mul(mtx);
+						temp.getTranslation(modelPos);
+						RenderAllocator.freeMatrix(temp);
 						modelPos.sub(camPos);
 
 						if (modelBone.isBBY()) {
@@ -483,6 +547,10 @@ public class G3DResourceState {
 	private void putAnimatedTransform(String jointName, FastSkeleton skeleton, Matrix4 matrix) {
 		Joint j = skeleton.getJoint(jointName);
 		if (j != null) {
+			Matrix4 exist = animatedTransforms.get(j);
+			if (exist != null) {
+				RenderAllocator.freeMatrix(exist);
+			}
 			animatedTransforms.put(j, matrix);
 		}
 	}
@@ -520,7 +588,7 @@ public class G3DResourceState {
 
 		Vec3f p;
 		Vec3f s;
-		Matrix3f rotationMatrix = new Matrix3f();
+		Matrix3f rotationMatrix = RenderAllocator.allocMatrix3f();
 
 		public LocRotScaleSet(Matrix4 mtx) {
 			p = mtx.getTranslation();
@@ -552,11 +620,10 @@ public class G3DResourceState {
 	public Matrix4 getGlobalJointMatrix(Joint j, FastSkeleton skl) {
 		Matrix4 mtx = globalBindTransforms.get(j);
 		if (mtx == null) {
-			if (j == null) {
-				mtx = new Matrix4();
-			} else {
+			mtx = mallocMatrix();
+			if (j != null) {
 				Joint parentJoint = skl.getJoint(j.parentName);
-				mtx = getGlobalJointMatrix(parentJoint, skl).clone();
+				mtx.set(getGlobalJointMatrix(parentJoint, skl));
 				Matrix4 local = getLocalJointMatrix(j);
 				mtx.mul(local);
 			}
@@ -568,39 +635,11 @@ public class G3DResourceState {
 	public Matrix4 getLocalJointMatrix(Joint j) {
 		Matrix4 bt = localBindTransforms.get(j);
 		if (bt == null) {
-			bt = j.getLocalMatrix();
+			bt = mallocMatrix();
+			j.getLocalMatrix(bt);
 			localBindTransforms.put(j, bt);
 		}
 		return bt;
-	}
-
-	public Vec3f transformVertex(Vertex v, List<Matrix4> perJointMatrices) {
-		Vec3f position = new Vec3f(v.position);
-		Vec3f p = new Vec3f();
-
-		int weightIndex = 0;
-		float weightSum = 0;
-
-		for (int i = 0; i < v.boneIndices.size(); i++) {
-			int boneIndex = v.boneIndices.get(i);
-			float weight = 0;
-			if (weightIndex < v.weights.size()) {
-				weight = v.weights.get(weightIndex++);
-			}
-			weightSum += weight;
-			if (boneIndex >= 0 && boneIndex < perJointMatrices.size()) {
-				Matrix4 animatedTransformMatrix = perJointMatrices.get(boneIndex);
-				Vec3f transformed = new Vec3f();
-				position.mulPosition(animatedTransformMatrix, transformed);
-				transformed.mul(weight);
-				p.add(transformed);
-			}
-		}
-		if (weightSum < 1) {
-			position.mul(1 - weightSum);
-			p.add(position);
-		}
-		return p;
 	}
 
 	public static class FastSkeleton {
@@ -613,8 +652,8 @@ public class G3DResourceState {
 
 		public FastSkeleton(Skeleton skl) {
 			this.source = skl;
-			joints = new HashMap<>(skl.getJointCount());
-			children = new HashMap<>(joints.size());
+			joints = new WeakHashMap<>(skl.getJointCount());
+			children = new WeakHashMap<>(joints.size());
 			for (Joint j : skl.getJoints()) {
 				joints.put(j.name, j);
 				List<Joint> childList = children.get(j.parentName);

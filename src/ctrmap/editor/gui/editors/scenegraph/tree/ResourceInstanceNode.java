@@ -8,12 +8,20 @@ import ctrmap.renderer.scene.animation.AbstractAnimationController;
 import ctrmap.renderer.scene.animation.skeletal.KinematicsController;
 import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scenegraph.G3DResourceInstance;
+import xstandard.util.ListenableList;
 
 public class ResourceInstanceNode extends ScenegraphExplorerNode {
 
 	public static final int RESID = 0x420001;
 
 	private G3DResourceInstance instance;
+	
+	private G3DResourceInstance.ResourceChangeListener resChgListener;
+	private ListenableList.ElementChangeListener childrenListener;
+	private ListenableList.ElementChangeListener animListener;
+	private ListenableList.ElementChangeListener lightListener;
+	private ListenableList.ElementChangeListener camListener;
+	private ListenableList.ElementChangeListener kinematicsListener;
 
 	public ResourceInstanceNode(G3DResourceInstance instance, ScenegraphJTree tree) {
 		super(tree);
@@ -22,7 +30,7 @@ public class ResourceInstanceNode extends ScenegraphExplorerNode {
 		if (instance.resource != null) {
 			addChild(new ResourceNode(instance.resource, tree));
 		}
-		instance.addResourceChangeListener(new G3DResourceInstance.ResourceChangeListener() {
+		instance.addResourceChangeListener(resChgListener = new G3DResourceInstance.ResourceChangeListener() {
 			@Override
 			public void onResourceChanged(G3DResourceInstance instance, G3DResource oldRes, G3DResource newRes) {
 				removeChild(getChildByContent(oldRes));
@@ -59,40 +67,56 @@ public class ResourceInstanceNode extends ScenegraphExplorerNode {
 			addChild(new ResourceInstanceNode(child, tree));
 		}
 
-		instance.getChildren().addListener(new ScenegraphListener<G3DResourceInstance>(this) {
+		instance.getChildren().addListener(childrenListener = new ScenegraphListener<G3DResourceInstance>(this) {
 			@Override
 			protected ScenegraphExplorerNode createNode(G3DResourceInstance elem) {
 				return new ResourceInstanceNode(elem, tree);
 			}
 		});
 		
-		instance.resourceAnimControllers.addListener(new ScenegraphListener<AbstractAnimationController>(animeControllers) {
+		instance.resourceAnimControllers.addListener(animListener = new ScenegraphListener<AbstractAnimationController>(animeControllers) {
 			@Override
 			protected ScenegraphExplorerNode createNode(AbstractAnimationController elem) {
 				return new AnimationControllerNode(elem, tree);
 			}
 		});
 		
-		instance.resourceKinematicsControllers.addListener(new ScenegraphListener<KinematicsController>(ikControllers) {
+		instance.resourceKinematicsControllers.addListener(kinematicsListener = new ScenegraphListener<KinematicsController>(ikControllers) {
 			@Override
 			protected ScenegraphExplorerNode createNode(KinematicsController elem) {
 				return new KinematicsControllerNode(elem, tree);
 			}
 		});
 		
-		instance.cameraInstances.addListener(new ScenegraphListener<Camera>(this) {
+		instance.cameraInstances.addListener(camListener = new ScenegraphListener<Camera>(this) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Camera elem) {
 				return new CameraNode(elem, tree);
 			}
 		});
 		
-		instance.lights.addListener(new ScenegraphListener<Light>(this) {
+		instance.lights.addListener(lightListener = new ScenegraphListener<Light>(this) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Light elem) {
 				return new LightNode(elem, tree);
 			}
 		});
+	}
+	
+	@Override
+	protected void freeListeners() {
+		instance.getChildren().removeListener(childrenListener);
+		instance.lights.removeListener(lightListener);
+		instance.cameraInstances.removeListener(camListener);
+		instance.resourceKinematicsControllers.removeListener(kinematicsListener);
+		instance.resourceAnimControllers.removeListener(animListener);
+		instance.removeResourceChangeListener(resChgListener);
+		childrenListener = null;
+		lightListener = null;
+		camListener = null;
+		kinematicsListener = null;
+		animListener = null;
+		resChgListener = null;
 	}
 	
 	@Override

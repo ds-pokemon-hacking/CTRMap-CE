@@ -10,6 +10,8 @@ public class CameraViewpointFrame extends CameraAnimationFrame {
 	public AnimatedValue rx;
 	public AnimatedValue ry;
 	public AnimatedValue rz;
+	
+	public Quaternion rotQuat;
 
 	@Override
 	protected void applyCameraEx(Camera cam) {
@@ -22,6 +24,7 @@ public class CameraViewpointFrame extends CameraAnimationFrame {
 		if (rz.exists) {
 			cam.rotation.z = rz.value;
 		}
+		cam.rotQuat = rotQuat;
 		cam.viewMode = Camera.ViewMode.ROTATE;
 	}
 	

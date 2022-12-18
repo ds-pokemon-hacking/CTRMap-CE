@@ -9,7 +9,7 @@ import ctrmap.renderer.backends.base.RenderSettings;
 import ctrmap.renderer.scene.Scene;
 import xstandard.fs.FSManager;
 import ctrmap.renderer.backends.RenderSurface;
-import xstandard.res.ResourceAccess;
+import ctrmap.renderer.util.AspectRatioSyncCallback;
 import java.util.ArrayList;
 import java.util.List;
 import xstandard.util.ArraysEx;
@@ -29,22 +29,23 @@ public abstract class IMissionControl {
 	public RenderSettings videoSettings;
 	public AudioSettings audioSettings;
 	
-	private MCDebuggerManager debuggers = new MCDebuggerManager();
+	private final MCDebuggerManager debuggers = new MCDebuggerManager();
 
 	protected List<IMCSurfaceListener> surfaceListeners = new ArrayList<>();
 	protected List<BackendChangeListener> bcListeners = new ArrayList<>();
 	protected List<GameInfoListener> giListeners = new ArrayList<>();
 
 	protected IMissionControl() {
-		mcScene.addSceneAnimationCallback((float frameAdvance) -> {
-			input.updateInput();
-		});
+		
 	}
 	
 	public boolean mcInit(FSManager filesystem, GameInfo gameMan, RenderSettings vSettings, AudioSettings aSettings) {
 		mcScene.clear(true);
-		mcScene.addSceneAnimationCallback((frameAdvance) -> {
-			mcScene.setAllCameraAspectRatio(backend.getViewportInfo().getAspectRatio());
+		mcScene.addSceneAnimationCallback(new AspectRatioSyncCallback(() -> {
+			return backend;
+		}));
+		mcScene.addSceneAnimationCallback((float frameAdvance) -> {
+			input.updateInput();
 		});
 		this.videoSettings = vSettings;
 		this.audioSettings = aSettings;

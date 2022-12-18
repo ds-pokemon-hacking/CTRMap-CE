@@ -6,8 +6,6 @@ import ctrmap.missioncontrol_base.IMissionControl;
 import ctrmap.renderer.backends.RenderConstants;
 import ctrmap.renderer.backends.base.RenderSettings;
 import xstandard.formats.msgtxt.MsgTxt;
-import javax.swing.JFormattedTextField;
-import javax.swing.text.NumberFormatter;
 import xstandard.gui.components.ComponentUtils;
 
 public class GfxSettingsPanel extends javax.swing.JPanel implements SettingsPanel {
@@ -543,4 +541,9 @@ public class GfxSettingsPanel extends javax.swing.JPanel implements SettingsPane
     private javax.swing.JFormattedTextField zFar;
     private javax.swing.JFormattedTextField zNear;
     // End of variables declaration//GEN-END:variables
+
+	@Override
+	public String getTitle() {
+		return "Video";
+	}
 }

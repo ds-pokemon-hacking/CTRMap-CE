@@ -59,7 +59,7 @@ public class ModelUtil {
 		m.name = StringIO.readStringWithAddress(dis);
 
 		if (fileVersion >= Revisions.REV_META_DATA) {
-			m.metaData = MetaDataUtil.readMetaData(dis, fileVersion);
+			m.metaData.putValues(MetaDataUtil.readMetaData(dis, fileVersion).getValues());
 		}
 
 		PointerTable bonesPT = new PointerTable(dis);

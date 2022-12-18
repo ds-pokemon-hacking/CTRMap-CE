@@ -3,6 +3,7 @@ package ctrmap.creativestudio.ngcs.tree;
 
 import ctrmap.creativestudio.editors.IEditor;
 import ctrmap.creativestudio.ngcs.NGEditorController;
+import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.texturing.Material;
 import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scenegraph.NamedResource;
@@ -56,7 +57,9 @@ public class MaterialNode extends CSNode {
 	
 	@Override
 	public void putForExport(G3DResource rsc) {
+		Model oldParent = mat.parentModel;
 		getDmyModel(rsc).materials.add(mat);
+		mat.parentModel = oldParent;
 	}
 
 	@Override

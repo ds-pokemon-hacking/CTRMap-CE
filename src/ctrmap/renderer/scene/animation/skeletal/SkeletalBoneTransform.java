@@ -1,5 +1,6 @@
 package ctrmap.renderer.scene.animation.skeletal;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import xstandard.math.vec.Vec3f;
 import ctrmap.renderer.scene.animation.AbstractBoneTransform;
 import ctrmap.renderer.scene.animation.AnimatedValue;
@@ -75,7 +76,7 @@ public class SkeletalBoneTransform extends AbstractBoneTransform {
 		}
 	}
 
-	public Matrix4 getTransformMatrix(SkeletalAnimationTransformRequest req) {
+	public Matrix4 getTransformMatrix(SkeletalAnimationTransformRequest req, Matrix4 dest) {
 		boolean nonHermite = getIsRotationNonHermite();
 		
 		SkeletalAnimationTransformRequest reqNoRot = new SkeletalAnimationTransformRequest(req);
@@ -99,33 +100,36 @@ public class SkeletalBoneTransform extends AbstractBoneTransform {
 		reqRotOnly.frame = ceilFrame;
 		SkeletalAnimationFrame fRotRight = getFrame(reqRotOnly);
 
-		Matrix4 mtx = new Matrix4();
 		if (req.translation) {
-			mtx.translate(fMain.tx.value, fMain.ty.value, fMain.tz.value);
+			dest.translate(fMain.tx.value, fMain.ty.value, fMain.tz.value);
 		}
 		float frameDiff = req.frame - floorFrame;
 		if (req.disableInterpolation || frameDiff == 0f || (floorFrame == ceilFrame)) {
-			mtx.rotate(fRotLeft.getRotation());
+			dest.rotate(fRotLeft.getRotation());
 		} else {
-			mtx.rotate(
+			dest.rotate(
 				fRotLeft.getRotation().slerp(
 					fRotRight.getRotation(),
 					MathEx.clamp(0f, 1f, frameDiff / (ceilFrame - floorFrame))
 				));
 		}
 		if (req.scale) {
-			mtx.scale(fMain.sx.value, fMain.sy.value, fMain.sz.value);
+			dest.scale(fMain.sx.value, fMain.sy.value, fMain.sz.value);
 		}
+		
+		fMain.free();
+		fRotLeft.free();
+		fRotRight.free();
 
-		return mtx;
+		return dest;
 	}
 
 	public SkeletalAnimationFrame getFrame(float frame) {
 		return getFrame(new SkeletalAnimationTransformRequest(frame));
 	}
 
-	public SkeletalAnimationFrame getFrame(float frame, Joint bindJoint) {
-		SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(frame);
+	public SkeletalAnimationFrame getFrame(float frame, Joint bindJoint, boolean manualAlloc) {
+		SkeletalAnimationTransformRequest req = new SkeletalAnimationTransformRequest(frame, manualAlloc);
 		req.bindJoint = bindJoint;
 		return getFrame(req);
 	}
@@ -154,27 +158,27 @@ public class SkeletalBoneTransform extends AbstractBoneTransform {
 	}
 
 	public SkeletalAnimationFrame getFrame(SkeletalAnimationTransformRequest request) {
-		SkeletalAnimationFrame frm = new SkeletalAnimationFrame();
+		SkeletalAnimationFrame frm = new SkeletalAnimationFrame(request.useManualAllocation);
 
 		float frame = request.frame;
 		boolean disableInterpolation = request.disableInterpolation;
 
 		if (request.translation) {
-			frm.tx = getValueAt(tx, frame, disableInterpolation);
-			frm.ty = getValueAt(ty, frame, disableInterpolation);
-			frm.tz = getValueAt(tz, frame, disableInterpolation);
+			getValueAt(tx, frame, disableInterpolation, frm.tx);
+			getValueAt(ty, frame, disableInterpolation, frm.ty);
+			getValueAt(tz, frame, disableInterpolation, frm.tz);
 		}
 
 		if (request.rotation) {
-			frm.rx = getValueAt(rx, frame, disableInterpolation);
-			frm.ry = getValueAt(ry, frame, disableInterpolation);
-			frm.rz = getValueAt(rz, frame, disableInterpolation);
+			getValueAt(rx, frame, disableInterpolation, frm.rx);
+			getValueAt(ry, frame, disableInterpolation, frm.ry);
+			getValueAt(rz, frame, disableInterpolation, frm.rz);
 		}
 
 		if (request.scale) {
-			frm.sx = getValueAt(sx, frame, disableInterpolation);
-			frm.sy = getValueAt(sy, frame, disableInterpolation);
-			frm.sz = getValueAt(sz, frame, disableInterpolation);
+			getValueAt(sx, frame, disableInterpolation, frm.sx);
+			getValueAt(sy, frame, disableInterpolation, frm.sy);
+			getValueAt(sz, frame, disableInterpolation, frm.sz);
 		}
 
 		setAnmFrameJoint(frm, request);
@@ -234,7 +238,9 @@ public class SkeletalBoneTransform extends AbstractBoneTransform {
 	}
 
 	private static void addValueToKfList(float frame, float value, KeyFrameList kfl) {
-		addValueToKfList(frame, new AnimatedValue(value), kfl);
+		AnimatedValue val = RenderAllocator.allocAnimatedValue();
+		addValueToKfList(frame, val, kfl);
+		RenderAllocator.freeAnimatedValue(val);
 	}
 
 	private static void addValueToKfList(float frame, AnimatedValue value, KeyFrameList kfl) {

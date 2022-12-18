@@ -138,7 +138,16 @@ public final class InputManager {
 		LB,
 		RB,
 		START,
-		SELECT
+		SELECT,
+		
+		DEBUG0,
+		DEBUG1,
+		DEBUG2,
+		DEBUG3,
+		DEBUG4,
+		DEBUG5,
+		DEBUG6,
+		DEBUG7
 	}
 
 	private static class ButtonQueue extends ArrayList<Button> {

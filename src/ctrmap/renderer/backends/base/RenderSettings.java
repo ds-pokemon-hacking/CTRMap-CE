@@ -39,17 +39,25 @@ public class RenderSettings {
 	}
 	
 	public static AbstractBackend createDefaultRenderer(){
-		return getDefaultSettings().createRenderer();
+		return createDefaultRenderer(null);
+	}
+	
+	public static AbstractBackend createDefaultRenderer(RenderCapabilities caps){
+		return getDefaultSettings().createRenderer(caps);
 	}
 	
 	public AbstractBackend createRenderer(){
+		return createRenderer(null);
+	}
+	
+	public AbstractBackend createRenderer(RenderCapabilities caps){
 		switch (BACKEND_DEFAULT){
 			case RenderConstants.BACKEND_OGL2_HOUSTON:
-				return new HoustonGL2(this);
+				return new HoustonGL2(this, caps);
 			case RenderConstants.BACKEND_OGL2_HOUSTON_UBER:
-				return new HoustonGL2Uber(this);
+				return new HoustonGL2Uber(this, caps);
 			case RenderConstants.BACKEND_OGL4_HOUSTON:
-				return new HoustonGL4(this);
+				return new HoustonGL4(this, caps);
 		}
 		return new HoustonGL2();
 	}

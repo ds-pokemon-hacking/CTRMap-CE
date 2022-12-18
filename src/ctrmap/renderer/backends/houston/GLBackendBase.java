@@ -1,16 +1,8 @@
 package ctrmap.renderer.backends.houston;
 
 import ctrmap.renderer.backends.houston.common.GLExtensionSupport;
-import ctrmap.renderer.backends.houston.common.HoustonDefines;
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLContext;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLException;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
-import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.AnimatorBase;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
@@ -26,13 +18,12 @@ import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.scene.metadata.ReservedMetaData;
 import ctrmap.renderer.backends.base.Framebuffer;
-import ctrmap.renderer.backends.base.flow.BufferObjectMemory;
+import ctrmap.renderer.backends.base.RenderCapabilities;
 import ctrmap.renderer.backends.base.flow.IRenderDriver;
 import ctrmap.renderer.backends.base.shaderengine.ShaderProgramManager;
 import ctrmap.renderer.scene.texturing.MaterialParams;
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
 import ctrmap.renderer.util.generators.PlaneGenerator;
-import xstandard.util.EnumBitflags;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
@@ -75,15 +66,15 @@ public abstract class GLBackendBase extends GLJPanel implements AbstractBackend,
 
 	protected static class DefaultCaps extends GLCapabilities {
 
-		public DefaultCaps(GLProfile glp) throws GLException {
+		public DefaultCaps(GLProfile glp, RenderCapabilities source) throws GLException {
 			super(glp);
 			setHardwareAccelerated(true);
-			setDoubleBuffered(false);
-			setAlphaBits(0);
-			setRedBits(8);
-			setBlueBits(8);
-			setGreenBits(8);
-			setStencilBits(8);
+			setDoubleBuffered(source.doubleBuffered);
+			setAlphaBits(source.alphaBits);
+			setRedBits(source.redBits);
+			setBlueBits(source.blueBits);
+			setGreenBits(source.greenBits);
+			setStencilBits(source.stencilBits);
 		}
 	}
 
@@ -92,11 +83,11 @@ public abstract class GLBackendBase extends GLJPanel implements AbstractBackend,
 	}
 
 	public GLBackendBase(RenderSettings settings) {
-		this(settings, new DefaultCaps(GLProfile.get(GLProfile.GL2)));
+		this(settings, new RenderCapabilities());
 	}
 
-	public GLBackendBase(RenderSettings settings, GLCapabilities caps) {
-		this(caps);
+	public GLBackendBase(RenderSettings settings, RenderCapabilities caps) {
+		this(new DefaultCaps(GLProfile.get(GLProfile.GL2), caps == null ? new RenderCapabilities() : caps));
 		this.settings = settings;
 
 		renderController = new SceneRenderFlow(this);
@@ -129,6 +120,11 @@ public abstract class GLBackendBase extends GLJPanel implements AbstractBackend,
 
 	public void setSettings(RenderSettings settings) {
 		this.settings = settings;
+	}
+	
+	@Override
+	public ViewportInfo getViewportInfo() {
+		return new ViewportInfo(getSize());
 	}
 
 	@Override
@@ -306,10 +302,5 @@ public abstract class GLBackendBase extends GLJPanel implements AbstractBackend,
 	@Override
 	public void clearTextureCache() {
 		renderController.clearTextureCacheNextPass.raise();
-	}
-
-	@Override
-	public ViewportInfo getViewportInfo() {
-		return new ViewportInfo(getSize(), settings.Z_NEAR, settings.Z_FAR);
 	}
 }

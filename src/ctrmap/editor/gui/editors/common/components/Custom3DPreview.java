@@ -1,6 +1,7 @@
 package ctrmap.editor.gui.editors.common.components;
 
 import com.jogamp.opengl.GLEventListener;
+import ctrmap.renderer.backends.RenderSurface;
 import ctrmap.util.gui.cameras.OrbitCameraInputManager;
 import ctrmap.renderer.backends.base.RenderSettings;
 import ctrmap.renderer.backends.houston.gl2.HoustonGL2;
@@ -18,7 +19,7 @@ import xstandard.math.vec.Vec3f;
 /**
  * Used for showing single H3D models in a window
  */
-public class Custom3DPreview extends HoustonGL2 implements GLEventListener {
+public class Custom3DPreview extends RenderSurface {
 
 	private ModelInstance model = new ModelInstance();
 
@@ -30,6 +31,7 @@ public class Custom3DPreview extends HoustonGL2 implements GLEventListener {
 
 	public Custom3DPreview() {
 		super(new DefaultPreviewRenderSettings());
+		setSyncAspectRatio(true);
 		model.setPersistent(true);
 		setScene(previewScene);
 		previewScene.addModel(model);
@@ -126,7 +128,7 @@ public class Custom3DPreview extends HoustonGL2 implements GLEventListener {
 	}
 
 	public void clearTextures() {
-		scene.resource.textures.clear();
+		getScene().resource.textures.clear();
 	}
 
 	public void mergeSceneResource(G3DResource res) {
@@ -161,8 +163,6 @@ public class Custom3DPreview extends HoustonGL2 implements GLEventListener {
 
 		public DefaultPreviewRenderSettings() {
 			super();
-			Z_NEAR = 5f;
-			Z_FAR = 2000f;
 			FRAMERATE_CAP = 60;
 			BACKFACE_CULLING = true;
 		}

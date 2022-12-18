@@ -21,7 +21,7 @@ public class SceneRenderFlow {
 	public static final int RENDER_LAYER_MAX = 8;
 
 	private final AbstractBackend backend;
-
+	
 	public TripFlag resetVerticesNextPass = new TripFlag();
 	public TripFlag clearTextureCacheNextPass = new TripFlag();
 	public TripFlag waitForDisplay = new TripFlag();
@@ -149,6 +149,8 @@ public class SceneRenderFlow {
 			state.setLayer(i);
 			renderG3DResInstanceState(rootState, gl, state);
 		}
+		
+		rootState.destroy();
 	}
 	
 	private Model bboxDebugModel = new Model();

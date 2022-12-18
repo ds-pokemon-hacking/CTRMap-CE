@@ -12,12 +12,22 @@ import ctrmap.renderer.scene.animation.visibility.VisibilityAnimation;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.texturing.Texture;
 import ctrmap.renderer.scenegraph.G3DResource;
+import xstandard.util.ListenableList;
 
 public class ResourceNode extends ScenegraphExplorerNode {
 
 	public static final int RESID = 0x420002;
 	
 	private G3DResource rsc;
+	
+	private ListenableList.ElementChangeListener mdlListener;
+	private ListenableList.ElementChangeListener texListener;
+	private ListenableList.ElementChangeListener anmSklListener;
+	private ListenableList.ElementChangeListener anmMatListener;
+	private ListenableList.ElementChangeListener anmVisListener;
+	private ListenableList.ElementChangeListener anmCamListener;
+	private ListenableList.ElementChangeListener camListener;
+	private ListenableList.ElementChangeListener lightListener;
 
 	public ResourceNode(G3DResource rsc, ScenegraphJTree tree) {
 		super(tree);
@@ -79,54 +89,74 @@ public class ResourceNode extends ScenegraphExplorerNode {
 			lights.addChild(new LightNode(l, tree));
 		}
 		
-		rsc.models.addListener(new ScenegraphListener<Model>(models) {
+		rsc.models.addListener(mdlListener = new ScenegraphListener<Model>(models) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Model elem) {
 				return new ModelNode(elem, tree);
 			}
 		});
-		rsc.textures.addListener(new ScenegraphListener<Texture>(textures) {
+		rsc.textures.addListener(texListener = new ScenegraphListener<Texture>(textures) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Texture elem) {
 				return new TextureNode(elem, tree);
 			}
 		});
-		rsc.cameras.addListener(new ScenegraphListener<Camera>(cameras) {
+		rsc.cameras.addListener(camListener = new ScenegraphListener<Camera>(cameras) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Camera elem) {
 				return new CameraNode(elem, tree);
 			}
 		});
-		rsc.lights.addListener(new ScenegraphListener<Light>(lights) {
+		rsc.lights.addListener(lightListener = new ScenegraphListener<Light>(lights) {
 			@Override
 			protected ScenegraphExplorerNode createNode(Light elem) {
 				return new LightNode(elem, tree);
 			}
 		});
-		rsc.skeletalAnimations.addListener(new ScenegraphListener<SkeletalAnimation>(animationsS) {
+		rsc.skeletalAnimations.addListener(anmSklListener = new ScenegraphListener<SkeletalAnimation>(animationsS) {
 			@Override
 			protected ScenegraphExplorerNode createNode(SkeletalAnimation elem) {
 				return new AnimationNode(elem, tree);
 			}
 		});
-		rsc.materialAnimations.addListener(new ScenegraphListener<MaterialAnimation>(animationsM) {
+		rsc.materialAnimations.addListener(anmMatListener = new ScenegraphListener<MaterialAnimation>(animationsM) {
 			@Override
 			protected ScenegraphExplorerNode createNode(MaterialAnimation elem) {
 				return new AnimationNode(elem, tree);
 			}
 		});
-		rsc.visibilityAnimations.addListener(new ScenegraphListener<VisibilityAnimation>(animationsV) {
+		rsc.visibilityAnimations.addListener(anmVisListener = new ScenegraphListener<VisibilityAnimation>(animationsV) {
 			@Override
 			protected ScenegraphExplorerNode createNode(VisibilityAnimation elem) {
 				return new AnimationNode(elem, tree);
 			}
 		});
-		rsc.cameraAnimations.addListener(new ScenegraphListener<CameraAnimation>(animationsC) {
+		rsc.cameraAnimations.addListener(anmCamListener = new ScenegraphListener<CameraAnimation>(animationsC) {
 			@Override
 			protected ScenegraphExplorerNode createNode(CameraAnimation elem) {
 				return new AnimationNode(elem, tree);
 			}
 		});
+	}
+	
+	@Override
+	protected void freeListeners() {
+		rsc.models.removeListener(mdlListener);
+		rsc.textures.removeListener(texListener);
+		rsc.cameras.removeListener(camListener);
+		rsc.lights.removeListener(lightListener);
+		rsc.skeletalAnimations.removeListener(anmSklListener);
+		rsc.materialAnimations.removeListener(anmMatListener);
+		rsc.visibilityAnimations.removeListener(anmVisListener);
+		rsc.cameraAnimations.removeListener(anmCamListener);
+		mdlListener = null;
+		texListener = null;
+		camListener = null;
+		lightListener = null;
+		anmCamListener = null;
+		anmMatListener = null;
+		anmSklListener = null;
+		anmVisListener = null;
 	}
 	
 	@Override

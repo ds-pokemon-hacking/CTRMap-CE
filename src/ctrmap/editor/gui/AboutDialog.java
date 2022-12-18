@@ -1,5 +1,6 @@
 package ctrmap.editor.gui;
 
+import ctrmap.editor.CTRMap;
 import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public class AboutDialog extends javax.swing.JDialog {
 	public static final String GEVENT_OPEN_ID = "OpenAboutDialog";
 	private static final String PROGRAM_NAME = "CTRMap CE";
 
-	public AboutDialog(Frame parent, boolean modal) {
+	public AboutDialog(CTRMap parent, boolean modal) {
 		super(parent, modal);
 		initComponents();
 		
@@ -24,6 +25,7 @@ public class AboutDialog extends javax.swing.JDialog {
 		else {
 			versionLabel.setText(PROGRAM_NAME + " development build");
 		}
+		parent.broadcastGlobalEvent(AboutDialog.GEVENT_OPEN_ID);
 	}
 	
 	private String joinCredits(List<String> credits) {

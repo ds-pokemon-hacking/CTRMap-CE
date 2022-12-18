@@ -171,6 +171,12 @@ public class CM3DInputManager implements IMCSurfaceListener, DebugCameraControll
 		else {
 			input.releaseButton(InputManager.Button.LB);
 		}
+		if (keycodes.contains(KeyEvent.VK_SHIFT)){
+			input.pressButton(InputManager.Button.DEBUG0);
+		}
+		else {
+			input.releaseButton(InputManager.Button.DEBUG0);
+		}
 		if (keycodes.contains(KeyEvent.VK_X)){
 			input.pressButton(InputManager.Button.A);
 		}

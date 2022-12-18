@@ -1,5 +1,6 @@
 package ctrmap.renderer.scene.animation.material;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import ctrmap.renderer.scene.animation.AbstractBoneTransform;
 import ctrmap.renderer.scene.animation.AnimatedValue;
 import ctrmap.renderer.scene.animation.KeyFrame;
@@ -89,22 +90,28 @@ public class MatAnimBoneTransform extends AbstractBoneTransform {
 	}
 
 	public MaterialAnimationFrame getFrame(float frame, int coordinator) {
+		return getFrame(frame, coordinator, false);
+	}
+	
+	public MaterialAnimationFrame getFrame(float frame, int coordinator, boolean manualAlloc) {
 		//System.out.println("getfrm coord " + coordinator);
-		MaterialAnimationFrame frm = new MaterialAnimationFrame();
+		MaterialAnimationFrame frm = new MaterialAnimationFrame(manualAlloc);
 
-		frm.tx = getValueAt(mtx[coordinator], frame);
-		frm.ty = getValueAt(mty[coordinator], frame);
+		getValueAt(mtx[coordinator], frame, frm.tx);
+		getValueAt(mty[coordinator], frame, frm.ty);
 
-		frm.r = getValueAt(mrot[coordinator], frame);
+		getValueAt(mrot[coordinator], frame, frm.r);
 
-		frm.sx = getValueAt(msx[coordinator], frame);
-		frm.sy = getValueAt(msy[coordinator], frame);
+		getValueAt(msx[coordinator], frame, frm.sx);
+		getValueAt(msy[coordinator], frame, frm.sy);
 
-		AnimatedValue tex = getValueAt(textureIndices[coordinator], frame, true);
+		AnimatedValue tex = RenderAllocator.allocAnimatedValue();
+		getValueAt(textureIndices[coordinator], frame, true, tex);
 
 		if (tex.exists) {
 			frm.textureName = textureNames.get((int) tex.value);
 		}
+		RenderAllocator.freeAnimatedValue(tex);
 
 		return frm;
 	}

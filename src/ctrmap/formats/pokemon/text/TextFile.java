@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class TextFile implements ITextFile {
 
-	public ListenableList<MsgStr> lines;
+	public final ListenableList<MsgStr> lines;
 	
 	public boolean enableEncryption;
 

@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 public abstract class AbstractPerspective {
 
 	private boolean loaded;
-	
+
 	protected CTRMap ctrmap;
 
 	public DCCManager dcc;
@@ -50,6 +50,9 @@ public abstract class AbstractPerspective {
 		scn = new EditorScene(this);
 	}
 
+	/*
+	This method is only for compatibility and should be AVOIDED where possible.
+	 */
 	public <T extends AbstractSubEditor> T getEditor(Class<T> cls) {
 		for (AbstractSubEditor e : getAllEditors()) {
 			if (e.getClass() == cls) {
@@ -62,6 +65,9 @@ public abstract class AbstractPerspective {
 	private <T> Constructor<T> getFirstSafeConstructor(Class<T> cls, Class... paramClasses) {
 		for (Class other : paramClasses) {
 			try {
+				if (other == null) {
+					return cls.getConstructor();
+				}
 				return cls.getConstructor(other);
 			} catch (NoSuchMethodException | SecurityException ex) {
 
@@ -70,19 +76,32 @@ public abstract class AbstractPerspective {
 		return null;
 	}
 
-	private <T> T instantiateBaseEditor(Class<T> cls) {
-		Constructor<T> ctor = getFirstSafeConstructor(cls, getClass(), CTRMap.class, AbstractPerspective.class);
+	private <T extends AbstractSubEditor> T instantiateBaseEditor(Class<T> cls) {
+		T existing = (T) ctrmap.sharedInstanceEditors.get(cls);
+		if (existing != null) {
+			return existing; //shared instance
+		}
+		Constructor<T> ctor = getFirstSafeConstructor(cls, getClass(), CTRMap.class, AbstractPerspective.class, null);
 		if (ctor != null) {
 			try {
-				Class paramCls = ctor.getParameterTypes()[0];
-				Object param = null;
-				if (AbstractPerspective.class.isAssignableFrom(paramCls)) {
-					param = this;
+				Class[] paramTypes = ctor.getParameterTypes();
+				Class paramCls = paramTypes.length > 0 ? paramTypes[0] : null;
+				T edt;
+				if (paramCls != null) {
+					Object param = null;
+					if (AbstractPerspective.class.isAssignableFrom(paramCls)) {
+						param = this;
+					} else if (paramCls == CTRMap.class) {
+						param = ctrmap;
+					}
+					edt = ctor.newInstance(param);
+				} else {
+					edt = ctor.newInstance();
 				}
-				else if (paramCls == CTRMap.class) {
-					param = ctrmap;
+				if (edt.isSharedInstance()) {
+					ctrmap.sharedInstanceEditors.put(cls, edt);
 				}
-				return ctor.newInstance(param);
+				return edt;
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 				System.err.println("Could not instantiate editor: " + cls);
 				Logger.getLogger(CTRMapEditorManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -128,7 +147,7 @@ public abstract class AbstractPerspective {
 		}
 		loaded = false;
 	}
-	
+
 	public boolean isLoaded() {
 		return loaded;
 	}
@@ -180,14 +199,17 @@ public abstract class AbstractPerspective {
 		List<IMCDebugger> l = new ArrayList<>();
 		l.add(dcc);
 		for (AbstractSubEditor e : getAllEditors()) {
-			if (e instanceof IMCDebugger) {
-				l.add((IMCDebugger)e);
+			if (e != null) {
+				if (e instanceof IMCDebugger) {
+					l.add((IMCDebugger) e);
+				}
+				l.addAll(e.getExtraDebuggers());
 			}
 		}
 		l.addAll(getExtraDebuggers());
 		return l;
 	}
-	
+
 	public List<? extends IMCDebugger> getExtraDebuggers() {
 		return new ArrayList<>();
 	}
@@ -234,9 +256,9 @@ public abstract class AbstractPerspective {
 	public AbstractBackend getRenderer() {
 		return ctrmap.getMissionControl().backend;
 	}
-	
+
 	public void handleGlobalEvent(String eventName, Object... params) {
-		
+
 	}
 
 	public void reinitTool() {
@@ -249,7 +271,10 @@ public abstract class AbstractPerspective {
 		return store(false);
 	}
 
-	public final boolean store(boolean dialog) {
+	public boolean store(boolean dialog) {
+		for (AbstractSubEditor e : getAllEditors()) {
+			e.prepareForSave();
+		}
 		for (AbstractSubEditor e : getAllEditors()) {
 			if (!e.store(dialog)) {
 				return false;
@@ -261,7 +286,7 @@ public abstract class AbstractPerspective {
 	public abstract Scene getInjectionScene();
 
 	public abstract ICollisionProvider getWorldCollisionProvider();
-	
+
 	public void callGlobalEvent(String eventId, Object... params) {
 		handleGlobalEvent(eventId, params);
 		for (AbstractSubEditor e : getAllEditors()) {

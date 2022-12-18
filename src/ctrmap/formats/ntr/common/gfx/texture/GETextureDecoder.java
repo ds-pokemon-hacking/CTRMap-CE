@@ -4,6 +4,7 @@ import ctrmap.formats.ntr.common.gfx.GXColor;
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
 import java.io.IOException;
 import xstandard.io.base.impl.ext.data.DataIOStream;
+import xstandard.io.util.BitConverter;
 import xstandard.io.util.IOUtils;
 import xstandard.math.BitMath;
 
@@ -19,7 +20,7 @@ public class GETextureDecoder {
 			int inOffs = 0;
 			for (int y = 0; y < height; y += 4) {
 				for (int x = 0; x < width; x += 4) {
-					int blockData = IOUtils.byteArrayToIntegerLE(data, inOffs);
+					int blockData = BitConverter.toInt32LE(data, inOffs);
 					int indexBitfield = indexStream.readUnsignedShort();
 					int baseIndex = (indexBitfield & 0x3FFF) << 1;
 					int mode = (indexBitfield >> 14) & 3;
@@ -47,7 +48,7 @@ public class GETextureDecoder {
 
 					for (int y2 = 0; y2 < 4; y2++) {
 						for (int x2 = 0; x2 < 4; x2++) {
-							IOUtils.integer16ToByteArrayLE(
+							BitConverter.fromInt16LE(
 								col1555To5551(blockColors[BitMath.getIntegerBits(blockData, ((y2 * 4) + x2) * 2, 2)]),
 								data5a1,
 								TextureFormatHandler.getPixelByteOffset(x + x2, y + y2, width, 2)
@@ -85,21 +86,21 @@ public class GETextureDecoder {
 					switch (format) {
 						case IDX8:
 							col = input.readByte();
-							IOUtils.integer16ToByteArrayLE(palette[col & 0xFF], data5a1, outOffs);
+							BitConverter.fromInt16LE(palette[col & 0xFF], data5a1, outOffs);
 							pixelsConverted = 1;
 							break;
 						case IDX4:
 							col = input.readByte();
-							IOUtils.integer16ToByteArrayLE(palette[col & 0x0F], data5a1, outOffs);
-							IOUtils.integer16ToByteArrayLE(palette[(col & 0xF0) >> 4], data5a1, outOffs + 2);
+							BitConverter.fromInt16LE(palette[col & 0x0F], data5a1, outOffs);
+							BitConverter.fromInt16LE(palette[(col & 0xF0) >> 4], data5a1, outOffs + 2);
 							pixelsConverted = 2;
 							break;
 						case IDX2:
 							col = input.readByte();
-							IOUtils.integer16ToByteArrayLE(palette[col & 0x3], data5a1, outOffs);
-							IOUtils.integer16ToByteArrayLE(palette[(col & 0xC) >> 2], data5a1, outOffs + 2);
-							IOUtils.integer16ToByteArrayLE(palette[(col & 0x30) >> 4], data5a1, outOffs + 4);
-							IOUtils.integer16ToByteArrayLE(palette[(col & 0xC0) >> 6], data5a1, outOffs + 6);
+							BitConverter.fromInt16LE(palette[col & 0x3], data5a1, outOffs);
+							BitConverter.fromInt16LE(palette[(col & 0xC) >> 2], data5a1, outOffs + 2);
+							BitConverter.fromInt16LE(palette[(col & 0x30) >> 4], data5a1, outOffs + 4);
+							BitConverter.fromInt16LE(palette[(col & 0xC0) >> 6], data5a1, outOffs + 6);
 							pixelsConverted = 4;
 							break;
 					}
@@ -124,7 +125,7 @@ public class GETextureDecoder {
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
 					col = input.readShort();
-					IOUtils.integer16ToByteArrayLE((((col & 0x1F) << 11) | ((col >> 9) & 0x3E) | ((col & 0x3E0) << 1) | 1), data5a1, outOffs);
+					BitConverter.fromInt16LE((((col & 0x1F) << 11) | ((col >> 9) & 0x3E) | ((col & 0x3E0) << 1) | 1), data5a1, outOffs);
 
 					outOffs += 2;
 				}
@@ -162,7 +163,7 @@ public class GETextureDecoder {
 							break;
 					}
 
-					IOUtils.integerToByteArrayLE((paletteRGBA[index] & 0xFFFFFF) | (alpha << 24), dataRgba8, outOffs);
+					BitConverter.fromInt32LE((paletteRGBA[index] & 0xFFFFFF) | (alpha << 24), dataRgba8, outOffs);
 
 					outOffs += 4;
 				}

@@ -10,6 +10,7 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import ctrmap.renderer.backends.RenderConstants;
+import ctrmap.renderer.backends.base.RenderCapabilities;
 import ctrmap.renderer.backends.base.RenderState;
 import ctrmap.renderer.backends.base.ViewportInfo;
 import ctrmap.renderer.backends.base.flow.BufferObjectMemory;
@@ -34,7 +35,7 @@ public class HoustonGL2 extends GLBackendBase {
 		HoustonResources.load();
 	}
 
-	private GL2RenderDriver driver = new GL2RenderDriver(this);
+	private final GL2RenderDriver driver = new GL2RenderDriver(this);
 
 	public HoustonGL2() {
 		super();
@@ -44,7 +45,7 @@ public class HoustonGL2 extends GLBackendBase {
 		super(settings);
 	}
 
-	public HoustonGL2(RenderSettings settings, GLCapabilities caps) {
+	public HoustonGL2(RenderSettings settings, RenderCapabilities caps) {
 		super(settings, caps);
 	}
 
@@ -228,11 +229,6 @@ public class HoustonGL2 extends GLBackendBase {
 		driver.drawMesh(FILL_SCREEN_QUAD);
 
 		gl.glUseProgram(0);
-	}
-
-	@Override
-	public ViewportInfo getViewportInfo() {
-		return new ViewportInfo(getSize(), settings.Z_NEAR, settings.Z_FAR);
 	}
 
 	@Override

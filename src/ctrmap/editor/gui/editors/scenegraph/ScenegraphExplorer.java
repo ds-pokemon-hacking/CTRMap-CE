@@ -105,7 +105,7 @@ public class ScenegraphExplorer extends javax.swing.JPanel implements AbstractTo
 	public void loadBackend(AbstractBackend backend) {
 		this.backend = backend;
 		if (backend != null) {
-			sceneTree.loadRootScene(backend.getScene());
+			loadScene(backend.getScene());
 		}
 	}
 
@@ -123,6 +123,11 @@ public class ScenegraphExplorer extends javax.swing.JPanel implements AbstractTo
 
 	@Override
 	public boolean isDebugOnly() {
+		return true;
+	}
+	
+	@Override
+	public boolean isSharedInstance() {
 		return true;
 	}
 	

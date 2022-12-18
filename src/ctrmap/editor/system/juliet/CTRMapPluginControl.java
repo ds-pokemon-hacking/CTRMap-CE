@@ -9,4 +9,8 @@ public class CTRMapPluginControl {
 	public static void freeInterface(CTRMapPluginInterface iface) {
 		iface.free();
 	}
+	
+	public static void onProjectLoaded(CTRMapPluginInterface iface) {
+		iface.registAllUI();
+	}
 }

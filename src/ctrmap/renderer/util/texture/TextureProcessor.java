@@ -1,6 +1,7 @@
 package ctrmap.renderer.util.texture;
 
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
+import xstandard.io.util.BitConverter;
 import xstandard.io.util.IOUtils;
 import xstandard.math.vec.RGBA;
 import xstandard.util.collections.IntList;
@@ -87,7 +88,7 @@ public class TextureProcessor {
 		
 		int rgb;
 		for (int i = 0; i < rgba.length; i += 4){
-			rgb = IOUtils.byteArrayToIntegerLE(rgba, i);
+			rgb = BitConverter.toInt32LE(rgba, i);
 			if (alpha){
 				rgb &= 0xFFFFFF;
 			}

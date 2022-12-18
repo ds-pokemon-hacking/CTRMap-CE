@@ -52,8 +52,13 @@ public class ContainerUtil extends javax.swing.JFrame {
 
 	private void openFileInternal(FSFile f) {
 		fileList.clear();
-		GFContainer cnt = new DefaultGamefreakContainer(f);
-		openContInternal(cnt);
+		if (GFContainer.isContainer(f)) {
+			GFContainer cnt = new DefaultGamefreakContainer(f);
+			openContInternal(cnt);
+		}
+		else {
+			openContInternal(null);
+		}
 	}
 
 	private void openContInternal(GFContainer cnt) {
@@ -270,12 +275,10 @@ public class ContainerUtil extends javax.swing.JFrame {
 				if (btnApplySafeModeChanges.isEnabled()) {
 					DialogUtils.showErrorMessage(this, "Unhandled changes", "Some changes were made to the container whilst in safe mode.\nPlease apply or discard them first.");
 					btnSafeMode.setSelected(true);
-				}
-				else {
+				} else {
 					currentCont.deleteMemoryHandle();
 				}
-			}
-			else {
+			} else {
 				currentCont.makeMemoryHandle();
 			}
 		}

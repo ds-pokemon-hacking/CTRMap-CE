@@ -7,6 +7,7 @@ import javax.swing.JComponent;
 
 public interface SettingsPanel {
 
+	public String getTitle();
 	public void attachParent(SettingsForm form);
 	public MsgTxt getMsgTxt();
 	public SettingsForm getParentForm();

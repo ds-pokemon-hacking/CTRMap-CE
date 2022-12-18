@@ -16,7 +16,7 @@ public class CTRMapEditorManager {
 
 	private final CTRMap cm;
 	private final Listener listener;
-
+	
 	private final List<AbstractPerspective> perspectives = new ArrayList<>();
 	private final List<AbstractToolbarEditor> toolbarEditors = new ArrayList<>();
 	private final List<AbstractTabbedEditor> tabbedEditors = new ArrayList<>();

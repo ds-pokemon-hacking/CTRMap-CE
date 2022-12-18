@@ -11,6 +11,29 @@ public abstract class ScenegraphExplorerNode extends CustomJTreeNode {
 	public ScenegraphExplorerNode(ScenegraphJTree tree) {
 		this.tree = tree;
 	}
+	
+	protected void freeListeners() {
+		
+	}
+	
+	private void recursiveFreeListeners() {
+		freeListeners();
+		for (int ch = 0; ch < getChildCount(); ch++) {
+			TreeNode n = getChildAt(ch);
+			if (n instanceof ScenegraphExplorerNode) {
+				((ScenegraphExplorerNode) n).recursiveFreeListeners();
+			}
+		}
+	}
+	
+	@Override
+	public void remove(int childIndex) {
+		TreeNode ch = getChildAt(childIndex);
+		if (ch instanceof ScenegraphExplorerNode) {
+			((ScenegraphExplorerNode) ch).recursiveFreeListeners();
+		}
+		super.remove(childIndex);
+	}
 
 	public void onSelected(ScenegraphExplorer gui) {
 		gui.loadObjToEditor(null, null);

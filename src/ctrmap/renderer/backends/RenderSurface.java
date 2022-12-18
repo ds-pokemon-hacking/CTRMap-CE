@@ -1,8 +1,8 @@
-
 package ctrmap.renderer.backends;
 
 import ctrmap.renderer.backends.base.AbstractBackend;
 import ctrmap.renderer.backends.base.BackendMaterialOverride;
+import ctrmap.renderer.backends.base.RenderCapabilities;
 import ctrmap.renderer.backends.base.RenderSettings;
 import ctrmap.renderer.backends.base.RenderTarget;
 import ctrmap.renderer.backends.base.ViewportInfo;
@@ -11,43 +11,65 @@ import ctrmap.renderer.backends.base.shaderengine.ShaderProgramManager;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.scene.texturing.Material;
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
+import ctrmap.renderer.scenegraph.SceneAnimationCallback;
+import ctrmap.renderer.util.AspectRatioSyncCallback;
 import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 public class RenderSurface extends JPanel implements AbstractBackend {
-	
+
 	private AbstractBackend backend;
 	
-	public RenderSurface(){
+	private boolean syncAspectRatio = false;
+	private final SceneAnimationCallback aspectSyncCallback = new AspectRatioSyncCallback.Default(this);
+
+	public RenderSurface() {
 		this(RenderSettings.createDefaultRenderer());
 	}
-	
-	public RenderSurface(RenderSettings settings){
-		this(settings.createRenderer());
+
+	public RenderSurface(RenderSettings settings) {
+		this(settings, null);
 	}
 	
-	private RenderSurface(AbstractBackend backend){
+	public RenderSurface(RenderSettings settings, RenderCapabilities caps) {
+		this(settings.createRenderer(caps));
+	}
+
+	private RenderSurface(AbstractBackend backend) {
 		this.backend = backend;
-		
+
 		JComponent gui = backend.getGUI();
+
+		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+		this.setLayout(layout);
+		layout.setHorizontalGroup(
+			layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addComponent(gui, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(
+			layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				.addComponent(gui, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+	}
 	
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gui, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gui, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+	public final void setSyncAspectRatio(boolean enable) {
+		if (enable) {
+			getScene().addSceneAnimationCallback(aspectSyncCallback);
+		}
+		else {
+			getScene().removeSceneAnimationCallback(aspectSyncCallback);
+		}
+		syncAspectRatio = enable;
 	}
 
 	@Override
 	public void setScene(Scene scn) {
+		boolean aspectSync = syncAspectRatio;
+		setSyncAspectRatio(false); //remove callback from old scene
 		backend.setScene(scn);
+		setSyncAspectRatio(aspectSync);
 	}
 
 	@Override

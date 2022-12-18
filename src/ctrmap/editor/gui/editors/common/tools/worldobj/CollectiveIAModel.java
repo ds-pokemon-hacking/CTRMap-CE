@@ -11,7 +11,6 @@ import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.model.ModelInstance;
 import ctrmap.renderer.scene.model.PrimitiveType;
-import ctrmap.renderer.scene.model.Skeleton;
 import ctrmap.renderer.scene.model.Vertex;
 import ctrmap.renderer.scenegraph.G3DResource;
 import xstandard.util.ListenableList;
@@ -35,7 +34,7 @@ public class CollectiveIAModel extends ModelInstance {
 	};
 
 	public CollectiveIAModel(ListenableList<? extends WorldObject> list, MaterialProvider provider) {
-		if (true) {
+		if (false) {
 			throw new UnsupportedOperationException("DO NOT USE!");
 		}
 		this.list = list;

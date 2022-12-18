@@ -14,9 +14,11 @@ public class VisibilityBoneTransform extends AbstractBoneTransform {
 	public Target target = Target.MESH;
 
 	public KeyFrameList isVisible = new KeyFrameList();
+	
+	private final AnimatedValue tempAnimValue = new AnimatedValue();
 
 	public boolean isVisible(float frame) {
-		AnimatedValue val = getValueAt(isVisible, frame, true);
+		AnimatedValue val = getValueAt(isVisible, frame, true, tempAnimValue);
 		if (val.exists) {
 			return val.value != 0;
 		}

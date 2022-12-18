@@ -13,8 +13,15 @@ public class SkeletalAnimationTransformRequest {
 	public boolean rotation = true;
 	public boolean scale = true;
 	
+	public boolean useManualAllocation = false;
+	
 	public SkeletalAnimationTransformRequest(float frame){
+		this(frame, false);
+	}
+	
+	public SkeletalAnimationTransformRequest(float frame, boolean manualAllocation){
 		this.frame = frame;
+		this.useManualAllocation = manualAllocation;
 	}
 	
 	public SkeletalAnimationTransformRequest(SkeletalAnimationTransformRequest req){
@@ -24,5 +31,6 @@ public class SkeletalAnimationTransformRequest {
 		translation = req.translation;
 		rotation = req.rotation;
 		scale = req.scale;
+		useManualAllocation = req.useManualAllocation;
 	}
 }

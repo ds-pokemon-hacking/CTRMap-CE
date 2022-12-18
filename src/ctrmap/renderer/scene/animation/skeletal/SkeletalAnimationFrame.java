@@ -1,64 +1,94 @@
-
 package ctrmap.renderer.scene.animation.skeletal;
 
+import ctrmap.renderer.backends.RenderAllocator;
 import ctrmap.renderer.scene.animation.AnimatedValue;
 import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.Quaternion;
 import xstandard.math.vec.Vec3f;
 import org.joml.Matrix3f;
+import static ctrmap.renderer.backends.RenderAllocator.allocAnimatedValue;
 
 public class SkeletalAnimationFrame {
-	public AnimatedValue tx = new AnimatedValue();
-	public AnimatedValue ty = new AnimatedValue();
-	public AnimatedValue tz = new AnimatedValue();
 
-	public AnimatedValue rx = new AnimatedValue();
-	public AnimatedValue ry = new AnimatedValue();
-	public AnimatedValue rz = new AnimatedValue();
+	public AnimatedValue tx = null;
+	public AnimatedValue ty = null;
+	public AnimatedValue tz = null;
 
-	public AnimatedValue sx = new AnimatedValue();
-	public AnimatedValue sy = new AnimatedValue();
-	public AnimatedValue sz = new AnimatedValue();
-	
-	public Vec3f getTranslation(){
+	public AnimatedValue rx = null;
+	public AnimatedValue ry = null;
+	public AnimatedValue rz = null;
+
+	public AnimatedValue sx = null;
+	public AnimatedValue sy = null;
+	public AnimatedValue sz = null;
+
+	private final boolean wasManualAlloc;
+
+	public SkeletalAnimationFrame(boolean manualAlloc) {
+		wasManualAlloc = manualAlloc;
+		tx = allocValue(manualAlloc);
+		ty = allocValue(manualAlloc);
+		tz = allocValue(manualAlloc);
+		rx = allocValue(manualAlloc);
+		ry = allocValue(manualAlloc);
+		rz = allocValue(manualAlloc);
+		sx = allocValue(manualAlloc);
+		sy = allocValue(manualAlloc);
+		sz = allocValue(manualAlloc);
+	}
+
+	private AnimatedValue allocValue(boolean manual) {
+		return manual ? allocAnimatedValue() : new AnimatedValue();
+	}
+
+	public void free() {
+		if (wasManualAlloc) {
+			RenderAllocator.freeAnimatedValues(tx, ty, tz, rx, ry, rz, sx, sy, sz);
+		}
+	}
+
+	public Vec3f getTranslation() {
 		return new Vec3f(tx.value, ty.value, tz.value);
 	}
-	
+
 	public Vec3f getRotationEuler() {
 		return new Vec3f(rx.value, ry.value, rz.value);
 	}
-	
-	public Quaternion getRotation(){
+
+	public Quaternion getRotation() {
 		Quaternion q = new Quaternion();
 		getRotation(q);
 		return q;
 	}
-	
+
 	public Quaternion getRotation(Quaternion dest) {
 		dest.rotationZYX(rz.value, ry.value, rx.value);
 		return dest;
 	}
-	
-	public Matrix3f getRotationMatrix(){
+
+	public Matrix3f getRotationMatrix() {
 		Matrix3f mtx = new Matrix3f();
 		mtx.rotateZYX(rz.value, ry.value, rx.value);
 		return mtx;
 	}
-	
-	public Vec3f getScale(){
+
+	public Vec3f getScale() {
 		return new Vec3f(sx.value, sy.value, sz.value);
 	}
-	
-	public Matrix4 createTransformMatrix(){
-		Matrix4 mtx = new Matrix4();
-		mtx.translate(tx.value, ty.value, tz.value);
-		mtx.rotateZYX(rz.value, ry.value, rx.value);
-		mtx.scale(sx.value, sy.value, sz.value);
-		return mtx;
+
+	public Matrix4 createTransformMatrix() {
+		return getTransformMatrix(wasManualAlloc ? RenderAllocator.allocMatrix() : new Matrix4());
 	}
-	
+
+	public Matrix4 getTransformMatrix(Matrix4 dest) {
+		dest.translation(tx.value, ty.value, tz.value);
+		dest.rotateZYX(rz.value, ry.value, rx.value);
+		dest.scale(sx.value, sy.value, sz.value);
+		return dest;
+	}
+
 	@Override
-	public String toString(){
+	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("TRA: ");
 		sb.append(tx);

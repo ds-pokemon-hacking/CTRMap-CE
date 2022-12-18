@@ -129,19 +129,22 @@ public class Joint implements NamedResource {
 		}
 		return null;
 	}
-
+	
 	public Matrix4 getLocalMatrix() {
-		Matrix4 matrix = new Matrix4();
-		matrix.translate(position);
-		matrix.rotate(rotation);
-		matrix.scale(scale);
+		return getLocalMatrix(new Matrix4());
+	}
+
+	public Matrix4 getLocalMatrix(Matrix4 dest) {
+		dest.translation(position);
+		dest.rotate(rotation);
+		dest.scale(scale);
 		if (isScaleCompensate() && parentName != null) {
 			Joint parent = getParent();
 			if (parent != null) {
-				matrix.scale(parent.scale.clone().recip());
+				dest.scale(parent.scale.clone().recip());
 			}
 		}
-		return matrix;
+		return dest;
 	}
 
 }

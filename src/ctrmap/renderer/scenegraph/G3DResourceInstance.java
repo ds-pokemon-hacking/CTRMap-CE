@@ -78,6 +78,10 @@ public class G3DResourceInstance {
 	public void addResourceChangeListener(ResourceChangeListener l) {
 		ArraysEx.addIfNotNullOrContains(resourceChangeListeners, l);
 	}
+	
+	public void removeResourceChangeListener(ResourceChangeListener l) {
+		resourceChangeListeners.remove(l);
+	}
 
 	public void addSceneAnimationCallback(SceneAnimationCallback l) {
 		if (ArraysEx.addIfNotNullOrContains(sceneAnimationListeners, l)) {
@@ -213,14 +217,17 @@ public class G3DResourceInstance {
 	}
 
 	public Matrix4 getModelMatrix() {
-		Matrix4 mtx = new Matrix4();
+		return getModelMatrix(new Matrix4());
+	}
+	
+	public Matrix4 getModelMatrix(Matrix4 dest) {
 		Vec3f pos = getPosition();
 		Vec3f rot = getRotation();
 		Vec3f sca = getScale();
-		mtx.translate(pos.x, pos.y, pos.z);
-		mtx.rotateZYX(toRadians(rot.z), toRadians(rot.y), toRadians(rot.x));
-		mtx.scale(sca.x, sca.y, sca.z);
-		return mtx;
+		dest.translation(pos.x, pos.y, pos.z);
+		dest.rotateZYX(toRadians(rot.z), toRadians(rot.y), toRadians(rot.x));
+		dest.scale(sca.x, sca.y, sca.z);
+		return dest;
 	}
 
 	public Matrix4 getCameraMatrix(boolean useCache) {
@@ -338,16 +345,21 @@ public class G3DResourceInstance {
 	public boolean hasProjectionMatrix() {
 		return !cameraInstances.isEmpty();
 	}
-
+	
 	public Matrix4 getAbsoluteProjectionMatrix() {
+		return getAbsoluteProjectionMatrix(new Matrix4());
+	}
+
+	public Matrix4 getAbsoluteProjectionMatrix(Matrix4 dest) {
 		for (Camera cam : cameraInstances) {
 			//There can only be one applied at a time
-			return cam.getProjectionMatrix();
+			return cam.getProjectionMatrix(dest);
 		}
 		if (parent != null) {
-			return parent.getAbsoluteProjectionMatrix();
+			return parent.getAbsoluteProjectionMatrix(dest);
 		}
-		return new Matrix4();
+		dest.identity();
+		return dest;
 	}
 
 	public int getTotalVertexCountVBO() {
@@ -458,7 +470,7 @@ public class G3DResourceInstance {
 				}
 			}
 
-			for (ResourceChangeListener l : resourceChangeListeners) {
+			for (ResourceChangeListener l : new ArrayList<>(resourceChangeListeners)) { //copy in case the listener removes itself
 				l.onResourceChanged(this, oldRes, res);
 			}
 		}
@@ -700,6 +712,9 @@ public class G3DResourceInstance {
 			for (G3DResourceInstance ch : getChildren()) {
 				ch.stopAllAnimations();
 			}
+		}
+		for (AbstractAnimationController c : resourceAnimControllers) {
+			c.stopAnimation();
 		}
 		resourceAnimControllers.clear();
 	}
