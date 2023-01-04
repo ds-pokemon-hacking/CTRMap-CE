@@ -254,7 +254,7 @@ public class DAEAnimationPacker {
 				camAnm.frameCount = Math.max(camAnm.frameCount, sklAnm.frameCount);
 
 				for (Map.Entry<SkeletalBoneTransform, CameraViewpointBoneTransform> s2c : skel2CamQueue.entrySet()) {
-					AnimeProcessor.skeletalToCamera(sklAnm, s2c.getKey().name, skl, true, skel2XRots.get(s2c.getKey()), s2c.getValue());
+					AnimeProcessor.skeletalToCamera(sklAnm, s2c.getKey().name, skl, cfg.upAxis != DAEPostProcessConfig.DAEUpAxis.Y_UP, skel2XRots.get(s2c.getKey()), s2c.getValue());
 				}
 			}
 		}

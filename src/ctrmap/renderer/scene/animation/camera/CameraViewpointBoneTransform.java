@@ -85,7 +85,7 @@ public class CameraViewpointBoneTransform extends CameraBoneTransform {
 
 		float frameDiff = frame - floorFrame;
 		CameraViewpointFrame frm;
-		doNotInterpolate = true;
+
 		if (doNotInterpolate || frameDiff == 0f || (rx.isEmpty() || ry.isEmpty() || rz.isEmpty())) {
 			frm = getRotationExact(frame);
 		} else {

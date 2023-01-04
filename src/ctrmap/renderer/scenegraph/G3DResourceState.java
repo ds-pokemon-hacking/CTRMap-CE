@@ -11,7 +11,6 @@ import ctrmap.renderer.scene.animation.skeletal.KinematicsController;
 import ctrmap.renderer.scene.animation.skeletal.SkeletalController;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.model.Skeleton;
-import ctrmap.renderer.scene.model.Vertex;
 import ctrmap.renderer.scene.animation.skeletal.InverseKinematics;
 import ctrmap.renderer.scene.animation.visibility.VisibilityAnimation;
 import ctrmap.renderer.scene.animation.visibility.VisibilityBoneTransform;
@@ -387,7 +386,7 @@ public class G3DResourceState {
 
 	public Matrix4 getAnimatedJointMatrix(Joint modelBone, FastSkeleton modelSkeleton) {
 		Matrix4 mtx = animatedTransforms.get(modelBone);
-		Joint parentJoint = null;
+		Joint parentJoint;
 		if (mtx == null) {
 			mtx = mallocMatrix();
 			if (modelBone != null) {
@@ -502,6 +501,10 @@ public class G3DResourceState {
 				if (modelBone.isBillboard()) {
 					//Calculate billboard rotation
 					Quaternion q = new Quaternion();
+					Matrix3f normalizedGlobalRotation = RenderAllocator.allocMatrix3f();
+					modelMatrix.normalize3x3(normalizedGlobalRotation);
+					normalizedGlobalRotation.getNormalizedRotation(q).invert();
+					RenderAllocator.freeMatrix3f(normalizedGlobalRotation);
 					if (!modelBone.isBBAim()) {
 						Vec3f rot = cameraMatrix.getRotation();
 
