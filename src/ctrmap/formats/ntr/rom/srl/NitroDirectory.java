@@ -186,7 +186,8 @@ public class NitroDirectory implements Comparable<NitroDirectory> {
 				//System.out.println("writing file " + source);
 				rom.write(source.getBytes());
 				// padding with 0xff for 4-byte alignment
-				rom.pad(4, 0xFF);
+				// edit: pad to 512 bytes for faster flash memory speed
+				rom.pad(NDSROM.CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 			} else {
 				throw new IOException(f.name + " file does not exist");
 			}

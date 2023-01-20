@@ -9,7 +9,6 @@ import xstandard.io.base.impl.ext.data.DataIOStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import xstandard.fs.accessors.DiskFile;
 
 public class SRLHeader {
 

@@ -42,6 +42,8 @@ import xstandard.io.util.IOUtils;
 public class NDSROM {
 
 	public static final ExtensionFilter EXTENSION_FILTER = new ExtensionFilter("Nintendo DS ROM", "*.nds");
+	
+	static final int CARTRIDGE_OPTIMAL_ALIGNMENT = 512;
 
 	/**
 	 * Extract the entire NDSROM in the host file system
@@ -246,14 +248,14 @@ public class NDSROM {
 		arm9editor.close();
 
 		out.write(temp);
-		out.pad(4, 0xFF);
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 		// The ARM9 overlay table
 		temp = y9bin.getBytes();
 		header.arm9OverlayOffset = temp.length == 0 ? 0 : out.getPosition();
 		header.arm9OverlaySize = temp.length;
 		out.write(temp);
-		out.pad(4, 0xFF);
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 		// This will be needed for the FAT
 		List<Integer> overlayStartOffsets = new ArrayList<>();
@@ -266,7 +268,7 @@ public class NDSROM {
 			overlayStartOffsets.add(out.getPosition());
 			overlayEndOffsets.add(out.getPosition() + ovlBytes.length);
 			out.write(ovlBytes);
-			out.pad(4, 0xFF);
+			out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 		}
 
 		// The ARM7
@@ -274,14 +276,14 @@ public class NDSROM {
 		temp = arm7bin.getBytes();
 		header.arm7Size = temp.length;
 		out.write(temp);
-		out.pad(4, 0xFF);
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 		// The ARM7 overlay table
 		temp = y7bin.getBytes();
 		header.arm7OverlayOffset = temp.length == 0 ? 0 : temp.length;
 		header.arm7OverlaySize = temp.length;
 		out.write(temp);
-		out.pad(4, 0xFF);
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 		// The ARM7 overlays
 		int ovl7Base = header.arm9OverlaySize / OverlayTable.OverlayInfo.BYTES;
@@ -290,25 +292,25 @@ public class NDSROM {
 			overlayStartOffsets.add(out.getPosition());
 			overlayEndOffsets.add(out.getPosition() + ovl.length());
 			out.write(ovl.getBytes());
-			out.pad(4, 0xFF);
+			out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 		}
 
 		// The File Name Table
 		header.fntOffset = out.getPosition();
 		FNT.writeFNT(out, root);
 		header.fntSize = out.getPosition() - header.fntOffset;
-		out.pad(4, 0xFF);
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 		// The File Allocation Table
 		header.fatOffset = out.getPosition();
 		header.fatSize = FAT.calculateFATSize(dataDir) + overlays.size() * 8;
 		out.write(new byte[header.fatSize]); //allocate FAT
-		out.pad(4, 0xFF);
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 		// The banner
 		header.iconOffset = out.getPosition();
 		out.write(banner.getBytes());
-		out.pad(4, 0xFF);
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 		int fimgOffset = out.getPosition();
 
