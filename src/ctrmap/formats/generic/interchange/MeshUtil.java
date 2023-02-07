@@ -299,7 +299,7 @@ public class MeshUtil {
 			if (mesh.hasBoneIndices) {
 				//only do this if there is leq 3 (yes, not 4) since that's the most BCH supports for it
 				if (v.boneIndices.size() <= 3) {
-					checkConstantVertex(new Vec4f(getValueNonEx(0, v.boneIndices), getValueNonEx(1, v.boneIndices), getValueNonEx(2, v.boneIndices), 0), colors);
+					checkConstantVertex(new Vec4f(getValueNonEx(0, v.boneIndices), getValueNonEx(1, v.boneIndices), getValueNonEx(2, v.boneIndices), 0), boneIndices);
 				} else {
 					//disallow constants and finalize
 					boneIndices.isConstant = false;
@@ -308,7 +308,7 @@ public class MeshUtil {
 			}
 			if (mesh.hasBoneWeights) {
 				if (v.weights.size() <= 3) {
-					checkConstantVertex(new Vec4f(getValueNonExF(0, v.weights), getValueNonExF(1, v.weights), getValueNonExF(2, v.weights), 0), colors);
+					checkConstantVertex(new Vec4f(getValueNonExF(0, v.weights), getValueNonExF(1, v.weights), getValueNonExF(2, v.weights), 0), boneWeights);
 				} else {
 					//disallow constants and finalize
 					boneIndices.isConstant = false;

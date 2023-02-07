@@ -80,6 +80,6 @@ public class MeshNode extends CSNode {
 
 	@Override
 	public NamedResource getReplacement(G3DResource rsc) {
-		return getFirst(getDmyModel(rsc).materials);
+		return getFirst(getDmyModel(rsc).meshes);
 	}
 }

@@ -76,7 +76,7 @@ public class JointNode extends CSNode {
 			}
 			jnt.parentSkeleton.getJoints().fireModifyEvent(jnt);
 		} else {
-			System.err.println("Could not decend to skeleton container!!");
+			System.err.println("Could not descend to skeleton container!!");
 		}
 	}
 
@@ -101,7 +101,7 @@ public class JointNode extends CSNode {
 		if (jnt.getParent() != null) {
 			replacementIndex = jnt.getParent().getIndex();
 		}
-		//Now we retrieve the parent model (stil linked(
+		//Now we retrieve the parent model (still linked)
 		ModelNode mn = descend(ModelNode.class);
 		//Node can now be safely unlinked, actually remove it
 		super.callRemove();
