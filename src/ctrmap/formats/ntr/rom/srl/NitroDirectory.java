@@ -123,7 +123,7 @@ public class NitroDirectory implements Comparable<NitroDirectory> {
 			for (FSFile file : fileList) {
 				parent.fileList.add(new NitroFile(file.getName(), state.file, state.offset, file.length(), parent));
 				state.file++;
-				state.offset += MathEx.padInteger(file.length(), 4);
+				state.offset += MathEx.padInteger(file.length(), NDSROM.CARTRIDGE_OPTIMAL_ALIGNMENT);
 			}
 		}
 		// it's important to sort the file lists alphabetically
