@@ -5,6 +5,7 @@ import ctrmap.renderer.scene.model.PrimitiveType;
 import ctrmap.renderer.scene.model.Skeleton;
 import ctrmap.renderer.scene.model.Vertex;
 import ctrmap.renderer.scene.model.draw.buffers.mesh.NormalBufferComponent;
+import ctrmap.renderer.scene.model.draw.vtxlist.AbstractVertexList;
 import java.util.ArrayList;
 import java.util.List;
 import xstandard.math.MathEx;
@@ -70,58 +71,70 @@ public class MeshProcessor {
 	//https://gamedev.stackexchange.com/questions/68612/how-to-compute-tangent-and-bitangent-vectors
 	public static void calculateTangents(Mesh mesh, int uvSet) {
 		if (mesh.hasUV(uvSet) && mesh.primitiveType == PrimitiveType.TRIS) {
-			mesh.hasTangent = false;
+			VBOProcessor.makeInline(mesh, false);
+			for (Vertex v : mesh) {
+				v.tangent = null;
+			}
+			VBOProcessor.makeIndexed(mesh, false);
+			/*mesh.hasTangent = false;
 			//reindex, but ignore tangents
 			VBOProcessor.makeInline(mesh, false);
 			VBOProcessor.makeIndexed(mesh, false);
-			mesh.hasTangent = true;
-			
-			List<Vertex> verticesUnindexed = new ArrayList<>();
-			for (Vertex v : mesh) {
-				verticesUnindexed.add(v);
-			}
-			Vertex[] triVertices = new Vertex[3];
+			mesh.hasTangent = true;*/
 
-			Vec3f edge1 = new Vec3f();
-			Vec3f edge2 = new Vec3f();
-			Vec2f deltaUV1 = new Vec2f();
-			Vec2f deltaUV2 = new Vec2f();
-			Vec3f tangent = new Vec3f();
-			
-			for (Vertex v : verticesUnindexed) {
-				v.tangent = new Vec3f();
-			}
+			for (AbstractVertexList vl : mesh.getVertexArrays()) {
+				List<Vertex> verticesUnindexed = new ArrayList<>();
+				for (int i = 0; i < mesh.indices.size(); i++) {
+					verticesUnindexed.add(vl.get(mesh.indices.get(i)));
+				}
+				Vertex[] triVertices = new Vertex[3];
 
-			for (int ti = 0; ti < verticesUnindexed.size(); ti += 3) {
-				triVertices[0] = verticesUnindexed.get(ti);
-				triVertices[1] = verticesUnindexed.get(ti + 1);
-				triVertices[2] = verticesUnindexed.get(ti + 2);
+				Vec3f edge1 = new Vec3f();
+				Vec3f edge2 = new Vec3f();
+				Vec2f deltaUV1 = new Vec2f();
+				Vec2f deltaUV2 = new Vec2f();
+				Vec3f tangent = new Vec3f();
 
-				triVertices[1].position.sub(triVertices[0].position, edge1);
-				triVertices[2].position.sub(triVertices[0].position, edge2);
-				triVertices[1].uv[uvSet].sub(triVertices[0].uv[uvSet], deltaUV1);
-				triVertices[2].uv[uvSet].sub(triVertices[0].uv[uvSet], deltaUV2);
+				for (Vertex v : verticesUnindexed) {
+					v.tangent = new Vec3f();
+				}
 
-				float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-				tangent.set(
-					edge1.x * deltaUV2.y - edge2.x * deltaUV1.y,
-					edge1.y * deltaUV2.y - edge2.y * deltaUV1.y,
-					edge1.z * deltaUV2.y - edge2.z * deltaUV1.y
-				);
-				tangent.mul(r);
+				for (int ti = 0; ti < verticesUnindexed.size(); ti += 3) {
+					triVertices[0] = verticesUnindexed.get(ti);
+					triVertices[1] = verticesUnindexed.get(ti + 1);
+					triVertices[2] = verticesUnindexed.get(ti + 2);
 
-				for (Vertex tv : triVertices) {
-					tv.tangent.add(tangent);
+					triVertices[1].position.sub(triVertices[0].position, edge1);
+					triVertices[2].position.sub(triVertices[0].position, edge2);
+					triVertices[1].uv[uvSet].sub(triVertices[0].uv[uvSet], deltaUV1);
+					triVertices[2].uv[uvSet].sub(triVertices[0].uv[uvSet], deltaUV2);
+
+					float den = (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+					float r = (den == 0f) ? 0f : (1.0f / den);
+					tangent.set(
+						edge1.x * deltaUV2.y - edge2.x * deltaUV1.y,
+						edge1.y * deltaUV2.y - edge2.y * deltaUV1.y,
+						edge1.z * deltaUV2.y - edge2.z * deltaUV1.y
+					);
+					tangent.mul(r);
+
+					for (Vertex tv : triVertices) {
+						tv.tangent.add(tangent);
+					}
+				}
+
+				Vec3f temp = new Vec3f();
+				for (Vertex v : vl) {
+					if (v.tangent.lengthSquared() == 0f) {
+						v.tangent.set(0f, 0f, 1f);
+					}
+					v.normal.mul(v.normal.dot(v.tangent), temp);
+					v.tangent.sub(temp);
+					v.tangent.normalize();
 				}
 			}
-			
-			Vec3f temp = new Vec3f();
-			for (Vertex v : mesh.vertices) {
-				v.normal.mul(v.normal.dot(v.tangent), temp);
-				v.tangent.sub(temp);
-				v.tangent.normalize();
-			}
-			
+			mesh.hasTangent = true;
+
 			mesh.createAndInvalidateBuffers();
 		}
 	}

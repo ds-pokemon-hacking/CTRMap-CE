@@ -3,9 +3,6 @@ package ctrmap.renderer.util;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Vertex;
 import ctrmap.renderer.scene.model.draw.vtxlist.AbstractVertexList;
-import ctrmap.renderer.scene.model.draw.vtxlist.MorphableVertexList;
-import ctrmap.renderer.scene.model.draw.vtxlist.VertexArrayList;
-import xstandard.util.collections.IntList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,18 +16,21 @@ public class VBOProcessor {
 
 	public static void makeInline(Mesh mesh, boolean updateVBO) {
 		if (mesh.useIBO) {
-			List<Vertex> newVtxList = new ArrayList<>();
 			HashSet<Vertex> processed = new HashSet<>();
-			for (Vertex vtx : mesh) {
-				if (processed.contains(vtx)) {
-					vtx = new Vertex(vtx, mesh);
-				} else {
-					processed.add(vtx);
+			for (AbstractVertexList vl : mesh.getVertexArrays()) {
+				List<Vertex> newl = new ArrayList<>();
+				for (int i = 0; i < mesh.indices.size(); i++) {
+					Vertex vtx = vl.get(mesh.indices.get(i));
+					if (processed.contains(vtx)) {
+						vtx = new Vertex(vtx, mesh);
+					} else {
+						processed.add(vtx);
+					}
+					newl.add(vtx);
 				}
-				newVtxList.add(vtx);
+				vl.clear();
+				vl.addAll(newl);
 			}
-			mesh.vertices.clear();
-			mesh.vertices.addAll(newVtxList);
 			if (updateVBO) {
 				mesh.createAndInvalidateBuffers();
 			}
@@ -141,7 +141,7 @@ public class VBOProcessor {
 			return Arrays.equals(this.verts, other.verts);
 		}
 	}
-	
+
 	private static class VertexPosKey {
 
 		private final Vec3f[] positions;
@@ -173,8 +173,8 @@ public class VBOProcessor {
 				return false;
 			}
 			final VertexPosKey other = (VertexPosKey) obj;
-			return Arrays.equals(this.positions, other.positions) 
-				&& Arrays.equals(this.normals, other.normals) 
+			return Arrays.equals(this.positions, other.positions)
+				&& Arrays.equals(this.normals, other.normals)
 				&& Arrays.equals(this.tangents, other.tangents);
 		}
 	}
