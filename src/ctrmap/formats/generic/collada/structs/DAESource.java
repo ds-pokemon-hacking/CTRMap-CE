@@ -28,6 +28,7 @@ public class DAESource implements DAEIDAble, DAESerializable {
 
 		List<Element> floatArrayElems = XmlFormat.getElementsByTagName(elem, "float_array");
 		List<Element> nameArrayElems = XmlFormat.getElementsByTagName(elem, "Name_array");
+		nameArrayElems.addAll(XmlFormat.getElementsByTagName(elem, "IDREF_array"));
 
 		for (Element floatArray : floatArrayElems) {
 			float[] array = Arrays.copyOf(XmlFormat.getFloatArrayValue(elem), XmlFormat.getIntAttribute(floatArray, "count"));
@@ -60,6 +61,10 @@ public class DAESource implements DAEIDAble, DAESerializable {
 	}
 
 	public DAESource(Object contents, String... labels) {
+		this(contents, null, labels);
+	}
+
+	public DAESource(Object contents, DAEAccessor.ParamFormat format, String... labels) {
 		accessor = new DAEAccessor();
 		int extraLabelStartIndex = 0;
 		if (contents instanceof AbstractVector[]) {
@@ -69,7 +74,7 @@ public class DAESource implements DAEIDAble, DAESerializable {
 			for (int i = 0; i < labels.length; i++) {
 				DAEAccessor.Param p = new DAEAccessor.Param();
 
-				p.format = DAEAccessor.ParamFormat.FLOAT;
+				p.format = format == null ? DAEAccessor.ParamFormat.FLOAT : format;
 				float[] values = new float[len];
 				for (int j = 0; j < values.length; j++) {
 					values[j] = vecA[j].get(i);
@@ -85,7 +90,7 @@ public class DAESource implements DAEIDAble, DAESerializable {
 			for (int i = 0; i < labels.length; i++) {
 				DAEAccessor.Param p = new DAEAccessor.Param();
 
-				p.format = DAEAccessor.ParamFormat.STRING;
+				p.format = format == null ? DAEAccessor.ParamFormat.STRING : format;
 				String[] values = new String[strA.length / labels.length];
 				for (int j = 0, k = 0; j < values.length; j++, k += labels.length) {
 					values[j] = strA[k];
@@ -100,7 +105,7 @@ public class DAESource implements DAEIDAble, DAESerializable {
 
 			DAEAccessor.Param p = new DAEAccessor.Param();
 			p.array = fltA;
-			p.format = DAEAccessor.ParamFormat.FLOAT;
+			p.format = format == null ? DAEAccessor.ParamFormat.FLOAT : format;
 
 			accessor.params.put(labels[0], p);
 			extraLabelStartIndex = 1;

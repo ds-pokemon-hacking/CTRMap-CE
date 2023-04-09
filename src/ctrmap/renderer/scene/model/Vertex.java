@@ -75,6 +75,26 @@ public class Vertex {
 		}
 		return 0;
 	}
+	
+	public boolean hasAttribute(VertexAttributeType attr, int setNo) {
+		switch (attr) {
+			case BONE_INDEX:
+				return true;
+			case BONE_WEIGHT:
+				return true;
+			case COLOR:
+				return color != null;
+			case NORMAL:
+				return normal != null;
+			case POSITION:
+				return position != null;
+			case TANGENT:
+				return tangent != null;
+			case UV:
+				return uv[setNo] != null;
+		}
+		return false;
+	}
 
 	@Override
 	public int hashCode() {
@@ -87,6 +107,27 @@ public class Vertex {
 		hash = 37 * hash + Objects.hashCode(this.boneIndices);
 		hash = 37 * hash + Objects.hashCode(this.weights);
 		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
+		final Vertex other = (Vertex) obj;
+		if (!Objects.equals(this.position, other.position)
+			|| !Objects.equals(this.color, other.color)
+			|| !Arrays.deepEquals(this.uv, other.uv)
+			|| !Objects.equals(this.normal, other.normal)
+			|| !Objects.equals(this.tangent, other.tangent)
+			|| !Objects.equals(this.boneIndices, other.boneIndices)
+			|| !Objects.equals(this.weights, other.weights)) {
+			return false;
+		}
+		return true;
 	}
 
 	public boolean equals(Vertex v, boolean p, boolean c, boolean uv, boolean n) {

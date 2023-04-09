@@ -158,6 +158,7 @@ public class ModelNode extends CSNode {
 
 	@Override
 	public void onReplaceFinish(Object oldContent) {
+		super.onReplaceFinish(oldContent);
 		rebuildSubNodes();
 		NGCS cs = getCS();
 		if (cs.currentModel == oldContent) {

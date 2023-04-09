@@ -8,6 +8,10 @@ import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.model.PrimitiveType;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.model.VertexMorph;
+import ctrmap.renderer.scene.model.draw.vtxlist.AbstractVertexList;
+import ctrmap.renderer.scene.model.draw.vtxlist.MorphableVertexList;
+import ctrmap.renderer.scene.model.draw.vtxlist.VertexArrayList;
 import xstandard.fs.FSFile;
 import xstandard.fs.FSUtil;
 import xstandard.fs.accessors.DiskFile;
@@ -99,6 +103,49 @@ public class MeshUtil {
 			mesh.skinningType = Mesh.SkinningType.values()[dis.read() & 3];
 		}
 
+		if (fileVersion >= Revisions.REV_VERTEX_MORPHS) {
+			int morphNameCount = dis.readUnsignedShort();
+			String[] morphNames = new String[morphNameCount];
+			for (int i = 0; i < morphNameCount; i++) {
+				morphNames[i] = dis.readStringWithAddress();
+			}
+			
+			int morphCount = dis.readUnsignedShort();
+			if (morphCount == 1) {
+				mesh.vertices = readVertexArray(mesh, dis, true);
+			}
+			else {
+				MorphableVertexList mvl = new MorphableVertexList();
+				for (int i = 0; i < morphCount; i++) {
+					VertexMorph morph = new VertexMorph();
+					morph.name = morphNames[i];
+					morph.vertices = readVertexArray(mesh, dis, i == 0);
+					mvl.addMorph(morph);
+				}
+				mesh.vertices = mvl;
+			}
+		}
+		else {
+			mesh.vertices = readVertexArray(mesh, dis, true);
+		}
+
+		if (fileVersion >= Revisions.REV_INDEX_BUFFERS) {
+			mesh.useIBO = dis.readBoolean();
+			if (mesh.useIBO) {
+				int indexCount = dis.readInt();
+				int indexSize = dis.read();
+				for (int i = 0; i < indexCount; i++) {
+					mesh.indices.add(dis.readSized(indexSize));
+				}
+			}
+		}
+
+		return mesh;
+	}
+
+	private static AbstractVertexList readVertexArray(Mesh mesh, DataIOStream dis, boolean setMeshAttrib) throws IOException {
+		AbstractVertexList vertices = new VertexArrayList();
+
 		int numAttributes = dis.readByte();
 
 		List<VertexAttrib> attribs = new ArrayList<>();
@@ -112,14 +159,14 @@ public class MeshUtil {
 
 		int vertexCount = dis.readInt();
 		for (int i = 0; i < vertexCount; i++) {
-			mesh.vertices.add(new Vertex());
+			vertices.add(new Vertex());
 		}
 
 		for (VertexAttrib a : attribs) {
 			if (a.isConstant) {
 				a.constValue = new Vec4f(dis);
 			} else {
-				for (Vertex v : mesh.vertices) {
+				for (Vertex v : vertices) {
 					switch (a.name) {
 						case POSITION:
 							v.position = new Vec3f(dis);
@@ -169,7 +216,7 @@ public class MeshUtil {
 				Vec3f constantVec3 = new Vec3f(a.constValue.x, a.constValue.y, a.constValue.z);
 				RGBA constantColor = new RGBA(a.constValue);	//we make those to not clog up the memory with values that are all the same
 
-				for (Vertex v : mesh.vertices) {
+				for (Vertex v : vertices) {
 					switch (a.name) {
 						case NORMAL:
 							v.normal = constantVec3;
@@ -206,47 +253,37 @@ public class MeshUtil {
 			}
 		}
 
-		for (VertexAttrib a : attribs) {
-			switch (a.name) {
-				case BONE_IDX:
-					mesh.hasBoneIndices = true;
-					break;
-				case BONE_WEIGHT:
-					mesh.hasBoneWeights = true;
-					break;
-				case COLOR:
-					mesh.hasColor = true;
-					break;
-				case NORMAL:
-					mesh.hasNormal = true;
-					break;
-				case TANGENT:
-					mesh.hasTangent = true;
-					break;
-				case UV0:
-					mesh.hasUV[0] = true;
-					break;
-				case UV1:
-					mesh.hasUV[1] = true;
-					break;
-				case UV2:
-					mesh.hasUV[2] = true;
-					break;
-			}
-		}
-
-		if (fileVersion >= Revisions.REV_INDEX_BUFFERS) {
-			mesh.useIBO = dis.readBoolean();
-			if (mesh.useIBO) {
-				int indexCount = dis.readInt();
-				int indexSize = dis.read();
-				for (int i = 0; i < indexCount; i++) {
-					mesh.indices.add(dis.readSized(indexSize));
+		if (setMeshAttrib) {
+			for (VertexAttrib a : attribs) {
+				switch (a.name) {
+					case BONE_IDX:
+						mesh.hasBoneIndices = true;
+						break;
+					case BONE_WEIGHT:
+						mesh.hasBoneWeights = true;
+						break;
+					case COLOR:
+						mesh.hasColor = true;
+						break;
+					case NORMAL:
+						mesh.hasNormal = true;
+						break;
+					case TANGENT:
+						mesh.hasTangent = true;
+						break;
+					case UV0:
+						mesh.hasUV[0] = true;
+						break;
+					case UV1:
+						mesh.hasUV[1] = true;
+						break;
+					case UV2:
+						mesh.hasUV[2] = true;
+						break;
 				}
 			}
 		}
-
-		return mesh;
+		return vertices;
 	}
 
 	public static void writeMesh(Model m, Mesh mesh, CMIFWriter dos) throws IOException {
@@ -262,6 +299,39 @@ public class MeshUtil {
 		dos.writeEnum(mesh.primitiveType);
 		dos.writeEnum(mesh.skinningType);
 
+		if (mesh.isMorphable()) {
+			List<VertexMorph> morphs = ((MorphableVertexList) mesh.vertices).morphs();
+			dos.writeShort(morphs.size());
+			for (VertexMorph morph : morphs) {
+				dos.writeString(morph.name);
+			}
+		} else {
+			dos.writeShort(0);
+		}
+
+		AbstractVertexList[] vas = mesh.getVertexArrays();
+		dos.writeShort(vas.length);
+
+		int vertexCount = 0;
+
+		for (AbstractVertexList va  : vas) {
+			vertexCount = Math.max(vertexCount, va.size());
+			writeVertexArray(va, m, mesh, dos);
+		}
+
+		dos.writeBoolean(mesh.useIBO);
+		if (mesh.useIBO) {
+			dos.writeInt(mesh.indices.size());
+			int maxIndex = vertexCount - 1;
+			int size = (maxIndex > 0xFFFF) ? 4 : (maxIndex > 0xFF) ? 2 : 1;
+			dos.write(size);
+			for (int i = 0; i < mesh.indices.size(); i++) {
+				dos.writeSized(mesh.indices.get(i), size);
+			}
+		}
+	}
+
+	private static void writeVertexArray(AbstractVertexList vertices, Model m, Mesh mesh, CMIFWriter dos) throws IOException {
 		//generate vertex attribs first for optimization
 		VertexAttrib positions = new VertexAttrib(VertexAttribName.POSITION);
 		//those are gonna be always present and not constant
@@ -277,16 +347,44 @@ public class MeshUtil {
 		VertexAttrib texCoord1 = new VertexAttrib(VertexAttribName.UV1);
 		VertexAttrib texCoord2 = new VertexAttrib(VertexAttribName.UV2);
 
-		texCoord0.exists = mesh.hasUV(0);
-		texCoord1.exists = mesh.hasUV(1);
-		texCoord2.exists = mesh.hasUV(2);
-		colors.exists = mesh.hasColor;
-		normals.exists = mesh.hasNormal;
-		tangents.exists = mesh.hasTangent;
-		boneIndices.exists = mesh.hasBoneIndices;
-		boneWeights.exists = mesh.hasBoneWeights;
+		Vertex ref = vertices.isEmpty() ? new Vertex() : vertices.get(0);
 
-		for (Vertex v : mesh.vertices) {
+		boolean containsIndices = false;
+		boolean containsWeights = false;
+		for (Vertex v : vertices) {
+			if (!v.boneIndices.isEmpty()) {
+				containsIndices = true;
+			}
+			if (!v.weights.isEmpty()) {
+				containsWeights = true;
+			}
+			if (containsIndices && containsWeights) {
+				break;
+			}
+		}
+
+		texCoord0.exists = mesh.hasUV(0) && ref.uv[0] != null;
+		texCoord1.exists = mesh.hasUV(1) && ref.uv[1] != null;
+		texCoord2.exists = mesh.hasUV(2) && ref.uv[2] != null;
+		colors.exists = mesh.hasColor && ref.color != null;
+		normals.exists = mesh.hasNormal && ref.normal != null;
+		tangents.exists = mesh.hasTangent && ref.tangent != null;
+		boneIndices.exists = mesh.hasBoneIndices && containsIndices;
+		boneWeights.exists = mesh.hasBoneWeights && containsWeights;
+
+		VertexAttrib[] attribs = new VertexAttrib[]{
+			positions,
+			normals,
+			tangents,
+			colors,
+			texCoord0,
+			texCoord1,
+			texCoord2,
+			boneIndices,
+			boneWeights
+		};
+
+		for (Vertex v : vertices) {
 			if (mesh.hasColor) {
 				checkConstantVertex(v.color.toVector4(), colors);
 			}
@@ -327,50 +425,24 @@ public class MeshUtil {
 		}
 
 		//Constants done, write buffer format
-		int numAttribs = 1; //positions
-		numAttribs += normals.exists ? 1 : 0;
-		numAttribs += tangents.exists ? 1 : 0;
-		numAttribs += colors.exists ? 1 : 0;
-		numAttribs += texCoord0.exists ? 1 : 0;
-		numAttribs += texCoord1.exists ? 1 : 0;
-		numAttribs += texCoord2.exists ? 1 : 0;
-		numAttribs += boneWeights.exists ? 1 : 0;
-		numAttribs += boneIndices.exists ? 1 : 0;
+		int numAttribs = 0;
+		for (VertexAttrib a : attribs) {
+			if (a.exists) {
+				numAttribs++;
+			}
+		}
 
 		dos.write(numAttribs);
 
-		writeVertexAttrib(positions, dos);
-		writeVertexAttrib(normals, dos);
-		writeVertexAttrib(tangents, dos);
-		writeVertexAttrib(colors, dos);
-		writeVertexAttrib(texCoord0, dos);
-		writeVertexAttrib(texCoord1, dos);
-		writeVertexAttrib(texCoord2, dos);
-		writeVertexAttrib(boneIndices, dos);
-		writeVertexAttrib(boneWeights, dos);
+		for (VertexAttrib a : attribs) {
+			writeVertexAttrib(a, dos);
+		}
 
 		//since this converter always keeps the given order (positions, normals, colors...), we can just dump it into the buffer
-		int vertexCount = mesh.vertices.size();
+		int vertexCount = vertices.size();
 		dos.writeInt(vertexCount);
-		writeVertexAttribArray(positions, mesh.vertices, dos);
-		writeVertexAttribArray(normals, mesh.vertices, dos);
-		writeVertexAttribArray(tangents, mesh.vertices, dos);
-		writeVertexAttribArray(colors, mesh.vertices, dos);
-		writeVertexAttribArray(texCoord0, mesh.vertices, dos);
-		writeVertexAttribArray(texCoord1, mesh.vertices, dos);
-		writeVertexAttribArray(texCoord2, mesh.vertices, dos);
-		writeVertexAttribArray(boneIndices, mesh.vertices, dos);
-		writeVertexAttribArray(boneWeights, mesh.vertices, dos);
-
-		dos.writeBoolean(mesh.useIBO);
-		if (mesh.useIBO) {
-			dos.writeInt(mesh.indices.size());
-			int maxIndex = vertexCount - 1;
-			int size = (maxIndex > 0xFFFF) ? 4 : (maxIndex > 0xFF) ? 2 : 1;
-			dos.write(size);
-			for (int i = 0; i < mesh.indices.size(); i++) {
-				dos.writeSized(mesh.indices.get(i), size);
-			}
+		for (VertexAttrib a : attribs) {
+			writeVertexAttribArray(a, vertices, dos);
 		}
 	}
 

@@ -1,24 +1,18 @@
 
 package ctrmap.renderer.scene.model.draw.buffers.mesh;
 
-import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.model.VertexAttributeType;
 import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
-/**
- *
- */
-public class ColorBufferComponent extends BufferComponent {
-
-	private Mesh mesh;
+public class ColorBufferComponent extends MeshBufferComponent {
 	
 	private ByteBuffer colorBuffer;
 	
 	public ColorBufferComponent(MeshVertexBuffer buffer){
 		super(buffer);
-		this.mesh = buffer.mesh;
 	}
 	
 	@Override
@@ -43,9 +37,14 @@ public class ColorBufferComponent extends BufferComponent {
 	
 	public void createColorBuffer() {
 		if (isEnabled()) {
-			colorBuffer = ByteBuffer.allocateDirect(mesh.vertices.size() * 4);
+			int count = mesh.vertices.sizeForAttribute(VertexAttributeType.COLOR);
+			colorBuffer = ByteBuffer.allocateDirect(count * 4);
 
+			int index = 0;
 			for (Vertex v : mesh.vertices) {
+				if (index++ >= count) {
+					break;
+				}
 				colorBuffer.put((byte)v.color.r);
 				colorBuffer.put((byte)v.color.g);
 				colorBuffer.put((byte)v.color.b);
@@ -55,5 +54,10 @@ public class ColorBufferComponent extends BufferComponent {
 		else {
 			colorBuffer = null;
 		}
+	}
+
+	@Override
+	public int getElementCount() {
+		return 4;
 	}
 }

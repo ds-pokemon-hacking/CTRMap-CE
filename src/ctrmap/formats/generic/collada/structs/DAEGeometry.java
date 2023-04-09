@@ -8,6 +8,7 @@ import xstandard.math.vec.Vec3f;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.PrimitiveType;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.model.draw.vtxlist.AbstractVertexList;
 import ctrmap.renderer.scene.model.draw.vtxlist.VertexArrayList;
 import xstandard.math.MathEx;
 import xstandard.math.vec.Matrix4;
@@ -17,9 +18,12 @@ import xstandard.util.ArraysEx;
 import xstandard.util.collections.FloatList;
 import xstandard.util.collections.IntList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -97,7 +101,7 @@ public class DAEGeometry implements DAEIDAble {
 					case "NORMAL":
 						List<Vec3f> normals = srcAccessor.getVec3fArray();
 						for (int i = 0; i < data.size(); i++) {
-							data.get(i).normal = normals.get(i);;
+							data.get(i).normal = normals.get(i);
 						}
 						globalHasNormal = true;
 						break;
@@ -325,15 +329,19 @@ public class DAEGeometry implements DAEIDAble {
 		return false;
 	}
 
-	public DAEGeometry(Mesh mesh) {
+	private IdentityHashMap<Vertex, Integer> vtxIndexMap;
+
+	public DAEGeometry(Mesh mesh, AbstractVertexList vl, int[] indexMap, boolean isMorph) {
 		if (!isPrimitiveTypeCOLLADACompatible(mesh.primitiveType)) {
 			throw new RuntimeException("Primitive type " + mesh.primitiveType + " not supported by COLLADA!!");
 		}
 		name = XmlFormat.sanitizeName(mesh.name);
 
 		SubMesh submesh = new SubMesh();
-		submesh.hasColor = mesh.hasColor;
-		submesh.hasUV = mesh.hasUV;
+		if (!isMorph) {
+			submesh.hasColor = mesh.hasColor;
+			submesh.hasUV = mesh.hasUV;
+		}
 		submesh.hasNormal = mesh.hasNormal;
 		submesh.hasTangent = mesh.hasTangent;
 
@@ -342,20 +350,40 @@ public class DAEGeometry implements DAEIDAble {
 		submesh.vertexPointerOffset = pOffs++;
 		submesh.normalPointerOffset = mesh.hasNormal ? pOffs++ : -1;
 		submesh.tangentPointerOffset = submesh.normalPointerOffset; //index same as normals
-		submesh.colorPointerOffset = mesh.hasColor ? pOffs++ : -1;
-		for (int i = 0; i < mesh.hasUV.length; i++) {
-			if (mesh.hasUV(i)) {
-				submesh.uvOffsets.add(pOffs++);
-			} else {
-				break;
+		if (!isMorph) {
+			submesh.colorPointerOffset = mesh.hasColor ? pOffs++ : -1;
+			for (int i = 0; i < mesh.hasUV.length; i++) {
+				if (mesh.hasUV(i)) {
+					submesh.uvOffsets.add(pOffs++);
+				} else {
+					break;
+				}
 			}
 		}
 
 		submesh.materialSymbol = mesh.materialName;
 
+		if (indexMap != null) {
+			vtxIndexMap = new IdentityHashMap<>();
+			if (indexMap.length != vl.size()) {
+				throw new RuntimeException("Index map length " + indexMap.length + " is not equal to vertex list size " + vl.size());
+			}
+			int max = 0;
+			for (int i = 0; i < indexMap.length; i++) {
+				if (indexMap[i] > max) {
+					max = indexMap[i];
+				}
+				vtxIndexMap.put(vl.get(i), indexMap[i]);
+			}
+		}
+
 		VertexArrayList deindexed = new VertexArrayList();
-		for (Vertex vtx : mesh) {
-			deindexed.add(vtx);
+		if (mesh.useIBO) {
+			for (int i = 0; i < mesh.indices.size(); i++) {
+				deindexed.add(vl.get(mesh.indices.get(i)));
+			}
+		} else {
+			deindexed.addAll(vl);
 		}
 
 		submesh.vertexBuffers.put(new PrimitiveHeader(mesh), deindexed);
@@ -369,11 +397,11 @@ public class DAEGeometry implements DAEIDAble {
 		elem.setAttribute("name", name);
 
 		Element mesh = doc.createElement("mesh");
-		
+
 		Vec3f dmyNullVector = new Vec3f();
 
 		for (SubMesh sm : faces) {
-			HashSet<DAEVertex> vertices = new HashSet<>();
+			Collection<DAEVertex> vertices = new LinkedHashSet<>(); //some tools (guess which one) need this to preserve facepoint order
 			HashSet<TBN> tbns = new HashSet<>();
 			HashSet<RGBA> colors = new HashSet<>();
 			List<HashSet<Vec2f>> uvs = new ArrayList<>();
@@ -381,14 +409,37 @@ public class DAEGeometry implements DAEIDAble {
 				uvs.add(new HashSet<>());
 			}
 
+			if (vtxIndexMap != null) {
+				int maxIdx = 0;
+				for (int i : vtxIndexMap.values()) {
+					if (i + 1 > maxIdx) {
+						maxIdx = i + 1;
+					}
+				}
+				List<DAEVertex> vl = new ArrayList<>(maxIdx);
+				vertices = vl;
+
+				for (int i = 0; i < maxIdx; i++) {
+					vl.add(null);
+				}
+			}
+
 			DAEVertex vTemp = new DAEVertex();
 
-			for (Map.Entry<PrimitiveHeader, VertexArrayList> vertList : sm.vertexBuffers.entrySet()) {
+			for (Map.Entry<PrimitiveHeader, AbstractVertexList> vertList : sm.vertexBuffers.entrySet()) {
 				for (Vertex vtx : vertList.getValue()) {
 					vTemp.set(vtx);
-					if (!vertices.contains(vTemp)) {
-						vertices.add(vTemp);
-						vTemp = new DAEVertex();
+					if (vtxIndexMap != null) {
+						int vidx = vtxIndexMap.get(vtx);
+						if (((List) vertices).get(vidx) == null) {
+							((List) vertices).set(vidx, vTemp);
+							vTemp = new DAEVertex();
+						}
+					} else {
+						if (!vertices.contains(vTemp)) {
+							vertices.add(vTemp);
+							vTemp = new DAEVertex();
+						}
 					}
 					if (sm.hasNormal) {
 						Vec3f nor = vtx.normal;
@@ -435,6 +486,12 @@ public class DAEGeometry implements DAEIDAble {
 			}
 
 			for (DAEVertex v : vertices) {
+				if (v == null) {
+					for (DAEVertex vtx : vertices) {
+						System.err.println(vtx == null ? null : vtx.position);
+					}
+					throw new NullPointerException();
+				}
 				positionsList.add(v.position);
 				if (outListVertices != null) {
 					outListVertices.add(v);
@@ -480,15 +537,15 @@ public class DAEGeometry implements DAEIDAble {
 			}
 
 			TBN tbnCompTemp = new TBN(new Vec3f(), new Vec3f());
-			
-			for (Map.Entry<PrimitiveHeader, VertexArrayList> vbuf : sm.vertexBuffers.entrySet()) {
-				VertexArrayList verts = vbuf.getValue();
+
+			for (Map.Entry<PrimitiveHeader, AbstractVertexList> vbuf : sm.vertexBuffers.entrySet()) {
+				AbstractVertexList verts = vbuf.getValue();
 
 				int stride = sm.getFacepointStride();
 				int[] indices = new int[stride * verts.size()];
 				//System.out.println("vertex count " + verts.size() + " vertex stride " + stride);
 				//System.out.println("has color " + sm.hasColor + " has normal " + sm.hasNormal + " has uv " + Arrays.toString(sm.hasUV));
-				
+
 				int indicesOffset = 0;
 				for (Vertex vtx : verts) {
 					indices[indicesOffset + sm.vertexPointerOffset] = positionsList.indexOf(vtx.position);
@@ -496,8 +553,7 @@ public class DAEGeometry implements DAEIDAble {
 						tbnCompTemp.normal.set(vtx.normal);
 						if (vtx.tangent == null || !sm.hasTangent) {
 							tbnCompTemp.tangent.zero();
-						}
-						else {
+						} else {
 							tbnCompTemp.tangent.set(vtx.tangent);
 						}
 						indices[indicesOffset + sm.normalPointerOffset] = tbnList.indexOf(tbnCompTemp);
@@ -655,7 +711,7 @@ public class DAEGeometry implements DAEIDAble {
 
 		public int index;
 
-		public Map<PrimitiveHeader, VertexArrayList> vertexBuffers = new HashMap<>();
+		public Map<PrimitiveHeader, AbstractVertexList> vertexBuffers = new HashMap<>();
 		public Map<PrimitiveHeader, List<Integer>> daeIndexBuffers = new HashMap<>();
 
 		public String materialSymbol;
@@ -711,7 +767,7 @@ public class DAEGeometry implements DAEIDAble {
 					primitiveHeader.primitiveType = pt;
 				}
 
-				VertexArrayList vl = vertexBuffers.get(primitiveHeader);
+				AbstractVertexList vl = vertexBuffers.get(primitiveHeader);
 				if (vl == null) {
 					vl = new VertexArrayList();
 					vertexBuffers.put(primitiveHeader, vl);
@@ -768,7 +824,7 @@ public class DAEGeometry implements DAEIDAble {
 
 		private List<Mesh> toMeshes() {
 			List<Mesh> meshes = new ArrayList<>();
-			for (Map.Entry<PrimitiveHeader, VertexArrayList> vbo : vertexBuffers.entrySet()) {
+			for (Map.Entry<PrimitiveHeader, AbstractVertexList> vbo : vertexBuffers.entrySet()) {
 				PrimitiveHeader hdr = vbo.getKey();
 
 				if (hdr.primitiveType != null) {
@@ -791,7 +847,7 @@ public class DAEGeometry implements DAEIDAble {
 		public void applySkinning(List<Vertex> skinVertexBuf) {
 			for (Map.Entry<PrimitiveHeader, List<Integer>> e : daeIndexBuffers.entrySet()) {
 				List<Integer> l = e.getValue();
-				VertexArrayList vbo = vertexBuffers.get(e.getKey());
+				AbstractVertexList vbo = vertexBuffers.get(e.getKey());
 				for (int i = 0; i < l.size(); i++) {
 					Vertex skinVertex = skinVertexBuf.get(l.get(i));
 					vbo.get(i).boneIndices.addAll(skinVertex.boneIndices);
@@ -809,19 +865,19 @@ public class DAEGeometry implements DAEIDAble {
 			return max + 1;
 		}
 	}
-	
+
 	private static class TBN {
-		
+
 		private static final Vec3f DMYVEC = new Vec3f();
-		
+
 		public final Vec3f normal;
 		public final Vec3f tangent;
-		
+
 		public TBN(Vec3f normal, Vec3f tangent) {
 			this.normal = normal;
 			this.tangent = tangent == null ? DMYVEC : tangent;
 		}
-		
+
 		@Override
 		public boolean equals(Object o) {
 			if (o != null && o instanceof TBN) {

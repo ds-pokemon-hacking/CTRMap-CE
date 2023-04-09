@@ -8,6 +8,8 @@ import ctrmap.renderer.scene.metadata.MetaData;
 import ctrmap.renderer.scene.model.draw.vtxlist.AbstractVertexList;
 import ctrmap.renderer.scene.model.draw.vtxlist.VertexArrayList;
 import ctrmap.renderer.scene.model.draw.buffers.MeshBufferManager;
+import ctrmap.renderer.scene.model.draw.vtxlist.MorphableVertexList;
+import ctrmap.renderer.scene.model.draw.vtxlist.VertexListType;
 import ctrmap.renderer.scene.model.draw.vtxlist.VertexListUsage;
 import xstandard.util.collections.IntList;
 import java.util.Arrays;
@@ -52,12 +54,51 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 
 		setAttributes(source);
 
-		vertices = new VertexArrayList(source.vertices);
+		if (!source.isMorphable()) {
+			vertices = new VertexArrayList(source.vertices);
+		}
+		else {
+			MorphableVertexList newvl = new MorphableVertexList();
+			for (VertexMorph morph : ((MorphableVertexList)source.vertices).morphs()) {
+				newvl.addMorph(new VertexMorph(morph));
+			}
+			this.vertices = newvl;
+		}
 		indices = new IntList(source.indices);
 		useIBO = source.useIBO;
 		metaData = source.metaData;
 	}
-	
+
+	public boolean isMorphable() {
+		return vertices.getType() == VertexListType.MORPH;
+	}
+
+	public void makeMorphable() {
+		if (!isMorphable()) {
+			MorphableVertexList mvl = new MorphableVertexList();
+			VertexMorph oldmorph = new VertexMorph();
+			oldmorph.name = "base";
+			oldmorph.vertices = vertices;
+			mvl.addMorph(oldmorph);
+			vertices = mvl;
+			createAndInvalidateBuffers();
+		}
+	}
+
+	public AbstractVertexList[] getVertexArrays() {
+		AbstractVertexList[] vtxSources;
+		if (isMorphable()) {
+			MorphableVertexList mvl = ((MorphableVertexList) vertices);
+			vtxSources = new AbstractVertexList[mvl.morphs().size()];
+			for (int i = 0; i < vtxSources.length; i++) {
+				vtxSources[i] = mvl.morphs().get(i).vertices;
+			}
+		} else {
+			vtxSources = new AbstractVertexList[]{vertices};
+		}
+		return vtxSources;
+	}
+
 	public static Mesh mirror(Mesh source) {
 		Mesh m2 = new Mesh();
 		m2.setAttributes(source);
@@ -170,7 +211,18 @@ public class Mesh implements NamedResource, Iterable<Vertex> {
 	}
 
 	public int getVertexCount() {
-		return useIBO ? indices.size() : vertices.size();
+		return useIBO ? indices.size() : getRealVertexCount();
+	}
+
+	public int getRealVertexCount() {
+		if (isMorphable()) {
+			MorphableVertexList mvl = (MorphableVertexList) vertices;
+			if (mvl.getMorphCount() > 0) {
+				return mvl.morphs().get(0).vertices.size();
+			}
+			return 0;
+		}
+		return vertices.size();
 	}
 
 	public boolean hasUV(int index) {

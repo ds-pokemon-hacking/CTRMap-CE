@@ -1,7 +1,7 @@
 package ctrmap.renderer.scene.model.draw.buffers.mesh;
 
-import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.model.VertexAttributeType;
 import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -9,15 +9,12 @@ import java.nio.ByteBuffer;
 /**
  *
  */
-public class BoneIndexBufferComponent extends BufferComponent {
-
-	private Mesh mesh;
+public class BoneIndexBufferComponent extends MeshBufferComponent {
 
 	private ByteBuffer idxBuffer;
 
 	public BoneIndexBufferComponent(MeshVertexBuffer buffer) {
 		super(buffer);
-		this.mesh = buffer.mesh;
 	}
 
 	@Override
@@ -42,10 +39,15 @@ public class BoneIndexBufferComponent extends BufferComponent {
 
 	public void createBoneIndexBuffer() {
 		if (isEnabled()) {
-			idxBuffer = ByteBuffer.allocateDirect(mesh.vertices.size() * 4);
+			int count = mesh.vertices.sizeForAttribute(VertexAttributeType.BONE_INDEX);
+			idxBuffer = ByteBuffer.allocateDirect(count * 4);
 
 			int listSize;
+			int index = 0;
 			for (Vertex v : mesh.vertices) {
+				if (index++ >= count) {
+					break;
+				}
 				listSize = Math.min(4, v.boneIndices.size());
 				for (int i = 0; i < listSize; i++) {
 					idxBuffer.put((byte)v.boneIndices.get(i));
@@ -57,5 +59,10 @@ public class BoneIndexBufferComponent extends BufferComponent {
 		} else {
 			idxBuffer = null;
 		}
+	}
+
+	@Override
+	public int getElementCount() {
+		return 4;
 	}
 }

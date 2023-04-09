@@ -21,6 +21,7 @@ PASSTHROUGH vec2 uv0;
 PASSTHROUGH vec2 uv1;
 PASSTHROUGH vec2 uv2;
 PASSTHROUGH vec4 color;
+PASSTHROUGH vec3 f_relNormal;
 PASSTHROUGH vec3 f_normal;
 PASSTHROUGH vec3 f_tangent;
 PASSTHROUGH vec3 f_view;

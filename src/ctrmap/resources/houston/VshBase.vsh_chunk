@@ -9,8 +9,12 @@
 #endif
 
 VTXATTR vec3 a_position;
+VTXATTR vec3 a_positionB;
 VTXATTR vec3 a_normal;
+VTXATTR vec3 a_normalB;
 VTXATTR vec3 a_tangent;
+VTXATTR vec3 a_tangentB;
+uniform float morphWeight;
 VTXATTR vec4 a_color;
 VTXATTR vec2 a_texcoord;
 VTXATTR vec2 a_texcoord1;
@@ -30,6 +34,7 @@ uniform mat3 normalMatrix;
 uniform mat4 projectionMatrix;
 
 //Fragment lighting
+PASSTHROUGH vec3 f_relNormal;
 PASSTHROUGH vec3 f_normal;
 PASSTHROUGH vec3 f_tangent;
 PASSTHROUGH vec3 f_view;

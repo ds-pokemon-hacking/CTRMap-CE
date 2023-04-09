@@ -32,7 +32,7 @@ public abstract class CSNodeListener<T> implements ListenableList.ElementChangeL
 			}
 		}
 		if (index == -1 && evt.type == ListenableList.ElementChangeType.ADD) {
-			index = node.getChildCount();
+			index = Math.min(node.getChildCount(), evt.index);
 		}
 		if (index != -1) {
 			switch (evt.type) {

@@ -16,6 +16,8 @@ import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.model.Skeleton;
+import ctrmap.renderer.scene.model.draw.vtxlist.AbstractVertexList;
+import ctrmap.renderer.scene.model.draw.vtxlist.MorphableVertexList;
 import ctrmap.renderer.scene.texturing.Material;
 import ctrmap.renderer.scene.texturing.MaterialParams;
 import ctrmap.renderer.scene.texturing.Texture;
@@ -23,6 +25,7 @@ import ctrmap.renderer.scene.texturing.TextureMapper;
 import ctrmap.renderer.scenegraph.G3DResourceType;
 import ctrmap.renderer.util.MeshProcessor;
 import ctrmap.renderer.util.PrimitiveConverter;
+import ctrmap.renderer.util.VBOProcessor;
 import ctrmap.renderer.util.texture.TextureConverter;
 import xstandard.fs.FSFile;
 import xstandard.fs.FSUtil;
@@ -77,7 +80,8 @@ public class DAE extends XmlFormat {
 		DAEConvMemory<Material, DAEEffect> matEffConv = new DAEConvMemory<>(conv, "effect");
 		DAEConvMemory<Material, DAEMaterial> matConv = new DAEConvMemory<>(conv, "material");
 		DAEConvMemory<Mesh, DAEGeometry> meshConv = new DAEConvMemory<>(conv, "geometry");
-		DAEConvMemory<Mesh, DAEController> meshConvCtrl = new DAEConvMemory<>(conv, "geometry");
+		DAEConvMemory<Mesh, DAEController> meshConvCtrl = new DAEConvMemory<>(conv, "skin");
+		DAEConvMemory<Mesh, DAEController> meshConvMorphCtrl = new DAEConvMemory<>(conv, "morph");
 		DAEConvMemory<Skeleton, DAEVisualScene> vsConv = new DAEConvMemory<>(conv, "visual_scene");
 		DAEConvMemory<Joint, DAENode> skelConv = new DAEConvMemory<>(conv, "joint");
 		DAEConvMemory<Camera, DAECamera> camConv = new DAEConvMemory<>(conv, "camera");
@@ -191,13 +195,35 @@ public class DAE extends XmlFormat {
 					//quadstrips - only primitive type not supported by COLLADA
 					mesh = PrimitiveConverter.getTriOrQuadMesh(mesh);
 				}
-				DAEGeometry geom = new DAEGeometry(mesh);
+				AbstractVertexList[] varrs = mesh.getVertexArrays();
+				int[] indexMap = varrs.length > 1 ? VBOProcessor.createIndexMap(true, varrs) : null;
+				DAEGeometry geom = new DAEGeometry(mesh, varrs[0], indexMap, false);
 				meshConv.put(mesh, geom);
 				geometries.putNode(geom);
+				DAEController skinController = null;
 				if (mesh.hasBoneIndices) {
 					DAEController controller = new DAEController(mesh, mdl.skeleton, geom, meshNode, skelConvSID);
 					meshConvCtrl.put(keyMesh, controller);
 					controllers.putNode(controller);
+					skinController = controller;
+				}
+				if (varrs.length > 1) {
+					List<DAEGeometry> morphGeoms = new ArrayList<>();
+					
+					for (int morphIndex = 1; morphIndex < varrs.length; morphIndex++) {
+						DAEGeometry morph = new DAEGeometry(mesh, varrs[morphIndex], indexMap, true);
+						morph.name = XmlFormat.sanitizeName(((MorphableVertexList) mesh.vertices).morphs().get(morphIndex).name);
+						meshConv.put(mesh, morph);
+						geometries.putNode(morph);
+						morphGeoms.add(morph);
+					}
+					
+					DAEController morphController = new DAEController(mesh, geom, morphGeoms);
+					meshConvMorphCtrl.put(keyMesh, morphController);
+					controllers.putNode(morphController);
+					if (skinController != null && !settings.blenderMorphs) {
+						skinController.meshUrl = morphController.getURL();
+					}
 				}
 			}
 
@@ -518,8 +544,7 @@ public class DAE extends XmlFormat {
 								 */
 								isShitBlender = true;
 							}
-						}
-						else if (major == 3) {
+						} else if (major == 3) {
 							isShitBlender = true;
 						}
 
@@ -691,6 +716,12 @@ public class DAE extends XmlFormat {
 
 		for (DAEController c : controllers) {
 			DAEGeometry geom = geometries.getByUrl(c.meshUrl);
+			if (geom == null) {
+				DAEController morph = controllers.getByUrl(c.meshUrl);
+				if (morph != null) {
+					geom = geometries.getByUrl(morph.meshUrl);
+				}
+			}
 			if (geom != null) {
 				List<DAEGeometry.DAEVertex> verts = new ArrayList<>();
 				libGeom.appendChild(geom.createElement(doc, verts));

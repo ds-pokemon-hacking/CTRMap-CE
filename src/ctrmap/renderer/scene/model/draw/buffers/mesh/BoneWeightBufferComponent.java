@@ -1,23 +1,17 @@
 package ctrmap.renderer.scene.model.draw.buffers.mesh;
 
-import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.model.VertexAttributeType;
 import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 
-/**
- *
- */
-public class BoneWeightBufferComponent extends BufferComponent {
-
-	private Mesh mesh;
+public class BoneWeightBufferComponent extends MeshBufferComponent {
 
 	private FloatBuffer weightBuffer = null;
 
 	public BoneWeightBufferComponent(MeshVertexBuffer buffer) {
 		super(buffer);
-		this.mesh = buffer.mesh;
 	}
 
 	@Override
@@ -42,12 +36,17 @@ public class BoneWeightBufferComponent extends BufferComponent {
 
 	public void createBoneWeightBuffer() {
 		if (isEnabled()) {
-			weightBuffer = FloatBuffer.allocate(mesh.vertices.size() * 4);
+			int count = mesh.vertices.sizeForAttribute(VertexAttributeType.BONE_WEIGHT);
+			weightBuffer = FloatBuffer.allocate(count * 4);
 
 			int listSize;
 			float weightSum;
 			float w;
+			int index = 0;
 			for (Vertex v : mesh.vertices) {
+				if (index++ >= count) {
+					break;
+				}
 				listSize = Math.min(4, v.weights.size());
 				weightSum = 0f;
 				for (int i = 0; i < listSize; i++) {
@@ -67,5 +66,10 @@ public class BoneWeightBufferComponent extends BufferComponent {
 		} else {
 			weightBuffer = null;
 		}
+	}
+
+	@Override
+	public int getElementCount() {
+		return 4;
 	}
 }

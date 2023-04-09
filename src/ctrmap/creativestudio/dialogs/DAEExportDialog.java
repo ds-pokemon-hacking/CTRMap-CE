@@ -1,5 +1,6 @@
 package ctrmap.creativestudio.dialogs;
 
+import ctrmap.formats.generic.collada.DAEExportSettings;
 import ctrmap.renderer.scene.animation.AbstractAnimation;
 import ctrmap.renderer.scene.animation.camera.CameraAnimation;
 import ctrmap.renderer.scene.animation.skeletal.SkeletalAnimation;
@@ -40,6 +41,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		DialogOptionRemember.setRememberedCheckbox(btnBakeTransforms);
 		DialogOptionRemember.setRememberedCheckbox(btnTexExportMappedOnly);
 		DialogOptionRemember.setRememberedCheckbox(btnNoUseLookAt);
+		DialogOptionRemember.setRememberedCheckbox(btnBlenderMorphs);
 		DialogOptionRemember.selectRememberedRBtnPos(mdlExportTypeGroup);
 		DialogOptionRemember.selectRememberedRBtnPos(anmExportTypeGroup);
 
@@ -139,6 +141,8 @@ public class DAEExportDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         btnBakeTransforms = new javax.swing.JCheckBox();
         btnNoUseLookAt = new javax.swing.JCheckBox();
+        jPanel2 = new javax.swing.JPanel();
+        btnBlenderMorphs = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Export COLLADA");
@@ -235,6 +239,28 @@ public class DAEExportDialog extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Hacks"));
+
+        btnBlenderMorphs.setText("Headless vertex morphs");
+        btnBlenderMorphs.setToolTipText("<html> If checked, this will ignore vertex morphs by skin controllers.<br> This is AGAINST the COLLADA specification and will cause problems in most programs,<br> but is required to recognize vertex morphs in certain poorly designed software (note: Blender). </html>");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnBlenderMorphs)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnBlenderMorphs)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -298,7 +324,8 @@ public class DAEExportDialog extends javax.swing.JDialog {
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(btnTexExportMappedOnly)
                                             .addComponent(btnSeparateTex))))
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -351,8 +378,10 @@ public class DAEExportDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnExport)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -372,6 +401,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		DialogOptionRemember.putRememberedCheckbox(btnIsExportCam);
 		DialogOptionRemember.putRememberedCheckbox(btnIsExportLight);
 		DialogOptionRemember.putRememberedCheckbox(btnBakeTransforms);
+		DialogOptionRemember.putRememberedCheckbox(btnBlenderMorphs);
 		mdlSelect.saveComboBoxValue("DAESingleModelName");
 		anmSelect.saveComboBoxValue("DAESingleAnimeName");
 
@@ -386,6 +416,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		result.texMappedOnly = btnTexExportMappedOnly.isSelected() && result.exportMdl;
 		result.bakeTransforms = btnBakeTransforms.isSelected();
 		result.doNotUseLookAt = btnNoUseLookAt.isSelected();
+		result.blenderMorphs = btnBlenderMorphs.isSelected();
 
 		if (result.exportMdl) {
 			if (btnMdlExportOne.isSelected()) {
@@ -428,6 +459,7 @@ public class DAEExportDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox btnAnmExportAllSepDir;
     private javax.swing.JRadioButton btnAnmExportOne;
     private javax.swing.JCheckBox btnBakeTransforms;
+    private javax.swing.JCheckBox btnBlenderMorphs;
     private javax.swing.JButton btnExport;
     private javax.swing.JCheckBox btnIsExportAnm;
     private javax.swing.JCheckBox btnIsExportCam;
@@ -442,13 +474,14 @@ public class DAEExportDialog extends javax.swing.JDialog {
     private javax.swing.JSeparator camSep;
     private javax.swing.JSeparator exportBtnSep;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator lightSep;
     private javax.swing.ButtonGroup mdlExportTypeGroup;
     private ctrmap.creativestudio.dialogs.ModelSelectionPanel mdlSelect;
     private javax.swing.JSeparator texSep;
     // End of variables declaration//GEN-END:variables
 
-	public static class CSDAEExportSettings {
+	public static class CSDAEExportSettings extends DAEExportSettings {
 
 		public boolean exportMdl;
 		public boolean exportTex;
@@ -460,9 +493,6 @@ public class DAEExportDialog extends javax.swing.JDialog {
 		public List<AbstractAnimation> animeToExport = new ArrayList<>();
 
 		public boolean animeToSeparateFiles;
-		
-		public boolean bakeTransforms;
-		public boolean doNotUseLookAt;
 
 		public boolean texMappedOnly;
 

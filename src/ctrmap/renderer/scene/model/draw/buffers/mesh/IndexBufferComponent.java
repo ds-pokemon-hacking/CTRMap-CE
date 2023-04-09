@@ -49,4 +49,9 @@ public class IndexBufferComponent extends BufferComponent {
 			ibo = sb;
 		}
 	}
+
+	@Override
+	public int getElementCount() {
+		return 1;
+	}
 }

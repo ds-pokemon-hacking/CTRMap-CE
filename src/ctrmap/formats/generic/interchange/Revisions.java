@@ -1,8 +1,8 @@
 package ctrmap.formats.generic.interchange;
 
 public class Revisions {
-	public static final int REV_CURRENT = 22;
-	public static final int REV_CURRENT_BW_COMPAT = 22;
+	public static final int REV_CURRENT = 23;
+	public static final int REV_CURRENT_BW_COMPAT = 23;
 	
 	public static final int REV_FOUNDATION = 1;			//First version of the IF
 	public static final int REV_OTHER_FILES = 2;		//Add support for generic embedded files - new pointer table
@@ -41,6 +41,7 @@ public class Revisions {
 	public static final int REV_EXT_FSH_INFO = 20;      //Extended fragment shader parameters in materials
 	public static final int REV_TBN = 21;				//Tangent/bitangent vertex attribute support
 	public static final int REV_CAMERA_PLUS = 22;		//Serialization of the new camera structure
+	public static final int REV_VERTEX_MORPHS = 23;		//Multiple vertex arrays + morphs per mesh support
 	
 	public static final int REV_NDS_RESERVED = 4269;
 }

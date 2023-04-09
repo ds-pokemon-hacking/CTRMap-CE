@@ -82,7 +82,8 @@ public class DAEAccessor implements DAESerializable {
 						p.array = matrices;
 						break;
 					}
-					case STRING: {
+					case STRING:
+					case IDREF: {
 						String[] names = new String[count];
 						String[] srcData = (String[]) src;
 						int offs = paramIdx;
@@ -167,9 +168,9 @@ public class DAEAccessor implements DAESerializable {
 	}
 
 	public String[] getStringArray() {
-		if (hasParamTypes(ParamFormat.STRING)) {
+		if (hasParamTypes(ParamFormat.STRING) || hasParamTypes(ParamFormat.IDREF)) {
 			for (Param p : params.values()) {
-				if (p.format == ParamFormat.STRING) {
+				if (p.format == ParamFormat.STRING || p.format == ParamFormat.IDREF) {
 					return (String[]) p.array;
 				}
 			}
@@ -178,7 +179,7 @@ public class DAEAccessor implements DAESerializable {
 	}
 
 	public List<String> getStringList() {
-		if (hasParamTypes(ParamFormat.STRING)) {
+		if (hasParamTypes(ParamFormat.STRING) || hasParamTypes(ParamFormat.IDREF)) {
 			return ArraysEx.asList(getStringArray());
 		}
 		throw new UnsupportedOperationException("Not a name source.");
@@ -296,6 +297,9 @@ public class DAEAccessor implements DAESerializable {
 					case STRING:
 						newArrayfmt = "Name_array";
 						break;
+					case IDREF:
+						newArrayfmt = "IDREF_array";
+						break;
 				}
 				if (newArrayfmt != null) {
 					if (arrayfmt != null && !Objects.equals(arrayfmt, newArrayfmt)) {
@@ -344,7 +348,8 @@ public class DAEAccessor implements DAESerializable {
 		FLOAT(1, "float", "double"),
 		INTEGER(1, "int"),
 		FLOAT4x4(16, "float4x4"),
-		STRING(1, "name", "Name");
+		STRING(1, "name", "Name"),
+		IDREF(1, "IDREF");
 
 		private final List<String> fNames = new ArrayList<>();
 		private final int stride;

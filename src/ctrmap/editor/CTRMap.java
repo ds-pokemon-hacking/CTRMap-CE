@@ -244,13 +244,7 @@ public class CTRMap extends JFrame {
 		return null;
 	}
 
-	private void setupMCForCTRMap(IMissionControl mc) {
-		mc.addBackendChangeListener((AbstractBackend newBackend) -> {
-			worldEditorSplitPane.setLeftComponent(newBackend.getGUI());
-			//Add Discovery resource root
-			newBackend.getProgramManager().getUserShManager().addIncludeDirectory(ResourceAccess.getResourceFile("discovery"));
-			ObjectSelection.enableObjSelSHA(newBackend);
-		});
+	private void decorateCTRMapMCScene(IMissionControl mc) {
 		//Simple clear color animator by day time
 		mc.mcScene.addSceneAnimationCallback(new SceneAnimationCallback() {
 			final float TWENTYOCLOCK_SECS = 20 * 60 * 60;
@@ -273,6 +267,15 @@ public class CTRMap extends JFrame {
 				}
 				mc.videoSettings.CLEAR_COLOR = new RGBA(0, 0, 0, 255).lerp(new RGBA(103, 174, 255, 255), mul);
 			}
+		});
+	}
+
+	private void setupMCForCTRMap(IMissionControl mc) {
+		mc.addBackendChangeListener((AbstractBackend newBackend) -> {
+			worldEditorSplitPane.setLeftComponent(newBackend.getGUI());
+			//Add Discovery resource root
+			newBackend.getProgramManager().getUserShManager().addIncludeDirectory(ResourceAccess.getResourceFile("discovery"));
+			ObjectSelection.enableObjSelSHA(newBackend);
 		});
 	}
 
@@ -484,6 +487,7 @@ public class CTRMap extends JFrame {
 		}
 
 		mcInUse.mcInit(prj.wsfs, prj.gameInfo, RenderSettings.getDefaultSettings(), AudioSettings.defaultSettings);
+		decorateCTRMapMCScene(mcInUse);
 		gameAdapters.getGameAdapter(prj.gameInfo).startup();
 		loadSupportedPerspectives();
 

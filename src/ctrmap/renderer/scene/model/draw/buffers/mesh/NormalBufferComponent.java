@@ -1,24 +1,23 @@
 
 package ctrmap.renderer.scene.model.draw.buffers.mesh;
 
-import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.model.VertexAttributeType;
+import ctrmap.renderer.scene.model.VertexMorph;
 import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
+import ctrmap.renderer.scene.model.draw.vtxlist.MorphableVertexList;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 
 /**
  *
  */
-public class NormalBufferComponent extends BufferComponent {
-
-	private Mesh mesh;
+public class NormalBufferComponent extends MeshBufferComponent {
 	
 	private FloatBuffer normalBuffer = null;
 	
 	public NormalBufferComponent(MeshVertexBuffer buffer){
 		super(buffer);
-		this.mesh = buffer.mesh;
 	}
 	
 	@Override
@@ -43,9 +42,14 @@ public class NormalBufferComponent extends BufferComponent {
 	
 	public void createNormalBuffer() {
 		if (isEnabled()) {
-			normalBuffer = FloatBuffer.allocate(mesh.vertices.size() * 3);
+			int count = mesh.vertices.sizeForAttribute(VertexAttributeType.NORMAL);
+			normalBuffer = FloatBuffer.allocate(count * 3);
 
+			int index = 0;
 			for (Vertex v : mesh.vertices) {
+				if (index++ >= count) {
+					break;
+				}
 				normalBuffer.put(v.normal.x);
 				normalBuffer.put(v.normal.y);
 				normalBuffer.put(v.normal.z);
@@ -53,6 +57,22 @@ public class NormalBufferComponent extends BufferComponent {
 		}
 		else {
 			normalBuffer = null;
+		}
+	}
+
+	@Override
+	public int getElementCount() {
+		return 3;
+	}
+	
+	@Override
+	public void processVertexMorph(MorphableVertexList vl) {
+		VertexMorph m = vl.currentMorph();
+		if (m != null) {
+			morphIndex = vl.morphIndex(m);
+		}
+		else {
+			morphIndex = 0;
 		}
 	}
 }

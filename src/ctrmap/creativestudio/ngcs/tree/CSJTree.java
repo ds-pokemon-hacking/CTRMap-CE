@@ -35,6 +35,7 @@ public class CSJTree extends CustomJTree {
 		registerIconResource(OtherFileNode.RESID, "other");
 		registerIconResource(SceneTemplateNode.RESID, "scene");
 		registerIconResource(VisGroupNode.RESID, "visgroup");
+		registerIconResource(VertexMorphNode.RESID, "vertexmorph");
 		
 		for (int i = 0; i < root.getChildCount(); i++){
 			model.removeNodeFromParent((MutableTreeNode)root.getChildAt(0));

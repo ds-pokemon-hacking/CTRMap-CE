@@ -140,6 +140,20 @@ public abstract class CSNode extends CustomJTreeNode {
 		getCS().reloadEditor(); //will stop editing this object
 	}
 
+	public void replaceContent(NamedResource replacement) {
+		ListenableList list = getParentList();
+		if (list != null) {
+			NamedResource content = getContent();
+			int index = list.indexOf(content);
+			if (index != -1) {
+				replacement.setName(content.getName());
+				setContent(replacement);
+				list.setModify(index, replacement);
+				onReplaceFinish(content);
+			}
+		}
+	}
+
 	public void callReplace() {
 		NGCS cs = getCS();
 		NGCSIOManager ioMgr = cs.getIOManager();
@@ -149,17 +163,7 @@ public abstract class CSNode extends CustomJTreeNode {
 			G3DResource res = NGCSImporter.importFiles(cs, type.getFormats(ioMgr), repl);
 			NamedResource replacement = getReplacement(res);
 			if (replacement != null) {
-				ListenableList list = getParentList();
-				if (list != null) {
-					NamedResource content = getContent();
-					int index = list.indexOf(content);
-					if (index != -1) {
-						replacement.setName(content.getName());
-						setContent(replacement);
-						list.setModify(index, replacement);
-						onReplaceFinish(content);
-					}
-				}
+				replaceContent(replacement);
 			}
 		}
 	}
@@ -286,7 +290,7 @@ public abstract class CSNode extends CustomJTreeNode {
 	}
 
 	public void onReplaceFinish(Object lastContent) {
-
+		getCS().reloadEditor();
 	}
 
 	public abstract NamedResource getContent();

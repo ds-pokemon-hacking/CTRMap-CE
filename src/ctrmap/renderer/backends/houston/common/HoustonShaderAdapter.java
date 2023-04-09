@@ -62,6 +62,11 @@ public interface HoustonShaderAdapter extends IShaderAdapter {
 			driver.uniform1iv(program.getUniformLocation(HoustonUniforms.MESH_BOOLUNIFORMS, driver), boolUniforms);
 		}
 	}
+	
+	@Override
+	public default void setUpMeshBlendWeight(float value, IRenderDriver driver, ShaderProgram program) {
+		driver.uniform1f(program.getUniformLocation(HoustonUniforms.MESH_BLEND_WEIGHT, driver), value);
+	}
 
 	@Override
 	public default void setLUTNeedsTangentUniform(boolean value, IRenderDriver driver, ShaderProgram program) {
@@ -132,7 +137,7 @@ public interface HoustonShaderAdapter extends IShaderAdapter {
 
 	public static void passTextureMapperUniforms(Material mat, ShaderProgram program, IRenderDriver gl) {
 		synchronized (mapModes) {
-			for (int i = 0; i < mat.textures.size(); i++) {
+			for (int i = 0; i < Math.min(mapModes.length, mat.textures.size()); i++) {
 				mapModes[i] = mat.textures.get(i).mapMode.ordinal();
 			}
 			if (mapModes.length > 0) {

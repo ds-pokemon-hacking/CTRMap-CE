@@ -502,6 +502,9 @@ public class SMD {
 			for (Map.Entry<String, List<Vertex>> mesh : triangles.entrySet()) {
 				List<Vertex> verts = mesh.getValue();
 				String materialName = mesh.getKey();
+				if (materialName == null) {
+					materialName = "NoMaterial";
+				}
 
 				Texture tex = materialTextures.get(materialName);
 

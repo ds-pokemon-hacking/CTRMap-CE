@@ -13,6 +13,7 @@ public class HoustonUniforms {
 	public static final String MTX_NORMAL = "normalMatrix";
 	public static final String MTX_PROJECTION = "projectionMatrix";
 	
+	public static final String MESH_BLEND_WEIGHT = "morphWeight";
 	public static final String MESH_BOOLUNIFORMS = "meshBoolUniforms";
 	public static final int MESH_BOOLUNIFORMS_COLOR_IDX = 0;
 	public static final int MESH_BOOLUNIFORMS_NORMAL_IDX = 1;

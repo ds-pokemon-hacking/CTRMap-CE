@@ -28,7 +28,6 @@ import ctrmap.renderer.scenegraph.G3DResource;
 import ctrmap.renderer.scenegraph.G3DResourceInstance;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.scene.animation.AbstractAnimation;
-import ctrmap.renderer.scene.animation.AbstractAnimationController;
 import ctrmap.renderer.scene.animation.camera.CameraAnimation;
 import ctrmap.renderer.scene.animation.camera.CameraAnimationController;
 import ctrmap.renderer.scene.animation.material.MaterialAnimation;

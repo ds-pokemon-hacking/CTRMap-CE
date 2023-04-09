@@ -245,9 +245,7 @@ public class NGCSColladaPlugin implements INGCSPlugin {
 					texDir = dest.getParent();
 				}
 
-				DAEExportSettings daeSettings = new DAEExportSettings();
-				daeSettings.bakeTransforms = settings.bakeTransforms;
-				daeSettings.doNotUseLookAt = settings.doNotUseLookAt;
+				DAEExportSettings daeSettings = settings;
 
 				List<Skeleton> skeletons = new ArrayList<>();
 				for (Model mdl : contentAccessor.getModels()) {

@@ -24,6 +24,7 @@ public enum CSNodeContentType {
 	LIGHT("Light", CAP_ALL, CSG3DIOContentType.LIGHT),
 	JOINT("Joint", 0),
 	VISGROUP("VisGroup", 0),
+	VERTEX_MORPH("VertexMorph", CAP_ALL, CSG3DIOContentType.MESH),
 
 	SCENE_TEMPLATE("SceneTemplate", CAP_ALL, CSG3DIOContentType.SCENE_TEMPLATE),
 	SCENE_TEMPLATE_NODE("SceneTemplateNode", 0),

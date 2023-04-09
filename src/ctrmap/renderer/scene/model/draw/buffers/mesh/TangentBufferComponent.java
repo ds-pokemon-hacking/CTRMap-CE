@@ -1,24 +1,18 @@
 
 package ctrmap.renderer.scene.model.draw.buffers.mesh;
 
-import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Vertex;
+import ctrmap.renderer.scene.model.VertexAttributeType;
 import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 
-/**
- *
- */
-public class TangentBufferComponent extends BufferComponent {
-
-	private Mesh mesh;
+public class TangentBufferComponent extends MeshBufferComponent {
 	
 	private FloatBuffer tangentBuffer = null;
 	
 	public TangentBufferComponent(MeshVertexBuffer buffer){
 		super(buffer);
-		this.mesh = buffer.mesh;
 	}
 	
 	@Override
@@ -43,9 +37,14 @@ public class TangentBufferComponent extends BufferComponent {
 	
 	public void createTangentBuffer() {
 		if (isEnabled()) {
-			tangentBuffer = FloatBuffer.allocate(mesh.vertices.size() * 3);
+			int count = mesh.vertices.sizeForAttribute(VertexAttributeType.TANGENT);
+			tangentBuffer = FloatBuffer.allocate(mesh.vertices.sizeForAttribute(VertexAttributeType.TANGENT) * 3);
 
+			int index = 0;
 			for (Vertex v : mesh.vertices) {
+				if (index++ >= count) {
+					break;
+				}
 				tangentBuffer.put(v.tangent.x);
 				tangentBuffer.put(v.tangent.y);
 				tangentBuffer.put(v.tangent.z);
@@ -54,5 +53,10 @@ public class TangentBufferComponent extends BufferComponent {
 		else {
 			tangentBuffer = null;
 		}
+	}
+
+	@Override
+	public int getElementCount() {
+		return 3;
 	}
 }

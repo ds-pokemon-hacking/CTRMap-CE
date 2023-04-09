@@ -121,7 +121,7 @@ public class XmlFormat {
 		if (name == null) {
 			return "Null";
 		}
-		return FormattingUtils.getStrWithoutNonAlphanumeric(name, '-');
+		return FormattingUtils.getStrWithoutNonAlphanumeric(name, '-', '/');
 	}
 
 	public static String getFPRGBA(RGBA rgba) {

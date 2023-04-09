@@ -15,6 +15,10 @@ import ctrmap.renderer.scene.animation.material.MaterialAnimationColorFrame;
 import ctrmap.renderer.scene.metadata.MetaData;
 import ctrmap.renderer.scene.metadata.MetaDataValue;
 import ctrmap.renderer.scene.model.*;
+import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
+import ctrmap.renderer.scene.model.draw.buffers.mesh.MeshBufferComponent;
+import ctrmap.renderer.scene.model.draw.vtxlist.MorphableVertexList;
+import ctrmap.renderer.scene.model.draw.vtxlist.VertexListType;
 import ctrmap.renderer.scene.texturing.*;
 import ctrmap.renderer.scenegraph.G3DResourceInstance;
 import ctrmap.renderer.scenegraph.G3DResourceState;
@@ -97,6 +101,19 @@ public class MeshRenderFlow {
 			}
 
 			shaderHandler.setUpMeshBoolUniforms(mesh, gl, program);
+			if (mesh.vertices.getType() == VertexListType.MORPH) {
+				float weight = 0f;
+				MorphableVertexList mvl = (MorphableVertexList) mesh.vertices;
+				if (mvl.currentMorph() != null && mvl.lastMorph() != null) {
+					weight = mvl.getMorphWeight();
+				}
+				for (BufferComponent c : mesh.buffers.vbo.components) {
+					if (c instanceof MeshBufferComponent) {
+						((MeshBufferComponent) c).processVertexMorph(mvl);
+					}
+				}
+				shaderHandler.setUpMeshBlendWeight(weight, gl, program);
+			}
 
 			passMetaDataUniforms(mesh.metaData, program, gl);
 			passMetaDataUniforms(model.metaData, program, gl);

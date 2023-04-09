@@ -68,6 +68,7 @@ public class AnimationNode extends CSNode {
 
 	@Override
 	public void onReplaceFinish(Object oldObj) {
+		super.onReplaceFinish(oldObj);
 		rebuildSubNodes();
 		NGCS cs = getCS();
 		if (cs.stopAnimation((AbstractAnimation) oldObj)) {

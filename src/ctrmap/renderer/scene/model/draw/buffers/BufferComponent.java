@@ -28,6 +28,8 @@ public abstract class BufferComponent {
 	public abstract boolean isEnabled();
 
 	public abstract java.nio.Buffer getBuffer();
+	
+	public abstract int getElementCount();
 
 	public abstract BufferComponentType getType();
 
@@ -81,6 +83,10 @@ public abstract class BufferComponent {
 			return b.capacity() * getType().sizeof;
 		}
 		return 0;
+	}
+	
+	public int getStride() {
+		return getElementCount() * getType().sizeof;
 	}
 
 	public static enum BufferComponentType {

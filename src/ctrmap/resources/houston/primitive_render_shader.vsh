@@ -96,11 +96,38 @@ vec3 calcTangent(vec3 normal) {
     return tangent;
 }
 
+vec3 getMorphPosition() {
+    if (morphWeight == 0.0) {
+        return a_position;
+    }
+    else {
+        return mix(a_position, a_positionB, 1.0 - morphWeight);
+    }
+}
+
+vec3 getMorphNormal() {
+    if (morphWeight == 0.0) {
+        return a_normal;
+    }
+    else {
+        return mix(a_normal, a_normalB, 1.0 - morphWeight);
+    }
+}
+
+vec3 getMorphTangent() {
+    if (morphWeight == 0.0) {
+        return a_tangent;
+    }
+    else {
+        return mix(a_tangent, a_tangentB, 1.0 - morphWeight);
+    }
+}
+
 void main(void)
 {
-    vec4 pos = vec4(a_position, 1);
-    vec4 normal = vec4(a_normal, 0);
-    vec4 tangent = vec4(a_tangent, 0);
+    vec4 pos = vec4(getMorphPosition(), 1);
+    vec4 normal = vec4(getMorphNormal(), 0);
+    vec4 tangent = vec4(getMorphTangent(), 0);
     vec4 p = vec4(0, 0, 0, 1);
     vec4 n = vec4(0);
     vec4 t = vec4(0);
@@ -176,6 +203,7 @@ void main(void)
 
     uv_normal = normalMatrix * vec3(n);
     f_normal = uv_normal;
+    f_relNormal = normal.xyz;
 
     if (!hasTangent){
         f_tangent = calcTangent(uv_normal);

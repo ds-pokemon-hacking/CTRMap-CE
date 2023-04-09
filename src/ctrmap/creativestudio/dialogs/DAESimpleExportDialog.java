@@ -15,6 +15,7 @@ public class DAESimpleExportDialog extends javax.swing.JDialog {
 
 		DialogOptionRemember.setRememberedCheckbox(btnAnmExportBake);
 		DialogOptionRemember.setRememberedCheckbox(btnNoUseLookAt);
+		DialogOptionRemember.setRememberedCheckbox(btnBlenderVertexMorphs);
 	}
 
 	public DAEExportSettings getResult() {
@@ -31,6 +32,7 @@ public class DAESimpleExportDialog extends javax.swing.JDialog {
         btnExport = new javax.swing.JButton();
         btnAnmExportBake = new javax.swing.JCheckBox();
         btnNoUseLookAt = new javax.swing.JCheckBox();
+        btnBlenderVertexMorphs = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Additional settings");
@@ -49,6 +51,9 @@ public class DAESimpleExportDialog extends javax.swing.JDialog {
         btnNoUseLookAt.setSelected(true);
         btnNoUseLookAt.setText("Do not use look-at transform");
 
+        btnBlenderVertexMorphs.setText("Headless vertex morphs");
+        btnBlenderVertexMorphs.setToolTipText("<html>\nIf checked, this will ignore vertex morphs by skin controllers.<br>\nThis is AGAINST the COLLADA specification and will cause problems in most programs,<br>\nbut is required to recognize vertex morphs in certain poorly designed software (note: Blender).\n</html>");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -57,26 +62,28 @@ public class DAESimpleExportDialog extends javax.swing.JDialog {
                 .addGap(22, 22, 22)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnNoUseLookAt)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(btnAnmExportBake)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
-                        .addComponent(btnExport)))
+                        .addComponent(btnExport))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnBlenderVertexMorphs)
+                            .addComponent(btnNoUseLookAt))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnExport)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
                 .addGap(16, 16, 16)
                 .addComponent(btnAnmExportBake)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnNoUseLookAt)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnBlenderVertexMorphs)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnExport)
+                .addContainerGap())
         );
 
         pack();
@@ -85,16 +92,19 @@ public class DAESimpleExportDialog extends javax.swing.JDialog {
     private void btnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportActionPerformed
 		DialogOptionRemember.putRememberedCheckbox(btnAnmExportBake);
 		DialogOptionRemember.putRememberedCheckbox(btnNoUseLookAt);
+		DialogOptionRemember.putRememberedCheckbox(btnBlenderVertexMorphs);
 
 		result = new DAEExportSettings();
 		result.bakeTransforms = btnAnmExportBake.isSelected();
 		result.doNotUseLookAt = btnNoUseLookAt.isSelected();
+		result.blenderMorphs = btnBlenderVertexMorphs.isSelected();
 
 		dispose();
     }//GEN-LAST:event_btnExportActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox btnAnmExportBake;
+    private javax.swing.JCheckBox btnBlenderVertexMorphs;
     private javax.swing.JButton btnExport;
     private javax.swing.JCheckBox btnNoUseLookAt;
     // End of variables declaration//GEN-END:variables

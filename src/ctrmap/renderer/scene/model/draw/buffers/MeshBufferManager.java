@@ -34,7 +34,7 @@ public class MeshBufferManager extends BufferManager {
 	public void updateAll() {
 		super.updateAll();
 
-		lastUpdatedVertexCount = mesh.vertices.size();
+		lastUpdatedVertexCount = mesh.getRealVertexCount();
 		lastUpdatedIndexCount = mesh.indices.size();
 	}
 }

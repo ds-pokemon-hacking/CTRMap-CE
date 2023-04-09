@@ -118,6 +118,10 @@ public class MaterialUtil {
 			t.uvSetNo = dis.read();
 			if (fileVersion >= Revisions.REV_TEX_MAP_MODE) {
 				t.mapMode = MaterialParams.TextureMapMode.values()[dis.read()];
+				
+				if (t.mapMode != MaterialParams.TextureMapMode.UV_MAP && t.uvSetNo > 3) {
+					t.uvSetNo = -1;
+				}
 			} else {
 				switch (t.uvSetNo) {
 					case 3:
@@ -133,6 +137,12 @@ public class MaterialUtil {
 						t.mapMode = MaterialParams.TextureMapMode.UV_MAP;
 						break;
 				}
+				if (t.mapMode != MaterialParams.TextureMapMode.UV_MAP) {
+					t.uvSetNo = -1;
+				}
+			}
+			if (t.uvSetNo == 255) {
+				t.uvSetNo = -1;
 			}
 			t.bindTranslation = new Vec2f(dis);
 			t.bindRotation = dis.readFloat();

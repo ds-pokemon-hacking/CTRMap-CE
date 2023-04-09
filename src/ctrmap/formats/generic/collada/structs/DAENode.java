@@ -405,7 +405,7 @@ public class DAENode implements DAEIDAble, DAESerializable, DAESIDAble {
 					break;
 				case CONTROLLER:
 					DAEController ctrl = scene.controllers.getByUrl(instance.url);
-					instanceMeshes.addAll(ctrl.toMeshes(skl, vs, scene.geometries, ppCfg));
+					instanceMeshes.addAll(ctrl.toMeshes(skl, vs, scene, ppCfg));
 					break;
 			}
 			//Instantiate the meshes' material names

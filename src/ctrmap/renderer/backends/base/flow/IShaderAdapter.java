@@ -19,6 +19,7 @@ public interface IShaderAdapter {
 
 	public void setUpMeshUVAssignments(int[] assignments, IRenderDriver driver, ShaderProgram program);	
 	public void setUpMeshBoolUniforms(Mesh mesh, IRenderDriver driver, ShaderProgram program);
+	public void setUpMeshBlendWeight(float value, IRenderDriver driver, ShaderProgram program);
 	
 	public void setUpTextureTransforms(Matrix4[] matrices, IRenderDriver driver, ShaderProgram program);
 	public void setUpSkeletalTransforms(Matrix4[] matrices, IRenderDriver driver, ShaderProgram program);

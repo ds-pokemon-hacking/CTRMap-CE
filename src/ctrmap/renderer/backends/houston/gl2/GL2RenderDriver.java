@@ -10,6 +10,7 @@ import ctrmap.renderer.scene.model.draw.buffers.Buffer;
 import ctrmap.renderer.backends.base.flow.IRenderDriver;
 import static ctrmap.renderer.backends.houston.common.HoustonConstants.*;
 import ctrmap.renderer.scene.metadata.ReservedMetaData;
+import ctrmap.renderer.scene.model.draw.buffers.mesh.MeshVertexBuffer;
 import ctrmap.renderer.scene.model.draw.vtxlist.IVertexListMulti;
 import ctrmap.renderer.scene.texturing.Material;
 import ctrmap.renderer.scene.texturing.MaterialParams;
@@ -180,47 +181,59 @@ public class GL2RenderDriver implements IRenderDriver {
 		);
 	}
 
+	private static final int[] ATTR_MAP = new int[] {
+		ATTRLOC_POSITION_A,
+		ATTRLOC_POSITION_B,
+		ATTRLOC_COLOR,
+		ATTRLOC_NORMAL_A,
+		ATTRLOC_NORMAL_B,
+		ATTRLOC_TANGENT_A,
+		ATTRLOC_TANGENT_B,
+		ATTRLOC_UV0,
+		ATTRLOC_UV1,
+		ATTRLOC_UV2,
+		ATTRLOC_BONE_IDX,
+		ATTRLOC_BONE_WEIGHTS
+	};
+
 	@Override
 	public void drawMesh(Mesh mesh) {
-		if (mesh.primitiveType == null) {
-			return;
-		}
 		mesh.buffers.bindBuffers(this);
 
 		if (mesh.primitiveType == PrimitiveType.LINES) {
 			gl.glLineWidth(ReservedMetaData.getLineWidth(mesh.metaData, 1f));
 		}
+		
+		for (int a : ATTR_MAP) {
+			gl.glEnableVertexAttribArray(a);
+		}
 
-		gl.glEnableVertexAttribArray(ATTRLOC_POSITION);
-		gl.glEnableVertexAttribArray(ATTRLOC_COLOR);
-		gl.glEnableVertexAttribArray(ATTRLOC_NORMAL);
-		gl.glEnableVertexAttribArray(ATTRLOC_TANGENT);
-		gl.glEnableVertexAttribArray(ATTRLOC_UV0);
-		gl.glEnableVertexAttribArray(ATTRLOC_UV1);
-		gl.glEnableVertexAttribArray(ATTRLOC_UV2);
-		gl.glEnableVertexAttribArray(ATTRLOC_BONE_IDX);
-		gl.glEnableVertexAttribArray(ATTRLOC_BONE_WEIGHTS);
-
-		gl.glVertexAttribPointer(ATTRLOC_POSITION, 3, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.pos.getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_NORMAL, 3, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.nrm.getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_TANGENT, 3, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.tgt.getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_COLOR, 4, GL2.GL_UNSIGNED_BYTE, true, 0, mesh.buffers.vbo.col.getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_UV0, 2, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.uv[0].getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_UV1, 2, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.uv[1].getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_UV2, 2, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.uv[2].getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_BONE_IDX, 4, GL2.GL_UNSIGNED_BYTE, false, 0, mesh.buffers.vbo.bidx.getOffset());
-		gl.glVertexAttribPointer(ATTRLOC_BONE_WEIGHTS, 4, GL2.GL_FLOAT, false, 0, mesh.buffers.vbo.bwgt.getOffset());
+		MeshVertexBuffer vbo = mesh.buffers.vbo;
+		gl.glVertexAttribPointer(ATTRLOC_POSITION_A, vbo.posA.getElementCount(), GL2.GL_FLOAT, false, vbo.posA.getStride(), vbo.posA.getOffset());
+		gl.glVertexAttribPointer(ATTRLOC_POSITION_B, vbo.posB.getElementCount(), GL2.GL_FLOAT, false, vbo.posB.getStride(), vbo.posB.getOffset());
+		gl.glVertexAttribPointer(ATTRLOC_NORMAL_A, vbo.nrmA.getElementCount(), GL2.GL_FLOAT, false, vbo.nrmA.getStride(), vbo.nrmA.getOffset());
+		gl.glVertexAttribPointer(ATTRLOC_NORMAL_B, vbo.nrmB.getElementCount(), GL2.GL_FLOAT, false, vbo.nrmB.getStride(), vbo.nrmB.getOffset());
+		gl.glVertexAttribPointer(ATTRLOC_TANGENT_A, vbo.tgtA.getElementCount(), GL2.GL_FLOAT, false, vbo.tgtA.getStride(), vbo.tgtA.getOffset());
+		gl.glVertexAttribPointer(ATTRLOC_TANGENT_B, vbo.tgtB.getElementCount(), GL2.GL_FLOAT, false, vbo.tgtB.getStride(), vbo.tgtB.getOffset());
+		gl.glVertexAttribPointer(ATTRLOC_COLOR, vbo.col.getElementCount(), GL2.GL_UNSIGNED_BYTE, true, vbo.col.getStride(), vbo.col.getOffset());
+		for (int i = 0; i < vbo.uv.length; i++) {
+			gl.glVertexAttribPointer(ATTRLOC_UV0 + i, vbo.uv[i].getElementCount(), GL2.GL_FLOAT, false, vbo.uv[i].getStride(), mesh.buffers.vbo.uv[i].getOffset());
+		}
+		
+		gl.glVertexAttribPointer(ATTRLOC_BONE_IDX, vbo.bidx.getElementCount(), GL2.GL_UNSIGNED_BYTE, false, vbo.bidx.getStride(), vbo.bidx.getOffset());
+		gl.glVertexAttribPointer(ATTRLOC_BONE_WEIGHTS, vbo.bwgt.getElementCount(), GL2.GL_FLOAT, false, vbo.bwgt.getStride(), vbo.bwgt.getOffset());
 
 		if (mesh.useIBO) {
 			gl.glDrawElements(
-				getGL2PrimitiveType(mesh.primitiveType), 
+				getGL2PrimitiveType(mesh.primitiveType),
 				mesh.buffers.indexCount(),
-				mesh.buffers.vertexCount() > 65536 ? GL2.GL_UNSIGNED_INT : GL2.GL_UNSIGNED_SHORT, 
+				mesh.buffers.vertexCount() > 65536 ? GL2.GL_UNSIGNED_INT : GL2.GL_UNSIGNED_SHORT,
 				0
 			);
 		} else {
 			switch (mesh.vertices.getType()) {
 				case SINGLE:
+				case MORPH:
 					gl.glDrawArrays(getGL2PrimitiveType(mesh.primitiveType), 0, mesh.buffers.vertexCount());
 					break;
 				case MULTI:
@@ -231,15 +244,9 @@ public class GL2RenderDriver implements IRenderDriver {
 			}
 		}
 
-		gl.glDisableVertexAttribArray(ATTRLOC_POSITION);
-		gl.glDisableVertexAttribArray(ATTRLOC_NORMAL);
-		gl.glDisableVertexAttribArray(ATTRLOC_TANGENT);
-		gl.glDisableVertexAttribArray(ATTRLOC_COLOR);
-		gl.glDisableVertexAttribArray(ATTRLOC_UV0);
-		gl.glDisableVertexAttribArray(ATTRLOC_UV1);
-		gl.glDisableVertexAttribArray(ATTRLOC_UV2);
-		gl.glDisableVertexAttribArray(ATTRLOC_BONE_IDX);
-		gl.glDisableVertexAttribArray(ATTRLOC_BONE_WEIGHTS);
+		for (int a : ATTR_MAP) {
+			gl.glDisableVertexAttribArray(a);
+		}
 	}
 
 	@Override
@@ -489,9 +496,12 @@ public class GL2RenderDriver implements IRenderDriver {
 		gl.glAttachShader(programHandle, vsh);
 		gl.glAttachShader(programHandle, fsh);
 
-		gl.glBindAttribLocation(programHandle, ATTRLOC_POSITION, HOUSTON_ATTRIB_POSITION);
-		gl.glBindAttribLocation(programHandle, ATTRLOC_NORMAL, HOUSTON_ATTRIB_NORMAL);
-		gl.glBindAttribLocation(programHandle, ATTRLOC_TANGENT, HOUSTON_ATTRIB_TANGENT);
+		gl.glBindAttribLocation(programHandle, ATTRLOC_POSITION_A, HOUSTON_ATTRIB_POSITION_A);
+		gl.glBindAttribLocation(programHandle, ATTRLOC_POSITION_B, HOUSTON_ATTRIB_POSITION_B);
+		gl.glBindAttribLocation(programHandle, ATTRLOC_NORMAL_A, HOUSTON_ATTRIB_NORMAL_A);
+		gl.glBindAttribLocation(programHandle, ATTRLOC_NORMAL_B, HOUSTON_ATTRIB_NORMAL_B);
+		gl.glBindAttribLocation(programHandle, ATTRLOC_TANGENT_A, HOUSTON_ATTRIB_TANGENT_A);
+		gl.glBindAttribLocation(programHandle, ATTRLOC_TANGENT_B, HOUSTON_ATTRIB_TANGENT_B);
 		gl.glBindAttribLocation(programHandle, ATTRLOC_COLOR, HOUSTON_ATTRIB_COLOR);
 		gl.glBindAttribLocation(programHandle, ATTRLOC_UV0, HOUSTON_ATTRIB_UV0);
 		gl.glBindAttribLocation(programHandle, ATTRLOC_UV1, HOUSTON_ATTRIB_UV1);
