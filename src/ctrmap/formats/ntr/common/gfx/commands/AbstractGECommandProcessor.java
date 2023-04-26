@@ -27,7 +27,8 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 
 	private final MatrixStack projectionStack = new MatrixStack(1, matrixCtorNormal);
 	private final MatrixStack textureStack = new MatrixStack(1, matrixCtorNormal);
-	private final MatrixStack normalStack = new MatrixStack(31, matrixCtorNormal);
+	//gbatek: the 31st entry sets the overflow flag, but works normally
+	private final MatrixStack normalStack = new MatrixStack(32, matrixCtorNormal);
 
 	private final MatrixStack.MatrixCtor matrixCtorComb = new MatrixStack.MatrixCtor() {
 		@Override
@@ -39,7 +40,7 @@ public abstract class AbstractGECommandProcessor implements IGECommandProcessor 
 		}
 	};
 
-	protected final CombMatrixStack modelViewStack = new CombMatrixStack(31, matrixCtorComb, normalStack);
+	protected final CombMatrixStack modelViewStack = new CombMatrixStack(32, matrixCtorComb, normalStack);
 
 	protected final Map<MtxMode.GEMatrixMode, MatrixStack> matrixStacks = new HashMap<>();
 

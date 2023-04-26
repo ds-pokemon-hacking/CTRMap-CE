@@ -1,5 +1,7 @@
 package ctrmap.formats.ntr.common.gfx.texture;
 
+import ctrmap.formats.generic.interchange.CMIFTextureFormat;
+import ctrmap.renderer.scene.metadata.ReservedMetaData;
 import ctrmap.renderer.scene.texturing.Texture;
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
 import java.io.DataInput;
@@ -20,10 +22,13 @@ public class GETextureIndexed extends GETexture {
 
 	@Override
 	public Texture decode(short[] palette) {
+		Texture tex;
 		if (format == GETextureFormat.A3I5 || format == GETextureFormat.A5I3) {
-			return new Texture(width, height, TextureFormatHandler.RGBA8, GETextureDecoder.decodeAlpha(width, height, format, data, palette));
+			tex = new Texture(width, height, TextureFormatHandler.RGBA8, GETextureDecoder.decodeAlpha(width, height, format, data, palette));
 		} else {
-			return new Texture(width, height, TextureFormatHandler.RGB5A1, GETextureDecoder.decodeIndexed(width, height, data, format, palette, firstIndexAlpha));
+			tex = new Texture(width, height, TextureFormatHandler.RGB5A1, GETextureDecoder.decodeIndexed(width, height, data, format, palette, firstIndexAlpha));
 		}
+		tex.metaData.putValue(ReservedMetaData.DESIRED_TEX_FORMAT, CMIFTextureFormat.REDUCED_COLOR);
+		return tex;
 	}
 }

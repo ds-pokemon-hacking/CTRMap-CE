@@ -1,5 +1,7 @@
 package ctrmap.formats.ntr.common.gfx.texture;
 
+import ctrmap.formats.generic.interchange.CMIFTextureFormat;
+import ctrmap.renderer.scene.metadata.ReservedMetaData;
 import ctrmap.renderer.scene.texturing.Texture;
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
 import java.io.DataInput;
@@ -17,6 +19,8 @@ public class GETextureCompressed extends GETexture {
 
 	@Override
 	public Texture decode(short[] palette) {
-		return new Texture(width, height, TextureFormatHandler.RGB5A1, GETextureDecoder.decodeCompressed(width, height, data, indexData, palette));
+		Texture tex = new Texture(width, height, TextureFormatHandler.RGB5A1, GETextureDecoder.decodeCompressed(width, height, data, indexData, palette));
+		tex.metaData.putValue(ReservedMetaData.DESIRED_TEX_FORMAT, CMIFTextureFormat.COMPRESSED);
+		return tex;
 	}
 }

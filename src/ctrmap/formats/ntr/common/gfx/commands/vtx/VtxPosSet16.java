@@ -30,7 +30,7 @@ public class VtxPosSet16 extends GECommand {
 
 	@Override
 	public void writeParams(DataOutput out) throws IOException {
-		FXIO.writeVecFX32(out, position);
+		FXIO.writeVecFX16(out, position);
 		out.writeShort(0);
 	}
 

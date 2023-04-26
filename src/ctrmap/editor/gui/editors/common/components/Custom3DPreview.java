@@ -142,7 +142,7 @@ public class Custom3DPreview extends RenderSurface {
 			float maxTransl0 = Math.max(resource.boundingBox.min.getHighestAbsComponent(), resource.boundingBox.max.getHighestAbsComponent());
 			camera.getTranslationCamera().FOV = 45f;
 			camera.getRotationCamera().FOV = 45f;
-			camera.setTX((resource.boundingBox.max.x + resource.boundingBox.max.x) / 2f);
+			camera.setTX((resource.boundingBox.max.x + resource.boundingBox.min.x) / 2f);
 			camera.setTY(resource.boundingBox.max.y / 2f);
 			camera.setTZ(maxTransl0 * 2.25f + 5f);
 

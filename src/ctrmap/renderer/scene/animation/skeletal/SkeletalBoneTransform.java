@@ -239,6 +239,7 @@ public class SkeletalBoneTransform extends AbstractBoneTransform {
 
 	private static void addValueToKfList(float frame, float value, KeyFrameList kfl) {
 		AnimatedValue val = RenderAllocator.allocAnimatedValue();
+		val.set(value);
 		addValueToKfList(frame, val, kfl);
 		RenderAllocator.freeAnimatedValue(val);
 	}
