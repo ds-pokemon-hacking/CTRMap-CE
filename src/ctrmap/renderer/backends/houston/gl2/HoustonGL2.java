@@ -38,20 +38,19 @@ public class HoustonGL2 extends GLBackendBase {
 	private final GL2RenderDriver driver = new GL2RenderDriver(this);
 
 	public HoustonGL2() {
-		super();
+		super(createGLProfile());
 	}
 
 	public HoustonGL2(RenderSettings settings) {
-		super(settings);
+		super(settings, createGLProfile());
 	}
 
 	public HoustonGL2(RenderSettings settings, RenderCapabilities caps) {
-		super(settings, caps);
+		super(settings, caps, createGLProfile());
 	}
 
-	@Override
-	protected GLProfile createGLProfile() {
-		return GLProfile.get(GLProfile.GL4);
+	protected static GLProfile createGLProfile() {
+		return GLProfile.get(GLProfile.GL2);
 	}
 
 	@Override

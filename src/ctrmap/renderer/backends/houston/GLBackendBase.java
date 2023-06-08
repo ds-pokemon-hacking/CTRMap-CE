@@ -78,16 +78,16 @@ public abstract class GLBackendBase extends GLJPanel implements AbstractBackend,
 		}
 	}
 
-	public GLBackendBase() {
-		this(RenderSettings.DEFAULT_SETTINGS);
+	public GLBackendBase(GLProfile glp) {
+		this(RenderSettings.DEFAULT_SETTINGS, glp);
 	}
 
-	public GLBackendBase(RenderSettings settings) {
-		this(settings, new RenderCapabilities());
+	public GLBackendBase(RenderSettings settings, GLProfile glp) {
+		this(settings, new RenderCapabilities(), glp);
 	}
 
-	public GLBackendBase(RenderSettings settings, RenderCapabilities caps) {
-		this(new DefaultCaps(GLProfile.get(GLProfile.GL2), caps == null ? new RenderCapabilities() : caps));
+	public GLBackendBase(RenderSettings settings, RenderCapabilities caps, GLProfile glp) {
+		this(new DefaultCaps(glp, caps == null ? new RenderCapabilities() : caps));
 		this.settings = settings;
 
 		renderController = new SceneRenderFlow(this);
@@ -107,8 +107,6 @@ public abstract class GLBackendBase extends GLJPanel implements AbstractBackend,
 	public Integer getIdentity() {
 		return identity;
 	}
-
-	protected abstract GLProfile createGLProfile();
 
 	protected abstract ShaderProgramManager createProgramManager();
 

@@ -34,20 +34,19 @@ public class HoustonGL4 extends GLBackendBase {
 	private GL4RenderDriver driver = new GL4RenderDriver(this);
 
 	public HoustonGL4() {
-		super();
+		super(createGLProfile());
 	}
 
 	public HoustonGL4(RenderSettings settings) {
-		super(settings);
+		super(settings, createGLProfile());
 	}
 
 	public HoustonGL4(RenderSettings settings, RenderCapabilities caps) {
-		super(settings, caps);
+		super(settings, caps, createGLProfile());
 	}
 
-	@Override
-	protected GLProfile createGLProfile() {
-		return GLProfile.get(GLProfile.GL4);
+	protected static GLProfile createGLProfile() {
+		return GLProfile.get(GLProfile.GL4bc);
 	}
 
 	@Override
