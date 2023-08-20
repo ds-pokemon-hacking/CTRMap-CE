@@ -77,7 +77,7 @@ public class GLTEVShaderGenerator {
 
 			//light loop
 			sb.append("for (int i = 0; i < lightCount; i++) {\n");
-			sb.append("Light light = lights[i];\n");
+			//sb.append("Light light = lights[i];\n");
 
 			if (hasPrecalcHalf) {
 				sb.append("vec3 h = ");
@@ -90,8 +90,8 @@ public class GLTEVShaderGenerator {
 
 			if (needsFragPriColor) {
 				//Diffuse
-				sb.append("vec3 lightPos = light.directional ? -light.direction : (light.position + v);\n");
-				sb.append("fragmentLightingPrimaryColor += max(0.0, dot(normal, normalize(lightPos))) * light.colors[LIGHT_CMN_COLOR_DIF_IDX] * diffuseColor + light.colors[LIGHT_CMN_COLOR_AMB_IDX] * ambientColor;\n");
+				sb.append("vec3 lightPos = lights[i].directional ? -lights[i].direction : (lights[i].position + v);\n");
+				sb.append("fragmentLightingPrimaryColor += max(0.0, dot(normal, normalize(lightPos))) * lights[i].colors[LIGHT_CMN_COLOR_DIF_IDX] * diffuseColor + lights[i].colors[LIGHT_CMN_COLOR_AMB_IDX] * ambientColor;\n");
 			}
 
 			if (needsFragSecColor) {
@@ -138,7 +138,7 @@ public class GLTEVShaderGenerator {
 					sb.append("specular1.b = specular1.g;\n");
 				}
 
-				sb.append("fragmentLightingSecondaryColor += specular1 * light.colors[LIGHT_CMN_COLOR_SPC1_IDX] + specular0Color * light.colors[LIGHT_CMN_COLOR_SPC0_IDX];\n");
+				sb.append("fragmentLightingSecondaryColor += specular1 * lights[i].colors[LIGHT_CMN_COLOR_SPC1_IDX] + specular0Color * lights[i].colors[LIGHT_CMN_COLOR_SPC0_IDX];\n");
 
 			}
 
@@ -296,8 +296,8 @@ public class GLTEVShaderGenerator {
 
 	private static final String LUTIN_NORMAL = "normal";
 	private static final String LUTIN_TANGENT = "f_tangent";
-	private static final String LUTIN_HALF = "normalize(v + normalize(light.directional ? -light.direction : light.position + v))"; //we don't need to use a precalc light vec because half and light are never used together
-	private static final String LUTIN_LIGHT = "normalize(light.directional ? -light.direction : light.position + v)";
+	private static final String LUTIN_HALF = "normalize(v + normalize(lights[i].directional ? -lights[i].direction : lights[i].position + v))"; //we don't need to use a precalc light vec because half and light are never used together
+	private static final String LUTIN_LIGHT = "normalize(lights[i].directional ? -lights[i].direction : lights[i].position + v)";
 	private static final String LUTIN_PRECALC_HALF = "h";
 	private static final String LUTIN_PRECALC_VIEW = "v";
 
@@ -314,7 +314,7 @@ public class GLTEVShaderGenerator {
 				break;
 			case LIGHT_SPOT:
 				op1 = LUTIN_LIGHT;
-				op2 = "light.direction";
+				op2 = "lights[i].direction";
 				break;
 			case NORMAL_HALF:
 				op1 = LUTIN_NORMAL;

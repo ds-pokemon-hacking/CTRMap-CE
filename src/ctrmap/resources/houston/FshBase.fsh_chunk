@@ -2,15 +2,15 @@
 
 #ifdef GL2
 	#define PASSTHROUGH varying
-	#define OUTPUT(name) gl_FragData[##name]
+	#define OUTPUT(name) gl_FragData[name]
 #endif
 #ifdef GL3
 	#define PASSTHROUGH in
-	#define OUTPUT(name) fragData[##name]
+	#define OUTPUT(name) fragData[name]
 #endif
 #ifdef GL4
 	#define PASSTHROUGH in
-	#define OUTPUT(name) fragData[##name]
+	#define OUTPUT(name) fragData[name]
 #endif
 
 #ifndef PASSTHROUGH
