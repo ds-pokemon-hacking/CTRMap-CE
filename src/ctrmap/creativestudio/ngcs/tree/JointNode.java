@@ -68,7 +68,7 @@ public class JointNode extends CSNode {
 				newParent = skel;
 			}
 			if (newParent != null) {
-				removeFromParent();
+				//removeFromParent();
 				if (newParent.isNodeAncestor(this)) {
 					System.err.println("ERROR: Node " + getNodeName() + " is an ancestor of " + newParent.getNodeName());
 				}

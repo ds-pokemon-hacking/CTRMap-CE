@@ -103,10 +103,10 @@ public class NGCSJulietIface implements JExtensionReceiver<INGCSPlugin> {
 	 * @param types Generic resource content types that the class can handle.
 	 */
 	public void registFormatSupport(IG3DFormatHandler handler, CSG3DIOContentType... types) {
-		handler = formatGc.regGc(handler);
-		if (handler != null) {
+		IG3DFormatHandler result = formatGc.regGc(handler);
+		if (result != null) {
 			ioMgr.registHandler(handler, types);
-		} else {
+		} else if (handler != null) {
 			System.out.println("Could not register format " + handler.getExtensionFilter().formatName + ": not allowed here.");
 		}
 	}

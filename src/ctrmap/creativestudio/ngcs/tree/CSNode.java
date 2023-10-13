@@ -276,7 +276,7 @@ public abstract class CSNode extends CustomJTreeNode {
 	@Override
 	public void removeFromParent() {
 		tree.getModel().removeNodeFromParent(this);
-		setParent(null);
+		//setParent(null);
 	}
 
 	public void updateThis() {
