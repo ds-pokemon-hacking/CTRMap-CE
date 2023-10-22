@@ -6,12 +6,12 @@ import xstandard.gui.file.ExtensionFilter;
 
 public abstract class DefaultG3DImportOnlyFormatHandler extends DefaultG3DFormatHandler {
 
-	public DefaultG3DImportOnlyFormatHandler(ExtensionFilter filter, int attributes) {
-		super(filter, attributes);
+	public DefaultG3DImportOnlyFormatHandler(ExtensionFilter filter, int extraAttributes) {
+		super(filter, extraAttributes | G3DFMT_IMPORT);
 	}
 	
 	public DefaultG3DImportOnlyFormatHandler(ExtensionFilter filter) {
-		this(filter, G3DFMT_IMPORT);
+		this(filter, 0);
 	}
 
 	@Override

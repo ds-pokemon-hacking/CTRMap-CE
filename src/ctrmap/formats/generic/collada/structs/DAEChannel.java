@@ -142,6 +142,8 @@ public class DAEChannel implements DAEIDAble {
 		Vec3f destT = new Vec3f();
 		Vec3f destR = new Vec3f();
 		Vec3f destS = new Vec3f();
+		
+		Vec3f scale1 = Vec3f.ONE();
 
 		if (curveAccessor.hasParamTypes(DAEAccessor.ParamFormat.FLOAT4x4)) {
 			List<Matrix4> matrices = curveAccessor.getMatrix4Array();
@@ -151,6 +153,12 @@ public class DAEChannel implements DAEIDAble {
 				mtx.getTranslation(destT);
 				mtx.getScale(destS);
 				mtx.getRotationTo(destR);
+				
+				if (destS.equals(scale1, 0.001f)) {
+					if (!destS.equals(scale1)) {
+						destS.set(scale1);
+					}
+				}
 
 				sklTransform.pushFullBakedFrame(frameTimes[i] * 30, destT, destR, destS);
 			}
