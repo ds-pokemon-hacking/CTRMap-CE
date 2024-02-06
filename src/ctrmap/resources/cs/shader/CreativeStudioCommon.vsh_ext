@@ -19,7 +19,7 @@ highLightColor = vec4(0.0, 1.0, 1.0, 0.0);
 /*
 for (int i = 0; i < 4; i++) {
     int boneIndex = int(a_boneIndices[i]);
-    if (boneIndex == -1){
+    if (boneIndex == 255){
         break;
     }
 

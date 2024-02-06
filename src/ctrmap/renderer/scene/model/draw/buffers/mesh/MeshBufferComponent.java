@@ -41,6 +41,9 @@ public abstract class MeshBufferComponent extends BufferComponent {
 	}
 	
 	public int getMorphChannelSize() {
+		if (morphCount == 0) {
+			return 0;
+		}
 		return getByteSize() / morphCount;
 	}
 

@@ -6,7 +6,6 @@ import ctrmap.renderer.scene.model.MeshVisibilityGroup;
 import ctrmap.renderer.scene.model.PrimitiveType;
 import ctrmap.renderer.scene.texturing.Material;
 import ctrmap.renderer.util.MeshProcessor;
-import ctrmap.renderer.util.ModelProcessor;
 import ctrmap.renderer.util.PrimitiveConverter;
 import xstandard.text.FormattingUtils;
 import xstandard.gui.components.ComponentUtils;

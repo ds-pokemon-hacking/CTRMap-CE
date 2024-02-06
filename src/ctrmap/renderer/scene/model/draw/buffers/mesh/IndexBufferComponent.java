@@ -11,6 +11,7 @@ public class IndexBufferComponent extends BufferComponent {
 	private Mesh mesh;
 
 	private Buffer ibo = null;
+	private BufferComponentType curType = BufferComponentType.SHORT;
 
 	public IndexBufferComponent(MeshIndexBuffer buffer) {
 		super(buffer);
@@ -29,7 +30,7 @@ public class IndexBufferComponent extends BufferComponent {
 
 	@Override
 	public BufferComponentType getType() {
-		return BufferComponentType.SHORT;
+		return curType;
 	}
 
 	@Override
@@ -41,12 +42,14 @@ public class IndexBufferComponent extends BufferComponent {
 				ib.put(mesh.indices.get(i));
 			}
 			ibo = ib;
+			curType = BufferComponentType.INT;
 		} else {
 			ShortBuffer sb = ShortBuffer.allocate(max);
 			for (int i = 0; i < max; i++) {
 				sb.put((short) mesh.indices.get(i));
 			}
 			ibo = sb;
+			curType = BufferComponentType.SHORT;
 		}
 	}
 

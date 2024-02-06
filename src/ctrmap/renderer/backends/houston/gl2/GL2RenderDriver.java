@@ -10,6 +10,7 @@ import ctrmap.renderer.scene.model.draw.buffers.Buffer;
 import ctrmap.renderer.backends.base.flow.IRenderDriver;
 import static ctrmap.renderer.backends.houston.common.HoustonConstants.*;
 import ctrmap.renderer.scene.metadata.ReservedMetaData;
+import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
 import ctrmap.renderer.scene.model.draw.buffers.mesh.MeshVertexBuffer;
 import ctrmap.renderer.scene.model.draw.vtxlist.IVertexListMulti;
 import ctrmap.renderer.scene.texturing.Material;
@@ -101,6 +102,20 @@ public class GL2RenderDriver implements IRenderDriver {
 		throw new IllegalArgumentException();
 	}
 
+	public static int getGL2BufferComponentTypeUnsigned(BufferComponent.BufferComponentType t) {
+		switch (t) {
+			case BYTE:
+				return GL2.GL_UNSIGNED_BYTE;
+			case FLOAT:
+				return GL2.GL_FLOAT;
+			case INT:
+				return GL2.GL_UNSIGNED_INT;
+			case SHORT:
+				return GL2.GL_UNSIGNED_SHORT;
+		}
+		throw new IllegalArgumentException();
+	}
+
 	public static int getGL2PrimitiveType(PrimitiveType t) {
 		switch (t) {
 			case LINES:
@@ -181,7 +196,7 @@ public class GL2RenderDriver implements IRenderDriver {
 		);
 	}
 
-	private static final int[] ATTR_MAP = new int[] {
+	private static final int[] ATTR_MAP = new int[]{
 		ATTRLOC_POSITION_A,
 		ATTRLOC_POSITION_B,
 		ATTRLOC_COLOR,
@@ -203,7 +218,7 @@ public class GL2RenderDriver implements IRenderDriver {
 		if (mesh.primitiveType == PrimitiveType.LINES) {
 			gl.glLineWidth(ReservedMetaData.getLineWidth(mesh.metaData, 1f));
 		}
-		
+
 		for (int a : ATTR_MAP) {
 			gl.glEnableVertexAttribArray(a);
 		}
@@ -219,15 +234,14 @@ public class GL2RenderDriver implements IRenderDriver {
 		for (int i = 0; i < vbo.uv.length; i++) {
 			gl.glVertexAttribPointer(ATTRLOC_UV0 + i, vbo.uv[i].getElementCount(), GL2.GL_FLOAT, false, vbo.uv[i].getStride(), mesh.buffers.vbo.uv[i].getOffset());
 		}
-		
+
 		gl.glVertexAttribPointer(ATTRLOC_BONE_IDX, vbo.bidx.getElementCount(), GL2.GL_UNSIGNED_BYTE, false, vbo.bidx.getStride(), vbo.bidx.getOffset());
 		gl.glVertexAttribPointer(ATTRLOC_BONE_WEIGHTS, vbo.bwgt.getElementCount(), GL2.GL_FLOAT, false, vbo.bwgt.getStride(), vbo.bwgt.getOffset());
 
 		if (mesh.useIBO) {
-			gl.glDrawElements(
-				getGL2PrimitiveType(mesh.primitiveType),
+			gl.glDrawElements(getGL2PrimitiveType(mesh.primitiveType),
 				mesh.buffers.indexCount(),
-				mesh.buffers.vertexCount() > 65536 ? GL2.GL_UNSIGNED_INT : GL2.GL_UNSIGNED_SHORT,
+				getGL2BufferComponentTypeUnsigned(mesh.buffers.ibo.idxBuf.getType()),
 				0
 			);
 		} else {
@@ -299,7 +313,7 @@ public class GL2RenderDriver implements IRenderDriver {
 		}
 		gl.glUniformMatrix4fv(location, matrices.length, false, array, 0);
 	}
-	
+
 	private final float[] matrix3Fast = new float[256 * 16];
 
 	@Override
@@ -333,8 +347,7 @@ public class GL2RenderDriver implements IRenderDriver {
 		float[] floats;
 		if (values.length * 4 <= vec4fast.length) {
 			floats = vec4fast;
-		}
-		else {
+		} else {
 			floats = new float[values.length * 4];
 		}
 		for (int i = 0; i < values.length; i++) {
@@ -360,8 +373,7 @@ public class GL2RenderDriver implements IRenderDriver {
 		float[] floats;
 		if (values.length * 3 <= vec3fast.length) {
 			floats = vec3fast;
-		}
-		else {
+		} else {
 			floats = new float[values.length * 3];
 		}
 		for (int i = 0; i < values.length; i++) {
@@ -513,7 +525,7 @@ public class GL2RenderDriver implements IRenderDriver {
 
 		gl.glDetachShader(programHandle, vsh);
 		gl.glDetachShader(programHandle, fsh);
-		
+
 		return programHandle;
 	}
 

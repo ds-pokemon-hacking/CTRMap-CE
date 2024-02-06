@@ -11,6 +11,7 @@ import ctrmap.renderer.scene.model.draw.buffers.Buffer;
 import ctrmap.renderer.backends.base.flow.IRenderDriver;
 import static ctrmap.renderer.backends.houston.common.HoustonConstants.*;
 import ctrmap.renderer.scene.metadata.ReservedMetaData;
+import ctrmap.renderer.scene.model.draw.buffers.BufferComponent;
 import ctrmap.renderer.scene.model.draw.buffers.mesh.MeshVertexBuffer;
 import ctrmap.renderer.scene.model.draw.vtxlist.IVertexListMulti;
 import ctrmap.renderer.scene.texturing.Material;
@@ -93,6 +94,20 @@ public class GL4RenderDriver implements IRenderDriver {
 				return GL4.GL_ARRAY_BUFFER;
 			case ELEMENT_ARRAY_BUFFER:
 				return GL4.GL_ELEMENT_ARRAY_BUFFER;
+		}
+		throw new IllegalArgumentException();
+	}
+	
+	public static int getGL4BufferComponentTypeUnsigned(BufferComponent.BufferComponentType t) {
+		switch (t) {
+			case BYTE:
+				return GL4.GL_UNSIGNED_BYTE;
+			case FLOAT:
+				return GL4.GL_FLOAT;
+			case INT:
+				return GL4.GL_UNSIGNED_INT;
+			case SHORT:
+				return GL4.GL_UNSIGNED_SHORT;
 		}
 		throw new IllegalArgumentException();
 	}
@@ -218,7 +233,7 @@ public class GL4RenderDriver implements IRenderDriver {
 			gl.glDrawElements(
 				getGL4PrimitiveType(mesh.primitiveType),
 				mesh.buffers.indexCount(),
-				mesh.buffers.vertexCount() > 65536 ? GL4.GL_UNSIGNED_INT : GL4.GL_UNSIGNED_SHORT,
+				getGL4BufferComponentTypeUnsigned(mesh.buffers.ibo.idxBuf.getType()),
 				0
 			);
 		} else {

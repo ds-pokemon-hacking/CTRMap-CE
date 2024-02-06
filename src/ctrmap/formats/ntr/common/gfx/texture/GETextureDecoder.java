@@ -125,7 +125,7 @@ public class GETextureDecoder {
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
 					col = input.readShort();
-					BitConverter.fromInt16LE((((col & 0x1F) << 11) | ((col >> 9) & 0x3E) | ((col & 0x3E0) << 1) | 1), data5a1, outOffs);
+					BitConverter.fromInt16LE((((col & 0x1F) << 11) | ((col >> 9) & 0x3E) | ((col & 0x3E0) << 1) | ((col & 0x8000) >> 15)), data5a1, outOffs);
 
 					outOffs += 2;
 				}
