@@ -6,6 +6,7 @@ import ctrmap.formats.pokemon.text.MsgStr;
 import ctrmap.editor.gui.editors.common.AbstractTabbedEditor;
 import ctrmap.editor.gui.editors.text.loaders.AbstractTextLoader;
 import ctrmap.editor.gui.editors.text.loaders.ITextArcType;
+import ctrmap.formats.pokemon.text.ITextFile;
 import ctrmap.formats.pokemon.text.TextFileFriendlizer;
 import xstandard.fs.FSFile;
 import xstandard.gui.DialogUtils;
@@ -18,6 +19,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.swing.CellEditor;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -35,6 +37,11 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 	private AbstractTextLoader ldr;
 	private ITextAliasManager aliasMng;
 	private boolean loaded = false;
+
+	private int loadedFileId;
+	private ITextFile loadedExternalFile;
+
+	private boolean loadedExternal = false;
 
 	private boolean changed = false;
 
@@ -75,7 +82,7 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 							is9bit = (Boolean) textTable.getValueAt(row, COL_WRITE9BIT);
 						}
 						MsgStr ms = ldr.getMsgStrs().get(row);
-						ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), ldr.getTextFileId(), msgid);
+						ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), loadedFileId, msgid);
 						if (ldr.setTextLineContent(msgid, text) || ms.encode9Bit != is9bit) {
 							ms.encode9Bit = is9bit;
 							changed = true;
@@ -224,16 +231,16 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 
 		textTable.getSelectionModel().setSelectionInterval(addind, addind);
 
-		if (aliasMng != null) {
+		if (canManageAliases()) {
 			aliasMng.setSavedataEnable(false);
 			List<String> aliases = getAllAliases();
 			aliases.add(addind, null);
 			for (int i = 0; i < aliases.size(); i++) {
-				ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), ldr.getTextFileId(), i);
+				ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), loadedFileId, i);
 				aliasMng.setMsgidAlias(tag, aliases.get(i));
 			}
 			aliasMng.setSavedataEnable(true);
-			aliasMng.saveDataManual(ldr.getArcType(), ldr.getTextFileId());
+			aliasMng.saveDataManual(ldr.getArcType(), loadedFileId);
 		}
 
 		updateMsgIds(addind);
@@ -243,8 +250,8 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 
 	private List<String> getAllAliases() {
 		List<String> aliases = new ArrayList<>();
-		if (aliasMng != null) {
-			ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), ldr.getTextFileId(), 0);
+		if (canManageAliases()) {
+			ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), loadedFileId, 0);
 			for (int i = 0; i < textTable.getRowCount(); i++) {
 				tag.msgId = i;
 				String alias = aliasMng.getMsgidAlias(tag);
@@ -256,8 +263,8 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 
 	private String getAliasOrDefault(int msgId) {
 		String a = null;
-		if (aliasMng != null) {
-			ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), ldr.getTextFileId(), msgId);
+		if (canManageAliases()) {
+			ITextAliasManager.MessageTag tag = new ITextAliasManager.MessageTag(ldr.getArcType(), loadedFileId, msgId);
 			a = aliasMng.getMsgidAlias(tag);
 		}
 		if (a == null) {
@@ -271,10 +278,14 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 	}
 
 	private boolean isDefaultAlias(int msgId) {
-		if (aliasMng != null) {
-			return aliasMng.getMsgidAlias(new ITextAliasManager.MessageTag(ldr.getArcType(), ldr.getTextFileId(), msgId)) == null;
+		if (canManageAliases()) {
+			return aliasMng.getMsgidAlias(new ITextAliasManager.MessageTag(ldr.getArcType(), loadedFileId, msgId)) == null;
 		}
 		return true;
+	}
+
+	private boolean canManageAliases() {
+		return aliasMng != null && !loadedExternal;
 	}
 
 	private void updateMsgIds(int startIdx) {
@@ -358,11 +369,16 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 
 	public void save() {
 		if (changed) {
-			ldr.writeCurrentTextFile();
+			if (loadedExternal) {
+				loadedExternalFile.store();
+			}
+			else {
+				ldr.writeCurrentTextFile();
+			}
 			changed = false;
 		}
 	}
-	
+
 	@Override
 	public boolean store(boolean dialog) {
 		if (changed) {
@@ -379,30 +395,55 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 		return true;
 	}
 
-	private void loadTextFileData(int fileNo) {
+	private void loadMessages(List<MsgStr> messages) {
+		DefaultTableModel tblModel = getTableModel();
+		tblModel.setRowCount(0);
+
+		for (int i = 0; i < messages.size(); i++) {
+			String alias = getAliasOrDefault(i);
+
+			tblModel.addRow(new Object[]{
+				i,
+				alias,
+				messages.get(i).encode9Bit,
+				TextFileFriendlizer.getFriendlized(messages.get(i).value)
+			});
+		}
+	}
+
+	private void loadTextFileData(Supplier<List<MsgStr>> loader) {
 		cancelEditing();
 		save();
 		changed = false;
 		loaded = false;
-		if (fileNo >= 0 && fileNo < ldr.getTextArcMax()) {
-			ldr.setTextFile(fileNo);
 
-			List<MsgStr> ld = ldr.getMsgStrs();
-			DefaultTableModel tblModel = getTableModel();
-			tblModel.setRowCount(0);
-
-			for (int i = 0; i < ld.size(); i++) {
-				String alias = getAliasOrDefault(i);
-
-				tblModel.addRow(new Object[]{
-					i,
-					alias,
-					ldr.getMsgStrs().get(i).encode9Bit,
-					TextFileFriendlizer.getFriendlized(ld.get(i).value)
-				});
-			}
+		List<MsgStr> messages = loader.get();
+		if (messages != null) {
+			loadMessages(messages);
 		}
+
 		loaded = true;
+	}
+
+	private void loadTextFileData(int fileNo) {
+		loadTextFileData(() -> {
+			ldr.setTextFile(fileNo);
+			loadedExternal = false;
+			loadedExternalFile = null;
+			loadedFileId = fileNo;
+
+			return ldr.getMsgStrs();
+		});
+	}
+
+	private void loadTextFileData(ITextArcType fileType, FSFile externalFile) {
+		loadTextFileData(() -> {
+			ITextFile textFile = ldr.loadFromFile(fileType, externalFile);
+			loadedExternal = true;
+			loadedExternalFile = textFile;
+			
+			return textFile.getLines();
+		});
 	}
 
 	private DefaultTableModel getTableModel() {
@@ -443,6 +484,7 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
         btnSave = new javax.swing.JButton();
         btnDumpAllText = new javax.swing.JButton();
         textArcTypeBox = new javax.swing.JComboBox<>();
+        btnOpenExternalFile = new javax.swing.JButton();
 
         fancySep.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
@@ -515,6 +557,13 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
             }
         });
 
+        btnOpenExternalFile.setText("Open external file");
+        btnOpenExternalFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOpenExternalFileActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -538,6 +587,8 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
                     .addComponent(textTableSP, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnDumpAllText)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnOpenExternalFile)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnSave)))
                 .addContainerGap())
@@ -548,7 +599,7 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
                 .addGap(11, 11, 11)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(textArcSep)
-                    .addComponent(textFileBox, javax.swing.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
+                    .addComponent(textFileBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(textFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnAddTextFile, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(fancySep)
@@ -560,7 +611,8 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
-                    .addComponent(btnDumpAllText))
+                    .addComponent(btnDumpAllText)
+                    .addComponent(btnOpenExternalFile))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -576,7 +628,7 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
     }//GEN-LAST:event_btnAddTextFileActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-		ldr.writeCurrentTextFile();
+		save();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnDumpAllTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDumpAllTextActionPerformed
@@ -626,10 +678,18 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 		}
     }//GEN-LAST:event_textArcTypeBoxActionPerformed
 
+    private void btnOpenExternalFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenExternalFileActionPerformed
+		FSFile file = XFileDialog.openFileDialog();
+		if (file != null) {
+			loadTextFileData(ldr.getArcTypes()[Math.max(0, textArcTypeBox.getSelectedIndex())], file);
+		}
+    }//GEN-LAST:event_btnOpenExternalFileActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddTextFile;
     private javax.swing.JButton btnDumpAllText;
+    private javax.swing.JButton btnOpenExternalFile;
     private javax.swing.JButton btnSave;
     private javax.swing.JSeparator fancySep;
     private javax.swing.JSeparator tableSeparator;

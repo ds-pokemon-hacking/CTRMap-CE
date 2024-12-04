@@ -399,6 +399,7 @@ public class CMIFFile {
 	public void write(IOStream io, CMIFWriteConfig cfg) {
 		try {
 			CMIFWriter dos = new CMIFWriter(io);
+			dos.setLength(0);
 
 			dos.writeStringUnterminated(MAGIC);				//Format magic
 			dos.writeInt(Revisions.REV_CURRENT);			//Converter version

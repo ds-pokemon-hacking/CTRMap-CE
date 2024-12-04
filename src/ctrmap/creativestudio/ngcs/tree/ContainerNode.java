@@ -42,7 +42,7 @@ public class ContainerNode extends CSNode {
 
 	private final DummyResource dmyRes;
 
-	private final ListenableList list;
+	private ListenableList list;
 	private final CSNodeContentType childCntType;
 
 	public ContainerNode(String name, CSNodeContentType childCntType, ListenableList<? extends NamedResource> list, int resid, CSJTree tree) {
@@ -64,6 +64,10 @@ public class ContainerNode extends CSNode {
 			registerAction("Replace All", this::callReplaceAll);
 		}
 		registerAction("Clear", this::callClear);
+	}
+	
+	protected void rebind(ListenableList<? extends NamedResource> list) {
+		this.list = list;
 	}
 
 	@Override

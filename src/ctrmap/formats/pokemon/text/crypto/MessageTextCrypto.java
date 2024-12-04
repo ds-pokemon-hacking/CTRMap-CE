@@ -16,8 +16,8 @@ public class MessageTextCrypto implements ITextCrypto {
 	private char key;
 
 	@Override
-	public void begin(int base) {
-		key = (char) (base * STEP_KEY);
+	public void begin(int msgIdBase) {
+		key = (char) ((msgIdBase + 3) * STEP_KEY);
 	}
 
 	@Override

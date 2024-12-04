@@ -1,6 +1,7 @@
 
 package ctrmap.renderer.scene.model.draw.buffers.mesh;
 
+import ctrmap.renderer.backends.RenderConstants;
 import ctrmap.renderer.scene.model.draw.buffers.Buffer;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.draw.vtxlist.VertexListUsage;
@@ -15,7 +16,7 @@ public class MeshVertexBuffer extends Buffer {
 	public final TangentBufferComponent tgtA;
 	public final MirrorBufferComponent tgtB;
 	public final ColorBufferComponent col;
-	public final UVBufferComponent[] uv = new UVBufferComponent[3];
+	public final UVBufferComponent[] uv = new UVBufferComponent[RenderConstants.TEXTURE_MAX];
 	public final BoneIndexBufferComponent bidx;
 	public final BoneWeightBufferComponent bwgt;
 	
@@ -28,7 +29,7 @@ public class MeshVertexBuffer extends Buffer {
 		addComponent(tgtA = new TangentBufferComponent(this));
 		addComponent(tgtB = new MirrorBufferComponent(this, tgtA));
 		addComponent(col = new ColorBufferComponent(this));
-		for (int i = 0; i < 3; i++){
+		for (int i = 0; i < uv.length; i++){
 			addComponent(uv[i] = new UVBufferComponent(this, i));
 		}
 		addComponent(bidx = new BoneIndexBufferComponent(this));

@@ -5,6 +5,7 @@ import ctrmap.formats.pokemon.text.ITextFile;
 import ctrmap.formats.pokemon.text.MessageHandler;
 import ctrmap.formats.pokemon.text.MsgStr;
 import java.util.List;
+import xstandard.fs.FSFile;
 
 public abstract class AbstractTextLoader {
 
@@ -22,8 +23,14 @@ public abstract class AbstractTextLoader {
 	public abstract boolean isArcTypeNSFW(ITextArcType type);
 
 	public abstract int getTextArcMax(ITextArcType textArcType);
+	
+	public abstract FSFile getFileFromArc(ITextArcType type, int fileIndex);
+	
+	public abstract ITextFile loadFromFile(ITextArcType fileType, FSFile file);
 
-	public abstract ITextFile getTextFileData(ITextArcType textArcType, int i);
+	public ITextFile loadFromArc(ITextArcType type, int file) {
+		return loadFromFile(type, getFileFromArc(type, file));
+	}
 
 	public AbstractTextLoader(CTRMap cm2) {
 		cm = cm2;
@@ -41,17 +48,24 @@ public abstract class AbstractTextLoader {
 		return arcType;
 	}
 
+	@SuppressWarnings("deprecated")
 	public final void setTextFile(int file) {
 		this.textFileId = file;
-		this.file = getTextFileData(arcType, file);
+		//backwards compatibility
+		this.file = loadFromArc(arcType, file);
 	}
 
+	@Deprecated
 	public int getTextFileId() {
 		return textFileId;
 	}
 
 	public int getTextArcMax() {
 		return getTextArcMax(arcType);
+	}
+	
+	public ITextFile getCurrentFile() {
+		return file;
 	}
 
 	public List<MsgStr> getMsgStrs() {

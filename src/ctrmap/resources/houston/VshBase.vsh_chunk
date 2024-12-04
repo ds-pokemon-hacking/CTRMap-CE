@@ -17,15 +17,29 @@ VTXATTR vec3 a_tangentB;
 uniform float morphWeight;
 VTXATTR vec4 a_color;
 VTXATTR vec2 a_texcoord;
+#if TEXTURE_MAX > 1
 VTXATTR vec2 a_texcoord1;
+#endif
+#if TEXTURE_MAX > 2
 VTXATTR vec2 a_texcoord2;
+#endif
+#if TEXTURE_MAX > 3
+VTXATTR vec2 a_texcoord3;
+#endif
 VTXATTR vec4 a_boneIndices;
 VTXATTR vec4 a_boneWeights;
 
 PASSTHROUGH vec4 color;
 PASSTHROUGH vec2 uv0;
+#if TEXTURE_MAX > 1
 PASSTHROUGH vec2 uv1;
+#endif
+#if TEXTURE_MAX > 2
 PASSTHROUGH vec2 uv2;
+#endif
+#if TEXTURE_MAX > 3
+PASSTHROUGH vec2 uv3;
+#endif
 
 //Model matrices
 uniform mat4 modelMatrix;

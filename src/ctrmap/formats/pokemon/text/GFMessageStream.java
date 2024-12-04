@@ -27,7 +27,7 @@ public class GFMessageStream extends DataIOStream {
 	private Map<String, Character> specialCharactersInv;
 
 	//Decryption/encryption
-	private int keyIter = 3;
+	private int keyIter = 0;
 
 	//Character size control
 	private int charBuf = 0;
@@ -40,6 +40,7 @@ public class GFMessageStream extends DataIOStream {
 		hnd = handler;
 
 		cacheCharacterSet();
+		resetCryptoCounter();
 	}
 
 	private void cacheCharacterSet() {
@@ -55,6 +56,13 @@ public class GFMessageStream extends DataIOStream {
 	public void setCrypto(ITextCrypto crypto) {
 		this.crypto = crypto;
 		setUpKeyByIter();
+	}
+	
+	public final void resetCryptoCounter() {
+		keyIter = 0;
+		if (crypto != null) {
+			setUpKeyByIter();
+		}
 	}
 
 	public MsgStr readString(int maxChars) throws IOException {

@@ -25,3 +25,5 @@ dist/
 build/
 store/
 jogamp-all-platforms_2.4/
+
+nbproject/private

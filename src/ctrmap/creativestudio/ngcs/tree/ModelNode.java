@@ -15,7 +15,6 @@ import xstandard.util.ListenableList;
 public class ModelNode extends CSNode {
 
 	public static final int RESID = 0x420100;
-	public static final int RESID_SKELETON = 0x421101;
 
 	private Model mdl;
 
@@ -43,23 +42,23 @@ public class ModelNode extends CSNode {
 		visgroupList = new ContainerNode("Visibility Groups", CSNodeContentType.VISGROUP, mdl.visGroups, -1, tree);
 		addChild(visgroupList);
 
-		skeleton = new ContainerNode("Skeleton", CSNodeContentType.JOINT, mdl.skeleton.getJoints(), RESID_SKELETON, tree);
+		skeleton = new SkeletonNode("Skeleton", mdl.skeleton.getJoints(), tree);
 		addChild(skeleton);
-		
+
 		meshListener = new CSNodeListener<Mesh>(meshListNode) {
 			@Override
 			protected CSNode createNode(Mesh elem) {
 				return new MeshNode(elem, tree);
 			}
 		};
-		
+
 		materialListener = new CSNodeListener<Material>(materialList) {
 			@Override
 			protected CSNode createNode(Material elem) {
 				return new MaterialNode(elem, tree);
 			}
 		};
-		
+
 		skelListener = new CSNodeListener<Joint>(skeleton) {
 			@Override
 			protected boolean isAllowEntityChange(Joint elem) {
@@ -71,40 +70,56 @@ public class ModelNode extends CSNode {
 				return new JointNode(elem, tree);
 			}
 		};
-		
+
 		visgroupListener = new CSNodeListener<MeshVisibilityGroup>(visgroupList) {
 			@Override
 			protected CSNode createNode(MeshVisibilityGroup elem) {
 				return new VisGroupNode(mdl, elem, tree);
 			}
 		};
-		
+
 		rebuildSubNodes();
 	}
 
-	protected final void rebuildSubNodes() {
-		meshListNode.removeAllChildren();
-		materialList.removeAllChildren();
-		visgroupList.removeAllChildren();
+	protected final void rebuildSkeletonNode() {
 		skeleton.removeAllChildren();
-		for (Mesh mesh : mdl.meshes) {
-			meshListNode.addChild(new MeshNode(mesh, tree));
-		}
-		for (Material mat : mdl.materials) {
-			materialList.addChild(new MaterialNode(mat, tree));
-		}
-		for (MeshVisibilityGroup visgroup : mdl.visGroups) {
-			visgroupList.addChild(new VisGroupNode(mdl, visgroup, tree));
-		}
 		for (Joint j : mdl.skeleton.getJoints()) {
 			if (j.parentName == null) {
 				skeleton.addChild(new JointNode(j, tree));
 			}
 		}
-		mdl.meshes.addListener(meshListener);
-		mdl.materials.addListener(materialListener);
-		mdl.visGroups.addListener(visgroupListener);
 		mdl.skeleton.getJoints().addListener(skelListener);
+	}
+
+	protected final void rebuildMeshListNode() {
+		meshListNode.removeAllChildren();
+		for (Mesh mesh : mdl.meshes) {
+			meshListNode.addChild(new MeshNode(mesh, tree));
+		}
+		mdl.meshes.addListener(meshListener);
+	}
+
+	protected final void rebuildMaterialListNode() {
+		materialList.removeAllChildren();
+		for (Material mat : mdl.materials) {
+			materialList.addChild(new MaterialNode(mat, tree));
+		}
+		mdl.materials.addListener(materialListener);
+	}
+
+	protected final void rebuildVisgroupListNode() {
+		visgroupList.removeAllChildren();
+		for (MeshVisibilityGroup visgroup : mdl.visGroups) {
+			visgroupList.addChild(new VisGroupNode(mdl, visgroup, tree));
+		}
+		mdl.visGroups.addListener(visgroupListener);
+	}
+
+	protected final void rebuildSubNodes() {
+		rebuildMeshListNode();
+		rebuildMaterialListNode();
+		rebuildVisgroupListNode();
+		rebuildSkeletonNode();
 	}
 
 	@Override

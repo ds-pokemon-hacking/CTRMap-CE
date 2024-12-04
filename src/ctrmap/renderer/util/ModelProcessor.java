@@ -4,13 +4,15 @@ import ctrmap.renderer.scene.model.Joint;
 import ctrmap.renderer.scene.model.Mesh;
 import ctrmap.renderer.scene.model.Model;
 import ctrmap.renderer.scene.model.PrimitiveType;
+import ctrmap.renderer.scene.model.Skeleton;
 import ctrmap.renderer.scene.model.Vertex;
-import ctrmap.renderer.scene.texturing.Material;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import xstandard.math.MathEx;
 import xstandard.math.vec.Matrix4;
 import xstandard.math.vec.Quaternion;
@@ -209,6 +211,59 @@ public class ModelProcessor {
 			if (updateBuffers) {
 				mesh.createAndInvalidateBuffers();
 			}
+		}
+	}
+
+	public static void transplantSkeleton(Model model, Skeleton newSkeleton) {
+		transplantSkeleton(model, newSkeleton, false);
+	}
+
+	public static void transplantSkeleton(Model model, Skeleton newSkeleton, boolean reuseOldSkeleton) {
+		Map<Integer, Integer> jointIDRemap = new HashMap<>();
+
+		Map<String, Integer> newNameToIndex = new HashMap<>();
+
+		for (int i = 0; i < newSkeleton.getJointCount(); ++i) {
+			newNameToIndex.put(newSkeleton.getJoint(i).name, i);
+		}
+
+		Set<Integer> actuallyUsedBones = new HashSet<>();
+
+		for (Mesh mesh : model.meshes) {
+			for (Vertex vtx : mesh.vertices) {
+				for (int i = 0; i < vtx.boneIndices.size(); ++i) {
+					int boneIdx = vtx.boneIndices.get(i);
+					String boneName = model.skeleton.getJoint(boneIdx).name;
+
+					if (!newNameToIndex.containsKey(boneName)) {
+						throw new IllegalArgumentException("Joint " + boneName + " was not found.");
+					}
+
+					actuallyUsedBones.add(boneIdx);
+				}
+			}
+		}
+
+		for (int i = 0; i < model.skeleton.getJointCount(); ++i) {
+			if (!actuallyUsedBones.contains(i)) {
+				continue;
+			}
+			jointIDRemap.put(i, newNameToIndex.get(model.skeleton.getJoint(i).name));
+		}
+
+		for (Mesh mesh : model.meshes) {
+			for (Vertex vtx : mesh.vertices) {
+				for (int i = 0; i < vtx.boneIndices.size(); ++i) {
+					vtx.boneIndices.set(i, jointIDRemap.get(vtx.boneIndices.get(i)));
+				}
+			}
+		}
+
+		if (reuseOldSkeleton) {
+			model.skeleton.getJoints().clear();
+			model.skeleton.addJoints(newSkeleton.getJoints());
+		} else {
+			model.skeleton = newSkeleton;
 		}
 	}
 }

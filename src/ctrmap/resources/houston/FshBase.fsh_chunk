@@ -18,8 +18,15 @@
 #endif
 
 PASSTHROUGH vec2 uv0;
+#if TEXTURE_MAX > 1
 PASSTHROUGH vec2 uv1;
+#endif
+#if TEXTURE_MAX > 2
 PASSTHROUGH vec2 uv2;
+#endif
+#if TEXTURE_MAX > 3
+PASSTHROUGH vec2 uv3;
+#endif
 PASSTHROUGH vec4 color;
 PASSTHROUGH vec3 f_relNormal;
 PASSTHROUGH vec3 f_normal;

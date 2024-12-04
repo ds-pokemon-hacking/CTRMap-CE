@@ -29,7 +29,7 @@ public class CSJTree extends CustomJTree {
 		registerIconResource(MaterialNode.RESID, "material");
 		registerIconResource(MeshNode.RESID, "mesh");
 		registerIconResource(ModelNode.RESID, "model");
-		registerIconResource(ModelNode.RESID_SKELETON, "skeleton");
+		registerIconResource(SkeletonNode.RESID, "skeleton");
 		registerIconResource(CSRootSceneNode.RESID, "scene");
 		registerIconResource(TextureNode.RESID, "texture");
 		registerIconResource(OtherFileNode.RESID, "other");

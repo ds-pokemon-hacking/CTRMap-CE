@@ -1,6 +1,5 @@
 package ctrmap.editor.system.workspace;
 
-import ctrmap.editor.CTRMap;
 import ctrmap.editor.system.workspace.wildcards.FSWildCardManagerCTR;
 import xstandard.fs.FSFile;
 import ctrmap.formats.common.GameInfo;
@@ -31,8 +30,10 @@ public class GameDetector {
 
 	public static GameInfo.Game detectGameType(FSFile gameRoot) {
 		if (isDSGame(gameRoot)) {
+			System.out.println("Detecting DS game...");
 			return detectGameType(detectSubGameDS(gameRoot.getChild(HEADER_BIN)));
 		} else {
+			System.out.println("Detecting 3DS game...");
 			return detectGameType(detectSubGame3DS(FSWildCardManagerCTR.INSTANCE.getFileFromRefPath(gameRoot, ":exheader:")));
 		}
 	}
@@ -85,10 +86,10 @@ public class GameDetector {
 
 	public static GameInfo.SubGame detectSubGame(FSFile root) {
 		if (isDSGame(root)) {
-			System.out.println("Detecting DS game...");
+			System.out.println("Detecting DS subgame...");
 			return detectSubGameDS(root.getChild(HEADER_BIN));
 		} else {
-			System.out.println("Detecting 3DS game...");
+			System.out.println("Detecting 3DS subgame...");
 			return detectSubGame3DS(FSWildCardManagerCTR.INSTANCE.getFileFromRefPath(root, ":exheader:"));
 		}
 		//return null;
@@ -101,6 +102,7 @@ public class GameDetector {
 		try {
 			DataInStream in = exHeader.getDataInputStream();
 			String exeName = in.readPaddedString(8);
+			System.out.println("3DS exe name: " + exeName);
 			GameInfo.SubGame g = null;
 			switch (exeName) {
 				case "kujira-1":

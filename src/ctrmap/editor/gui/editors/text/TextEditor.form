@@ -40,6 +40,8 @@
                   <Component id="textTableSP" alignment="0" pref="643" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btnDumpAllText" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnOpenExternalFile" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="btnSave" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -54,7 +56,7 @@
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="textArcSep" alignment="0" max="32767" attributes="0"/>
-                  <Component id="textFileBox" alignment="0" pref="22" max="32767" attributes="0"/>
+                  <Component id="textFileBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="textFileLabel" alignment="0" max="32767" attributes="0"/>
                   <Component id="btnAddTextFile" alignment="0" pref="0" max="32767" attributes="0"/>
                   <Component id="fancySep" max="32767" attributes="0"/>
@@ -68,6 +70,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btnSave" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnDumpAllText" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnOpenExternalFile" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -180,6 +183,14 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnOpenExternalFile">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Open external file"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnOpenExternalFileActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

@@ -16,22 +16,30 @@ import java.util.logging.Logger;
 public class TextFileRW {
 
 	public static void readLinesForFile(TextFile target, FSFile fsf, MessageHandler handler) {
-		try {
-			GFMessageStream io = new GFMessageStream(fsf.getIO(), handler);
+		try (GFMessageStream io = new GFMessageStream(fsf.getIO(), handler)) {
 			int sectCount = io.readShort();
+			int lineCount = io.readUnsignedShort();
+			int sectionAllocateSize = io.readInt(); //white2-U 0x020487F0 - probably max. size for preload
+			int reserved = io.readInt();
 
-			if (sectCount > 1) {
-				throw new UnsupportedOperationException("More than 1 sections are not supported");
+			target.enableEncryption = reserved == 0 || !handler.isMsgDataSupportsNonEncrypted();
+			io.setCrypto(target.enableEncryption ? MessageTextCrypto.getInstance() : DummyTextCrypto.getInstance());
+
+			int[] sectionOffsets = new int[sectCount];
+			for (int i = 0; i < sectCount; ++i) {
+				sectionOffsets[i] = io.readInt();
 			}
-			if (sectCount == 1) {
-				int lineCount = io.readUnsignedShort();
-				io.skipBytes(4);
-				target.enableEncryption = io.readInt() == 0 || !handler.isMsgDataSupportsNonEncrypted();
-				io.setCrypto(target.enableEncryption ? MessageTextCrypto.getInstance() : DummyTextCrypto.getInstance());
-				int sectionStart = io.readInt();
 
+			for (int s = 0; s < sectCount; ++s) {
+				int sectionStart = sectionOffsets[s];
+				io.seek(sectionStart);
+				int sectionSize = io.readInt();
+				int sectionDataStart = io.getPosition();
+				
+				io.resetCryptoCounter();
+				
 				for (int l = 0; l < lineCount; l++) {
-					io.seek(sectionStart + 4 + l * 8);
+					io.seek(sectionDataStart + l * 8);
 					int offs = io.readInt();
 					int charCount = io.readUnsignedShort();
 					int extra = io.readUnsignedShort();
@@ -39,7 +47,6 @@ public class TextFileRW {
 					target.lines.add(io.readString(charCount));
 				}
 			}
-			io.close();
 		} catch (IOException ex) {
 			Logger.getLogger(TextFileRW.class.getName()).log(Level.SEVERE, null, ex);
 		}

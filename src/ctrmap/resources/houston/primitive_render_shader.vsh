@@ -220,7 +220,15 @@ void main(void)
     else {
         color = vec4(1.0);
     }
+
     uv0 = transformUV(0);
+    #if TEXTURE_MAX > 1
     uv1 = transformUV(1);
+    #endif
+    #if TEXTURE_MAX > 2
     uv2 = transformUV(2);
+    #endif
+    #if TEXTURE_MAX > 3
+    uv3 = transformUV(3);
+    #endif
 }
