@@ -3,7 +3,7 @@ package ctrmap.creativestudio.editors;
 import xstandard.math.vec.RGBA;
 import static ctrmap.creativestudio.editors.MaterialEditorTextRsrc.*;
 import ctrmap.creativestudio.ngcs.tree.CSNode;
-import ctrmap.editor.gui.editors.scenegraph.editors.IScenegraphEditor;
+import ctrmap.formats.ntr.common.gfx.Nitroshader;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.scene.metadata.GFLMetaData;
 import ctrmap.renderer.scene.metadata.MetaDataValue;
@@ -52,6 +52,12 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 	private ToggleableChangeListener lightClAll = new ToggleableChangeListener() {
 		@Override
 		public void onApprovedStateChange(ChangeEvent e) {
+			saveLighting();
+		}
+	};
+	private ToggleableActionListener lightAlAll = new ToggleableActionListener() {
+		@Override
+		public void actionPerformedImpl(ActionEvent e) {
 			saveLighting();
 		}
 	};
@@ -137,7 +143,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 
 		ComponentUtils.addActionListener(texAlAll, textureMagFilter, textureMinFilter, textureWrapU, textureWrapV, textureMapMode, textureUV);
 
-		ComponentUtils.addChangeListener(lightClAll, lightLayer, lightSetIndex);
+		ComponentUtils.addChangeListener(lightClAll, lightLayer, lightSetIndex, fogIndex);
+		ComponentUtils.addActionListener(lightAlAll, fogEnabled);
 		ComponentUtils.addActionListener(rsAlAll, depthFunc, boDstFuncAlpha, boDstFuncRgb, boEqtAlpha, boEqtRgb, boSrcFuncAlpha, boSrcFuncRgb, stencilFunc, soFail, soPass, soZPass, faceCulling, alphaTestFunc);
 		ComponentUtils.addActionListener(rsAlAll, dtAlphaWrite, dtBlueWrite, dtDepthWrite, dtGreenWrite, dtRedWrite, dtEnabled, blendOpEnabled, stencilEnabled, alphaTestEnabled);
 		ComponentUtils.addDocumentListenerToTFs(rsIntegerListener, stencilBufMask, stencilMask, stencilRef, alphaTestReference);
@@ -157,6 +164,15 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			} else {
 				mat = (Material) o;
 			}
+		} else {
+			mat = null;
+		}
+		
+		showMaterial();
+	}
+
+	private void showMaterial() {
+		if (mat != null) {
 			materialName.setText(mat.name);
 			buildTexMapperBox();
 			textureMapper.setSelectedIndex(Math.min(0, textureMapper.getItemCount() - 1));
@@ -166,7 +182,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			showLighting();
 			shadingStage.setSelectedIndex(Math.max(0, shadingStage.getSelectedIndex()));
 		} else {
-			mat = null;
 			ComponentUtils.clearComponents(
 				textureName, textureUV, textureMagFilter, textureMinFilter, textureWrapU, textureWrapV,
 				textureTX, textureTY, textureRot, textureMapper,
@@ -174,7 +189,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 				dtDepthWrite, blendOpEnabled, boEqtRgb, boEqtAlpha, boSrcFuncRgb, boSrcFuncAlpha, boDstFuncRgb, boDstFuncAlpha,
 				shadingStage, cModeRgb, cModeA, cEqtPreviewRgb, cEqtPreviewA, cUpdateRgb, cUpdateA, cScaleRgb, cScaleA, cSrc0Rgb,
 				cSrc0A, cSrc1Rgb, cSrc1A, cSrc2Rgb, cSrc2A, cOp0Rgb, cOp0A, cOp1Rgb, cOp1A, cOp2Rgb, cOp2A, stencilBufMask, stencilEnabled,
-				stencilFunc, stencilMask, stencilRef, soFail, soPass, soZPass, bumpMode, btnBumpMap, shaderArcName, lightSetIndex, faceCulling, lutInput, lutTextureName
+				stencilFunc, stencilMask, stencilRef, soFail, soPass, soZPass, bumpMode, btnBumpMap, shaderArcName, lightSetIndex, faceCulling, lutInput, lutTextureName,
+				fogEnabled, fogIndex
 			);
 			materialName.setText(null);
 			textureMapper.removeAllItems();
@@ -189,7 +205,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			metaDataEditor.loadMetaData(null);
 		}
 	}
-
+	
 	@Override
 	public void save() {
 		if (mat != null) {
@@ -231,6 +247,9 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		if (mat != null) {
 			mat.lightSetIndex = ((Number) lightSetIndex.getValue()).intValue();
 			mat.lightingLayer = ((Number) lightLayer.getValue()).intValue();
+
+			mat.fogIndex = ((Number) fogIndex.getValue()).intValue();
+			mat.fogEnabled = fogEnabled.isSelected();
 		}
 	}
 
@@ -281,6 +300,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			btnSetColSpc1.attachColor(mat.specular1Color);
 			btnSetColEmi.attachColor(mat.emissionColor);
 			showLUT();
+			fogEnabled.setSelected(mat.fogEnabled);
+			fogIndex.setValue(mat.fogIndex);
 		} else {
 			lightSetIndex.setValue(-1);
 			lightLayer.setValue(0);
@@ -289,6 +310,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 			btnSetColSpc0.attachColor(null);
 			btnSetColSpc1.attachColor(null);
 			btnSetColEmi.attachColor(null);
+			fogEnabled.setSelected(false);
+			fogIndex.setValue(-1);
 		}
 		lightClAll.setAllowEvents(true);
 	}
@@ -586,7 +609,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         boColorPreview = new javax.swing.JLabel();
         blendOpColorLabel = new javax.swing.JLabel();
         stencilOpPanel = new javax.swing.JPanel();
-        stencilFuncLabel = new javax.swing.JLabel();
         stencilFunc = new javax.swing.JComboBox<>();
         stencilRefLabel = new javax.swing.JLabel();
         stencilRef = new javax.swing.JFormattedTextField();
@@ -602,6 +624,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         soZPass = new javax.swing.JComboBox<>();
         soPass = new javax.swing.JComboBox<>();
         soFail = new javax.swing.JComboBox<>();
+        stencilFuncLabel = new javax.swing.JLabel();
         faceCullingPanel = new javax.swing.JPanel();
         faceCulling = new javax.swing.JComboBox<>();
         shadingPanel = new javax.swing.JPanel();
@@ -682,6 +705,10 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         lutInput = new javax.swing.JComboBox<>();
         lutTextureName = new ctrmap.creativestudio.editors.CSTextureSelector();
         btnIsLUTEnabled = new javax.swing.JCheckBox();
+        fogPanel = new javax.swing.JPanel();
+        fogEnabled = new javax.swing.JCheckBox();
+        jLabel3 = new javax.swing.JLabel();
+        fogIndex = new javax.swing.JSpinner();
         metaDataPanel = new javax.swing.JPanel();
         metaDataEditor = new ctrmap.creativestudio.editors.MetaDataEditor();
         shortcutsPanel = new javax.swing.JPanel();
@@ -703,6 +730,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         bakeFormula = new javax.swing.JComboBox<>();
         bakeTexName = new ctrmap.creativestudio.editors.CSTextureSelector();
         btnDisableAlphaBlend = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        btnSetupNitroshader = new javax.swing.JButton();
         saveCtrl = new ctrmap.creativestudio.editors.SaveControlPanel();
 
         generalPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("General"));
@@ -828,11 +857,6 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         textureWrapV.setModel(new javax.swing.DefaultComboBoxModel<>(textureWrapModes));
 
         textureMapMode.setModel(new javax.swing.DefaultComboBoxModel<>(texcoordGenModes));
-        textureMapMode.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textureMapModeActionPerformed(evt);
-            }
-        });
 
         jLabel1.setText("UV Set:");
 
@@ -903,7 +927,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addGroup(textureFilteringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(textureMinFilter, 0, 200, Short.MAX_VALUE)
                     .addComponent(textureMagFilter, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(192, Short.MAX_VALUE))
+                .addContainerGap(195, Short.MAX_VALUE))
         );
         textureFilteringPanelLayout.setVerticalGroup(
             textureFilteringPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1046,7 +1070,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addComponent(textureFilteringPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(texturePreview, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Texturing", texturingPanel);
@@ -1103,7 +1127,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                     .addComponent(alphaTestReferenceLabel)
                     .addComponent(alphaTestReference, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(alphaTestEnabled))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         depthTestPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Depth test"));
@@ -1253,7 +1277,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                         .addComponent(boColorPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(boConstantColorSet)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 175, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 169, Short.MAX_VALUE)
                         .addComponent(blendOpEnabled))
                     .addGroup(blendOpPanelLayout.createSequentialGroup()
                         .addGroup(blendOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1302,12 +1326,10 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                             .addComponent(blendOpColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(boColorPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(boConstantColorSet))
-                        .addContainerGap(22, Short.MAX_VALUE))))
+                        .addContainerGap(26, Short.MAX_VALUE))))
         );
 
         stencilOpPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Stencil operation"));
-
-        stencilFuncLabel.setText("Test function");
 
         stencilFunc.setModel(new javax.swing.DefaultComboBoxModel<>(testFunctions));
 
@@ -1339,6 +1361,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 
         soFail.setModel(new javax.swing.DefaultComboBoxModel<>(stencilOps));
 
+        stencilFuncLabel.setText("Test function");
+
         javax.swing.GroupLayout stencilOpPanelLayout = new javax.swing.GroupLayout(stencilOpPanel);
         stencilOpPanel.setLayout(stencilOpPanelLayout);
         stencilOpPanelLayout.setHorizontalGroup(
@@ -1346,39 +1370,34 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
             .addGroup(stencilOpPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(stencilOpPanelLayout.createSequentialGroup()
-                        .addComponent(stencilFuncLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(stencilFunc, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(stencilOpPanelLayout.createSequentialGroup()
-                        .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(stencilRefLabel)
-                            .addComponent(stencilMaskLabel)
-                            .addComponent(stencilBufMaskLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(stencilBufMask, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
-                            .addComponent(stencilRef)
-                            .addComponent(stencilMask))))
+                    .addComponent(stencilRefLabel)
+                    .addComponent(stencilMaskLabel)
+                    .addComponent(stencilBufMaskLabel)
+                    .addComponent(stencilFuncLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(stencilBufMask, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
+                        .addComponent(stencilRef)
+                        .addComponent(stencilMask))
+                    .addComponent(stencilFunc, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(soSep, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(stencilOpPanelLayout.createSequentialGroup()
-                        .addComponent(soZPassLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(soZPass, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(stencilOpPanelLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(stencilEnabled))
                     .addGroup(stencilOpPanelLayout.createSequentialGroup()
                         .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(soPassLabel)
-                            .addComponent(soFailLabel))
-                        .addGap(14, 14, 14)
+                            .addComponent(soFailLabel)
+                            .addComponent(soZPassLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(soFail, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(soPass, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(soZPass, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(soPass, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(soFail, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addGap(10, 10, 10))
         );
         stencilOpPanelLayout.setVerticalGroup(
@@ -1388,10 +1407,10 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(stencilOpPanelLayout.createSequentialGroup()
                         .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(stencilFuncLabel)
                             .addComponent(stencilFunc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(soFailLabel)
-                            .addComponent(soFail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(soFail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(stencilFuncLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(stencilOpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(stencilRefLabel)
@@ -1468,7 +1487,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addComponent(stencilOpPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(faceCullingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Render state", renderStatePanel);
@@ -1910,7 +1929,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addComponent(vshPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(texCmbPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Shading", shadingPanel);
@@ -1932,14 +1951,12 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
             .addGroup(lightingGeneralPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(lightingGeneralPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(lightingGeneralPanelLayout.createSequentialGroup()
-                        .addComponent(lsiLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lightSetIndex, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(lightingGeneralPanelLayout.createSequentialGroup()
-                        .addComponent(lightLayerLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lightLayer, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(lsiLabel)
+                    .addComponent(lightLayerLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(lightingGeneralPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(lightSetIndex, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lightLayer, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         lightingGeneralPanelLayout.setVerticalGroup(
@@ -1975,24 +1992,18 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
             .addGroup(colorPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(colorPanelLayout.createSequentialGroup()
-                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ambientColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(diffuseColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnSetColDif, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnSetColAmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(colorPanelLayout.createSequentialGroup()
-                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(spc1ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(spc0ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(emiColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnSetColSpc1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnSetColSpc0, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnSetColEmi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(ambientColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(diffuseColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(spc1ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(spc0ColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(emiColorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSetColDif, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSetColAmb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSetColSpc1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSetColSpc0, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSetColEmi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         colorPanelLayout.setVerticalGroup(
@@ -2063,22 +2074,19 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
             lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(lutPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(lutPanelLayout.createSequentialGroup()
-                        .addComponent(lutLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnIsLUTEnabled)
-                            .addComponent(lut, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(lutPanelLayout.createSequentialGroup()
-                        .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(lutTextureLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lutInputLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(lutTextureName, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
-                            .addComponent(lutInput, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addGap(0, 150, Short.MAX_VALUE))
+                .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lutLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(lutTextureLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lutInputLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnIsLUTEnabled)
+                    .addGroup(lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(lutTextureName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lutInput, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lut, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 157, Short.MAX_VALUE))
         );
         lutPanelLayout.setVerticalGroup(
             lutPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2100,6 +2108,38 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        fogPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Fog"));
+
+        fogEnabled.setText("Enabled");
+
+        jLabel3.setText("Fog index");
+
+        fogIndex.setModel(new javax.swing.SpinnerNumberModel(0, 0, 255, 1));
+
+        javax.swing.GroupLayout fogPanelLayout = new javax.swing.GroupLayout(fogPanel);
+        fogPanel.setLayout(fogPanelLayout);
+        fogPanelLayout.setHorizontalGroup(
+            fogPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(fogPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fogIndex, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(fogEnabled)
+                .addContainerGap())
+        );
+        fogPanelLayout.setVerticalGroup(
+            fogPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(fogPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(fogPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(fogIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fogEnabled))
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout lightingPanelLayout = new javax.swing.GroupLayout(lightingPanel);
         lightingPanel.setLayout(lightingPanelLayout);
         lightingPanelLayout.setHorizontalGroup(
@@ -2109,7 +2149,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addGroup(lightingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lightingGeneralPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(colorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(lutPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(fogPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         lightingPanelLayout.setVerticalGroup(
@@ -2121,7 +2162,9 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addComponent(colorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lutPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(293, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fogPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Lighting", lightingPanel);
@@ -2132,7 +2175,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
             metaDataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(metaDataPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(metaDataEditor, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+                .addComponent(metaDataEditor, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
                 .addContainerGap())
         );
         metaDataPanelLayout.setVerticalGroup(
@@ -2216,6 +2259,15 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
             }
         });
 
+        jLabel4.setText("Generic shaders");
+
+        btnSetupNitroshader.setText("Setup Nintendo DS shading");
+        btnSetupNitroshader.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSetupNitroshaderActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout shortcutsPanelLayout = new javax.swing.GroupLayout(shortcutsPanel);
         shortcutsPanel.setLayout(shortcutsPanelLayout);
         shortcutsPanelLayout.setHorizontalGroup(
@@ -2223,42 +2275,50 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
             .addGroup(shortcutsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
                     .addGroup(shortcutsPanelLayout.createSequentialGroup()
-                        .addComponent(btnSetDefaultSha)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSetBtlFldSha))
-                    .addGroup(shortcutsPanelLayout.createSequentialGroup()
-                        .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(btnAddBake, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnCmdAlphaEnable, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnCmdFragLightEnable, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnCmdOutlineSet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
                             .addGroup(shortcutsPanelLayout.createSequentialGroup()
-                                .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(bakeTexLabel)
-                                    .addComponent(bakeUVLabel)
-                                    .addComponent(bakeFormulaLabel))
+                                .addComponent(btnSetDefaultSha)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnSetBtlFldSha))
+                            .addGroup(shortcutsPanelLayout.createSequentialGroup()
+                                .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(btnAddBake, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnCmdAlphaEnable, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnCmdFragLightEnable, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnCmdOutlineSet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(bakeUV, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(bakeFormula, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(bakeTexName, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)))
-                            .addGroup(shortcutsPanelLayout.createSequentialGroup()
-                                .addComponent(isEdgeEnabled)
-                                .addGap(6, 6, 6)
-                                .addComponent(outlineSep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(edgeGroupLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(edgeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE))
-                            .addGroup(shortcutsPanelLayout.createSequentialGroup()
-                                .addComponent(btnDisableAlphaBlend, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE)))))
-                .addGap(76, 76, 76))
+                                    .addGroup(shortcutsPanelLayout.createSequentialGroup()
+                                        .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(bakeTexLabel)
+                                            .addComponent(bakeUVLabel)
+                                            .addComponent(bakeFormulaLabel))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(bakeUV, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(bakeFormula, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(bakeTexName, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)))
+                                    .addGroup(shortcutsPanelLayout.createSequentialGroup()
+                                        .addComponent(isEdgeEnabled)
+                                        .addGap(6, 6, 6)
+                                        .addComponent(outlineSep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(edgeGroupLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(edgeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE))
+                                    .addGroup(shortcutsPanelLayout.createSequentialGroup()
+                                        .addComponent(btnDisableAlphaBlend, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE)))))
+                        .addGap(76, 76, 76))
+                    .addGroup(shortcutsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(shortcutsPanelLayout.createSequentialGroup()
+                        .addComponent(btnSetupNitroshader)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         shortcutsPanelLayout.setVerticalGroup(
             shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2297,7 +2357,11 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addGroup(shortcutsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSetDefaultSha)
                     .addComponent(btnSetBtlFldSha))
-                .addContainerGap(521, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnSetupNitroshader)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         materialEditorTabbedPane.addTab("Shortcuts", shortcutsPanel);
@@ -2306,12 +2370,13 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(generalPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(materialEditorTabbedPane)
-                    .addComponent(saveCtrl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(materialEditorTabbedPane, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(saveCtrl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2319,7 +2384,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
                 .addContainerGap()
                 .addComponent(generalPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(materialEditorTabbedPane)
+                .addComponent(materialEditorTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(saveCtrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -2417,7 +2482,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private void btnCmdOutlineSetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCmdOutlineSetActionPerformed
 		if (mat != null) {
 			MaterialProcessor.setEdgeMetaData(mat, isEdgeEnabled.isSelected(), (Integer) edgeGroup.getValue());
-			metaDataEditor.loadMetaData(mat.metaData);
+			showMetaData();
 			showRenderState();
 		}
     }//GEN-LAST:event_btnCmdOutlineSetActionPerformed
@@ -2597,9 +2662,15 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
 		}
     }//GEN-LAST:event_btnDisableAlphaBlendActionPerformed
 
-    private void textureMapModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textureMapModeActionPerformed
-		// TODO add your handling code here:
-    }//GEN-LAST:event_textureMapModeActionPerformed
+    private void btnSetupNitroshaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNitroshaderActionPerformed
+		if (mat != null) {
+			//do not set the constant colors here, as that is an attribute of models
+			//imported from the NDS, not onto it
+			//existing models will use the actual vertex alpha instead
+			Nitroshader.setNshStencilScheme(mat, 0);
+			showRenderState();
+		}
+    }//GEN-LAST:event_btnSetupNitroshaderActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2649,6 +2720,7 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private xstandard.gui.components.SimpleColorSelector btnSetColSpc0;
     private xstandard.gui.components.SimpleColorSelector btnSetColSpc1;
     private javax.swing.JButton btnSetDefaultSha;
+    private javax.swing.JButton btnSetupNitroshader;
     private javax.swing.JPanel bumpMapPanel;
     private javax.swing.JComboBox<String> bumpMode;
     private javax.swing.JLabel bumpModeLabel;
@@ -2710,6 +2782,9 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JLabel emiColorLabel;
     private javax.swing.JComboBox<String> faceCulling;
     private javax.swing.JPanel faceCullingPanel;
+    private javax.swing.JCheckBox fogEnabled;
+    private javax.swing.JSpinner fogIndex;
+    private javax.swing.JPanel fogPanel;
     private javax.swing.JPanel generalPanel;
     private javax.swing.JLabel inBufColPreview;
     private javax.swing.JSeparator inBufColSeparator;
@@ -2718,6 +2793,8 @@ public class MaterialEditor extends javax.swing.JPanel implements IEditor, IScen
     private javax.swing.JCheckBox isEdgeEnabled;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JSpinner lightLayer;
     private javax.swing.JLabel lightLayerLabel;
     private javax.swing.JSpinner lightSetIndex;

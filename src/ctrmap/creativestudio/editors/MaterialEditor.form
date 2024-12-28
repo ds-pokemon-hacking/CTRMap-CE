@@ -20,13 +20,14 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="generalPanel" max="32767" attributes="0"/>
                   <Component id="materialEditorTabbedPane" alignment="0" max="32767" attributes="0"/>
-                  <Component id="saveCtrl" alignment="0" max="32767" attributes="0"/>
+                  <Component id="saveCtrl" max="32767" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -36,7 +37,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="generalPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="materialEditorTabbedPane" max="32767" attributes="0"/>
+              <Component id="materialEditorTabbedPane" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="saveCtrl" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -167,7 +168,7 @@
                       <Component id="textureFilteringPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="texturePreview" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="74" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -432,9 +433,6 @@
                       <Connection code="new javax.swing.DefaultComboBoxModel&lt;&gt;(texcoordGenModes)" type="code"/>
                     </Property>
                   </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="textureMapModeActionPerformed"/>
-                  </Events>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                   </AuxValues>
@@ -484,7 +482,7 @@
                               <Component id="textureMinFilter" pref="200" max="32767" attributes="0"/>
                               <Component id="textureMagFilter" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="192" max="32767" attributes="0"/>
+                          <EmptySpace pref="195" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -705,7 +703,7 @@
                       <Component id="stencilOpPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="faceCullingPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="48" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -756,7 +754,7 @@
                               <Component id="alphaTestReference" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="alphaTestEnabled" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="11" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -945,7 +943,7 @@
                                   <Component id="boColorPreview" min="-2" pref="50" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="boConstantColorSet" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="175" max="32767" attributes="0"/>
+                                  <EmptySpace pref="169" max="32767" attributes="0"/>
                                   <Component id="blendOpEnabled" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" attributes="0">
@@ -1007,7 +1005,7 @@
                                       <Component id="boColorPreview" min="-2" pref="23" max="-2" attributes="0"/>
                                       <Component id="boConstantColorSet" alignment="1" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="22" max="32767" attributes="0"/>
+                                  <EmptySpace pref="26" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -1158,47 +1156,39 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="stencilFuncLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Component id="stencilFunc" min="-2" pref="130" max="-2" attributes="0"/>
+                              <Component id="stencilRefLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="stencilMaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="stencilBufMaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="stencilFuncLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="stencilBufMask" pref="60" max="32767" attributes="0"/>
+                                  <Component id="stencilRef" max="32767" attributes="0"/>
+                                  <Component id="stencilMask" alignment="0" max="32767" attributes="0"/>
                               </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="stencilRefLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="stencilMaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="stencilBufMaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="stencilBufMask" pref="60" max="32767" attributes="0"/>
-                                      <Component id="stencilRef" max="32767" attributes="0"/>
-                                      <Component id="stencilMask" alignment="0" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
+                              <Component id="stencilFunc" min="-2" pref="132" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="soSep" min="-2" pref="2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="soZPassLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="soZPass" max="32767" attributes="0"/>
-                              </Group>
                               <Group type="102" attributes="0">
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   <Component id="stencilEnabled" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="soPassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="soFailLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="soZPassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="soFail" max="32767" attributes="0"/>
+                                      <Component id="soZPass" alignment="0" max="32767" attributes="0"/>
                                       <Component id="soPass" max="32767" attributes="0"/>
+                                      <Component id="soFail" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -1213,10 +1203,10 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="stencilFuncLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="stencilFunc" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="soFailLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="soFail" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="stencilFuncLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
@@ -1258,11 +1248,6 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JLabel" name="stencilFuncLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Test function"/>
-                  </Properties>
-                </Component>
                 <Component class="javax.swing.JComboBox" name="stencilFunc">
                   <Properties>
                     <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -1364,6 +1349,11 @@
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                   </AuxValues>
                 </Component>
+                <Component class="javax.swing.JLabel" name="stencilFuncLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Test function"/>
+                  </Properties>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="faceCullingPanel">
@@ -1443,7 +1433,7 @@
                       <Component id="vshPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="texCmbPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2262,6 +2252,7 @@
                           <Component id="lightingGeneralPanel" max="32767" attributes="0"/>
                           <Component id="colorPanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="lutPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="fogPanel" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2276,7 +2267,9 @@
                       <Component id="colorPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lutPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="293" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="fogPanel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2297,16 +2290,13 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="lsiLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="lightSetIndex" min="-2" pref="72" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="lightLayerLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="lightLayer" min="-2" pref="72" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="lsiLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="lightLayerLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="lightSetIndex" alignment="0" min="-2" pref="72" max="-2" attributes="0"/>
+                              <Component id="lightLayer" alignment="0" min="-2" pref="72" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -2372,30 +2362,19 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="ambientColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
-                                      <Component id="diffuseColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="btnSetColDif" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btnSetColAmb" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="spc1ColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
-                                      <Component id="spc0ColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
-                                      <Component id="emiColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="btnSetColSpc1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btnSetColSpc0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btnSetColEmi" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
+                              <Component id="ambientColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                              <Component id="diffuseColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                              <Component id="spc1ColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                              <Component id="spc0ColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                              <Component id="emiColorLabel" alignment="0" min="-2" pref="65" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="btnSetColDif" min="-2" max="-2" attributes="0"/>
+                              <Component id="btnSetColAmb" min="-2" max="-2" attributes="0"/>
+                              <Component id="btnSetColSpc1" min="-2" max="-2" attributes="0"/>
+                              <Component id="btnSetColSpc0" min="-2" max="-2" attributes="0"/>
+                              <Component id="btnSetColEmi" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -2486,28 +2465,23 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="lutLabel" min="-2" pref="59" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="btnIsLUTEnabled" min="-2" max="-2" attributes="0"/>
-                                      <Component id="lut" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="lutTextureLabel" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="lutInputLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="lutTextureName" pref="240" max="32767" attributes="0"/>
-                                      <Component id="lutInput" max="32767" attributes="0"/>
-                                  </Group>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="lutLabel" alignment="0" min="-2" pref="59" max="-2" attributes="0"/>
+                              <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="lutTextureLabel" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="lutInputLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace min="0" pref="150" max="32767" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="btnIsLUTEnabled" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="lutTextureName" max="32767" attributes="0"/>
+                                  <Component id="lutInput" min="-2" pref="240" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="lut" min="-2" pref="243" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="0" pref="157" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -2611,6 +2585,63 @@
                 </Component>
               </SubComponents>
             </Container>
+            <Container class="javax.swing.JPanel" name="fogPanel">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Fog"/>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="fogIndex" min="-2" pref="72" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="fogEnabled" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="fogIndex" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="fogEnabled" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="fogEnabled">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Enabled"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel3">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Fog index"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JSpinner" name="fogIndex">
+                  <Properties>
+                    <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+                      <SpinnerModel initial="0" maximum="255" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="metaDataPanel">
@@ -2627,7 +2658,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="metaDataEditor" pref="481" max="32767" attributes="0"/>
+                      <Component id="metaDataEditor" pref="498" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -2662,52 +2693,64 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="btnSetDefaultSha" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="btnSetBtlFldSha" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="btnSetDefaultSha" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnSetBtlFldSha" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                          <Component id="btnAddBake" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="btnCmdAlphaEnable" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="btnCmdFragLightEnable" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="btnCmdOutlineSet" alignment="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="bakeTexLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="bakeUVLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="bakeFormulaLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="bakeUV" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="bakeFormula" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="bakeTexName" pref="187" max="32767" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="isEdgeEnabled" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                                              <Component id="outlineSep" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="edgeGroupLabel" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="edgeGroup" min="-2" pref="60" max="-2" attributes="0"/>
+                                              <EmptySpace pref="20" max="32767" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="btnDisableAlphaBlend" min="-2" pref="154" max="-2" attributes="0"/>
+                                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="-2" pref="76" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="btnAddBake" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="btnCmdAlphaEnable" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="btnCmdFragLightEnable" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="btnCmdOutlineSet" alignment="0" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="bakeTexLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="bakeUVLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="bakeFormulaLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="bakeUV" min="-2" max="-2" attributes="0"/>
-                                          <Component id="bakeFormula" min="-2" max="-2" attributes="0"/>
-                                          <Component id="bakeTexName" pref="189" max="32767" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="isEdgeEnabled" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                                      <Component id="outlineSep" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="edgeGroupLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="edgeGroup" min="-2" pref="60" max="-2" attributes="0"/>
-                                      <EmptySpace pref="32" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="btnDisableAlphaBlend" min="-2" pref="154" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
+                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="btnSetupNitroshader" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="76" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2756,7 +2799,11 @@
                           <Component id="btnSetDefaultSha" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnSetBtlFldSha" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="521" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnSetupNitroshader" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2891,6 +2938,19 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDisableAlphaBlendActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel4">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Generic shaders"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="btnSetupNitroshader">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Setup Nintendo DS shading"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSetupNitroshaderActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>
