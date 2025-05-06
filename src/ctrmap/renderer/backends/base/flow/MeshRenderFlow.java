@@ -73,7 +73,7 @@ public class MeshRenderFlow {
 				boolean isLUTNeedsTangent = false;
 
 				if (!renderState.hasFlag(RenderState.Flag.UNTEXTURED)) {
-					isTexturingSuccess = setupMaterialTextures(instance, mat, bufMem, gl);
+					isTexturingSuccess = setupMaterialTextures(resourceState, mat, bufMem, gl);
 				} else {
 					gl.setTexturingEnable(false);
 				}
@@ -215,13 +215,23 @@ public class MeshRenderFlow {
 		}
 	}
 
-	protected static boolean setupMaterialTextures(G3DResourceInstance instance, Material mat, BufferObjectMemory bufMem, IRenderDriver gl) {
+	protected static boolean setupMaterialTextures(G3DResourceState state, Material mat, BufferObjectMemory bufMem, IRenderDriver gl) {
+		G3DResourceInstance instance = state.instance;
 		boolean isTexturingSuccess = false;
 		if (mat != null) {
 			int textureMax = RenderConstants.getTextureMax(mat);
 			for (int i = 0; i < textureMax; i++) {
 				TextureMapper m = mat.textures.get(i);
-				Texture texture = instance != null ? instance.getResTexture(m.textureName) : null;
+				Texture texture = instance.getResTexture(m.textureName);
+				for (MatAnimController c : state.materialAnimations) {
+					if (c.textureName[i].containsKey(mat.name)) {
+						Texture replacement = instance.getResTexture(c.textureName[i].get(mat.name));
+						if (replacement != null) {
+							texture = replacement;
+							break;
+						}
+					}
+				}
 				if (texture == null) {
 					texture = RenderConstants.EMPTY_TEXTURE;
 				} else {
@@ -319,11 +329,6 @@ public class MeshRenderFlow {
 						}
 						if (c.scaleY[texUnit].containsKey(mat.name)) {
 							s[texUnit].y = c.scaleY[texUnit].get(mat.name);
-						}
-						if (c.textureName[texUnit].containsKey(mat.name)) {
-							String name = c.textureName[texUnit].get(mat.name);
-							Texture replacement = state.instance.getResTexture(name);
-							setUpTexture(gl, replacement, mat.textures.get(texUnit), texUnit);
 						}
 					}
 				}

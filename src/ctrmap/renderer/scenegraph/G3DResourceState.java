@@ -288,6 +288,9 @@ public class G3DResourceState {
 
 	private void applyVisibilityAnimation() {
 		for (VisibilityController vis : visibilityAnimations) {
+			if (vis.anim == null) {
+				continue;
+			}
 			for (VisibilityBoneTransform trk : ((VisibilityAnimation) vis.anim).tracks) {
 				boolean visible = vis.nodeVisibilities.getOrDefault(trk.name, true);
 				switch (trk.target) {

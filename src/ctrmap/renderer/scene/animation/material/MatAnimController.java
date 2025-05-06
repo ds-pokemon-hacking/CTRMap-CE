@@ -53,6 +53,9 @@ public class MatAnimController extends AbstractAnimationController {
 	}
 
 	public void makeAnimationVectors(float frame) {
+		if (anim == null) {
+			return;
+		}
 		for (MatAnimBoneTransform bt : ((MaterialAnimation) anim).bones) {
 			for (int i = 0; i < 3; i++) {
 				MaterialAnimationFrame frm = bt.getFrame(frame, i, true);
