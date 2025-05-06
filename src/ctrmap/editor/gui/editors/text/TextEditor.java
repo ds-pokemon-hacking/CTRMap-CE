@@ -65,7 +65,7 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 			public void stateChanged(ChangeEvent e) {
 				if (ldr != null) {
 					int tf = textFileBox.getValueCB();
-					loadTextFileData(tf);
+					loadTextFileData(tf, sectionBox.getSelectedIndex());
 				}
 			}
 		});
@@ -364,15 +364,14 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 
 	private void forceMsgFileLoadFromArc(int fileIdx) {
 		textFileBox.setValue(fileIdx);
-		loadTextFileData(fileIdx);
+		loadTextFileData(fileIdx, -1);
 	}
 
 	public void save() {
 		if (changed) {
 			if (loadedExternal) {
 				loadedExternalFile.store();
-			}
-			else {
+			} else {
 				ldr.writeCurrentTextFile();
 			}
 			changed = false;
@@ -421,13 +420,20 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 		if (messages != null) {
 			loadMessages(messages);
 		}
+		populateSectionSelector();
+		applySelectedSection(ldr.getSelectedSection());
 
 		loaded = true;
 	}
 
-	private void loadTextFileData(int fileNo) {
+	private void loadTextFileData(int fileNo, int sectionNo) {
+		if (fileNo < 0 || fileNo >= ldr.getTextArcMax()) {
+			return;
+		}
 		loadTextFileData(() -> {
 			ldr.setTextFile(fileNo);
+			ldr.selectSection(sectionNo);
+
 			loadedExternal = false;
 			loadedExternalFile = null;
 			loadedFileId = fileNo;
@@ -436,14 +442,48 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 		});
 	}
 
+	private void loadSection(int sectionNo) {
+		loadTextFileData(() -> {
+			ldr.selectSection(sectionNo);
+			applySelectedSection(sectionNo);
+
+			return ldr.getMsgStrs();
+		});
+	}
+
 	private void loadTextFileData(ITextArcType fileType, FSFile externalFile) {
 		loadTextFileData(() -> {
-			ITextFile textFile = ldr.loadFromFile(fileType, externalFile);
-			loadedExternal = true;
-			loadedExternalFile = textFile;
+			ldr.setTextFile(fileType, externalFile);
 			
-			return textFile.getLines();
+			loadedExternal = true;
+			loadedExternalFile = ldr.getCurrentFile();
+
+			return ldr.getMsgStrs();
 		});
+	}
+
+	private void populateSectionSelector() {
+		sectionBox.removeAllItems();
+		if (ldr.getSections().isEmpty()) {
+			sectionBox.addItem("Default");
+		} else {
+			for (int i = 0; i < ldr.getSections().size(); i++) {
+				sectionBox.addItem(String.valueOf(i));
+			}
+		}
+	}
+
+	private void applySelectedSection(int sectionIndex) {
+		int selIndex = sectionIndex;
+		if (sectionIndex == -1) {
+			sectionBox.setEnabled(false);
+			selIndex = sectionBox.getItemCount() - 1;
+		} else {
+			sectionBox.setEnabled(true);
+		}
+		if (selIndex != sectionBox.getSelectedIndex()) {
+			sectionBox.setSelectedIndex(selIndex);
+		}
 	}
 
 	private DefaultTableModel getTableModel() {
@@ -485,6 +525,8 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
         btnDumpAllText = new javax.swing.JButton();
         textArcTypeBox = new javax.swing.JComboBox<>();
         btnOpenExternalFile = new javax.swing.JButton();
+        sectionLabel = new javax.swing.JLabel();
+        sectionBox = new javax.swing.JComboBox<>();
 
         fancySep.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
@@ -564,6 +606,14 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
             }
         });
 
+        sectionLabel.setText("Section:");
+
+        sectionBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sectionBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -583,8 +633,12 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(textFileBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAddTextFile, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(textTableSP, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+                        .addComponent(btnAddTextFile, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sectionLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sectionBox, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(textTableSP, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnDumpAllText)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -596,18 +650,21 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(11, 11, 11)
+                .addGap(8, 8, 8)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(textArcSep)
                     .addComponent(textFileBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(textFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnAddTextFile, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnAddTextFile, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addComponent(sectionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(sectionBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(fancySep)
                     .addComponent(textArcTypeBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tableSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textTableSP, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                .addComponent(textTableSP, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
@@ -637,23 +694,21 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 		if (target != null) {
 			int max = ldr.getTextArcMax();
 
-			PrintStream out = new PrintStream(target.getNativeOutputStream());
+			try (PrintStream out = new PrintStream(target.getNativeOutputStream())) {
+				for (int i = 0; i < max; i++) {
+					out.println("----- TEXT FILE " + i + "-----");
+					ldr.setTextFile(i);
 
-			for (int i = 0; i < max; i++) {
-				out.println("----- TEXT FILE " + i + "-----");
-				ldr.setTextFile(i);
-
-				int line = 0;
-				for (MsgStr str : ldr.getMsgStrs()) {
-					out.print(line);
-					out.print(": ");
-					out.println(TextFileFriendlizer.getFriendlized(str.value));
-					line++;
+					int line = 0;
+					for (MsgStr str : ldr.getMsgStrs()) {
+						out.print(line);
+						out.print(": ");
+						out.println(TextFileFriendlizer.getFriendlized(str.value));
+						line++;
+					}
+					out.println();
 				}
-				out.println();
 			}
-
-			out.close();
 		}
     }//GEN-LAST:event_btnDumpAllTextActionPerformed
 
@@ -685,6 +740,12 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 		}
     }//GEN-LAST:event_btnOpenExternalFileActionPerformed
 
+    private void sectionBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sectionBoxActionPerformed
+		if (ldr != null && loaded) {
+			loadSection(sectionBox.getSelectedIndex());
+		}
+    }//GEN-LAST:event_sectionBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddTextFile;
@@ -692,6 +753,8 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
     private javax.swing.JButton btnOpenExternalFile;
     private javax.swing.JButton btnSave;
     private javax.swing.JSeparator fancySep;
+    private javax.swing.JComboBox<String> sectionBox;
+    private javax.swing.JLabel sectionLabel;
     private javax.swing.JSeparator tableSeparator;
     private javax.swing.ButtonGroup textArcGroup;
     private javax.swing.JSeparator textArcSep;

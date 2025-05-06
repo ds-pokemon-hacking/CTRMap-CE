@@ -100,7 +100,7 @@ public class GFMessageStream extends DataIOStream {
 			sb.append(var.toString());
 		} else if (specialCharacters.containsKey(c)) {
 			sb.append(specialCharacters.get(c));
-		} else if ((c & 0xFF00) == 0xFF00) {
+		} else if ((c & 0xFFF0) == 0xFFF0) { //unicode "specials"
 			sb.append(hnd.handleUnrecognizedCharacter(c, this));
 		} else {
 			sb.append(c);

@@ -36,8 +36,12 @@
                       <Component id="textFileBox" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnAddTextFile" min="-2" pref="40" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="sectionLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="sectionBox" min="-2" pref="75" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="textTableSP" alignment="0" pref="643" max="32767" attributes="0"/>
+                  <Component id="textTableSP" alignment="0" pref="675" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btnDumpAllText" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -53,19 +57,23 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="textArcSep" alignment="0" max="32767" attributes="0"/>
                   <Component id="textFileBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="textFileLabel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="btnAddTextFile" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                      <Component id="btnAddTextFile" alignment="3" pref="0" max="32767" attributes="0"/>
+                      <Component id="sectionLabel" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                      <Component id="sectionBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="fancySep" max="32767" attributes="0"/>
                   <Component id="textArcTypeBox" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="tableSeparator" min="-2" pref="5" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="textTableSP" pref="333" max="32767" attributes="0"/>
+              <Component id="textTableSP" pref="336" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btnSave" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -191,6 +199,19 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnOpenExternalFileActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="sectionLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Section:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="sectionBox">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sectionBoxActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

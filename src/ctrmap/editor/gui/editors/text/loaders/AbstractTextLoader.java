@@ -10,22 +10,24 @@ import xstandard.fs.FSFile;
 public abstract class AbstractTextLoader {
 
 	protected ITextArcType arcType = null;
-	protected int textFileId;
+	protected int textFileId = -1;
 	protected CTRMap cm;
+
 	private ITextFile file;
+	private int subFileIndex = -1;
 
 	public abstract MessageHandler getMsgHandler();
-	
+
 	public abstract ITextArcType[] getArcTypes();
-	
+
 	public abstract boolean checkCanExpandTextArc(ITextArcType type);
-	
+
 	public abstract boolean isArcTypeNSFW(ITextArcType type);
 
 	public abstract int getTextArcMax(ITextArcType textArcType);
-	
+
 	public abstract FSFile getFileFromArc(ITextArcType type, int fileIndex);
-	
+
 	public abstract ITextFile loadFromFile(ITextArcType fileType, FSFile file);
 
 	public ITextFile loadFromArc(ITextArcType type, int file) {
@@ -53,6 +55,28 @@ public abstract class AbstractTextLoader {
 		this.textFileId = file;
 		//backwards compatibility
 		this.file = loadFromArc(arcType, file);
+		selectSection(subFileIndex);
+	}
+	
+	public void setTextFile(ITextArcType fileType, FSFile file) {
+		this.file = loadFromFile(fileType, file);
+		selectSection(subFileIndex);
+	}
+	
+	public void selectSection(int sectionIndex) {
+		List<? extends ITextFile> subFiles = file.getSubFiles();
+		if (subFiles.isEmpty()) {
+			subFileIndex = -1;
+		} else {
+			if (sectionIndex < 0 || sectionIndex >= subFiles.size()) {
+				sectionIndex = 0;
+			}
+			subFileIndex = sectionIndex;
+		}
+	}
+	
+	public int getSelectedSection() {
+		return subFileIndex;
 	}
 
 	@Deprecated
@@ -63,25 +87,36 @@ public abstract class AbstractTextLoader {
 	public int getTextArcMax() {
 		return getTextArcMax(arcType);
 	}
-	
-	public ITextFile getCurrentFile() {
+
+	public List<? extends ITextFile> getSections() {
+		return file.getSubFiles();
+	}
+
+	private ITextFile getSectionOrFile() {
+		if (subFileIndex != -1) {
+			return getSections().get(subFileIndex);
+		}
 		return file;
 	}
 
+	public ITextFile getCurrentFile() {
+		return getSectionOrFile();
+	}
+
 	public List<MsgStr> getMsgStrs() {
-		return file.getLines();
+		return getCurrentFile().getLines();
 	}
 
 	public void insertTextLineContent(int line, String data) {
-		file.insertFriendlyLine(line, data);
+		getCurrentFile().insertFriendlyLine(line, data);
 	}
 
 	public boolean setTextLineContent(int line, String data) {
-		return file.setFriendlyLine(line, data);
+		return getCurrentFile().setFriendlyLine(line, data);
 	}
 
 	public void removeTextLine(int line) {
-		file.removeLine(line);
+		getCurrentFile().removeLine(line);
 	}
 
 	public void writeCurrentTextFile() {
@@ -93,5 +128,4 @@ public abstract class AbstractTextLoader {
 	public String getBlankLineText(int lineNo) {
 		return getMsgHandler().getBlankLineText(lineNo);
 	}
-
 }

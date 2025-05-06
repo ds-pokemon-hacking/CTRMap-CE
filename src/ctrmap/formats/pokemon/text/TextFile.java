@@ -1,5 +1,6 @@
 package ctrmap.formats.pokemon.text;
 
+import java.util.ArrayList;
 import xstandard.fs.FSFile;
 import xstandard.util.ListenableList;
 import java.util.List;
@@ -9,40 +10,39 @@ import java.util.List;
  */
 public class TextFile implements ITextFile {
 
-	public final ListenableList<MsgStr> lines;
-	
+	public final List<TextFileSection> sections;
+	public TextFileSection mainSection;
+	public ListenableList<MsgStr> lines;
+
 	public boolean enableEncryption;
 
 	private FSFile source;
 	private MessageHandler hnd;
 
 	public TextFile(FSFile f, MessageHandler handler) {
-		lines = new ListenableList<>();
+		sections = new ArrayList<>();
 		if (f.exists()) {
 			TextFileRW.readLinesForFile(this, f, handler);
 		}
+		if (sections.isEmpty()) {
+			sections.add(new TextFileSection(this));
+		}
+		setMainSection(0);
 		source = f;
 		hnd = handler;
 	}
 
-	public void addListener(ListenableList.ElementChangeListener l) {
-		lines.addListener(l);
+	public void setMainSection(int index) {
+		mainSection = sections.get(index);
+		lines = mainSection.lines;
 	}
 
 	public String[] getLinesArray() {
-		String[] l = new String[lines.size()];
-		for (int i = 0; i < l.length; i++){
-			l[i] = getLine(i);
-		}
-		return l;
+		return mainSection.getLinesArray();
 	}
-	
+
 	public String[] getFriendlyLinesArray() {
-		String[] l = new String[lines.size()];
-		for (int i = 0; i < l.length; i++){
-			l[i] = TextFileFriendlizer.getFriendlized(getLine(i));
-		}
-		return l;
+		return mainSection.getFriendlyLinesArray();
 	}
 
 	@Override
@@ -51,102 +51,71 @@ public class TextFile implements ITextFile {
 			source.setBytes(TextFileRW.getBytesForFile(this, hnd));
 		}
 	}
-	
-	public MessageHandler getHandler(){
+
+	public MessageHandler getHandler() {
 		return hnd;
 	}
-	
-	public int indexOfOrDefault(String v, int defValue){
-		int idx = indexOf(v);
-		if (idx != -1){
-			return idx;
-		}
-		return defValue;
+
+	public int indexOfOrDefault(String v, int defValue) {
+		return mainSection.indexOfOrDefault(v, defValue);
 	}
-	
-	public int indexOf(String v){
-		for (int i = 0; i < lines.size(); i++){
-			if (lines.get(i).value.equals(v)){
-				return i;
-			}
-		}
-		return -1;
+
+	public int indexOf(String v) {
+		return mainSection.indexOf(v);
 	}
 
 	public String getOrDefault(int num, String defaultV) {
-		if (num < 0 || num >= lines.size()) {
-			return defaultV;
-		}
-		return lines.get(num).value;
+		return mainSection.getOrDefault(num, defaultV);
 	}
 
 	public String getLine(int num) {
-		return getOrDefault(num, null);
+		return mainSection.getLine(num);
 	}
 
 	@Override
 	public void removeLine(int num) {
-		if (num >= 0 && num < lines.size()) {
-			lines.remove(num);
+		for (TextFileSection section : sections) {
+			section.removeLine(num);
 		}
 	}
-	
+
 	public int getLineCount() {
-		return lines.size();
-	}
-	
-	private boolean getShouldEncode9BitLine(int line){
-		int lidx = line - 1;
-		if (lidx < 0){
-			lidx = line + 1;
-		}
-		if (lidx < lines.size()){
-			return lines.get(lidx).encode9Bit;
-		}
-		return false;
+		return mainSection.getLineCount();
 	}
 
 	public int appendLine(String value) {
-		int idx = lines.size();
-		lines.add(new MsgStr(value, getShouldEncode9BitLine(idx)));
-		return idx;
+		return mainSection.appendLine(value);
 	}
-	
+
 	@Override
 	public boolean setFriendlyLine(int num, String value) {
-		return setLine(num, TextFileFriendlizer.getDefriendlized(value));
+		return mainSection.setFriendlyLine(num, value);
 	}
-	
+
 	@Override
 	public void insertFriendlyLine(int num, String value) {
-		insertLine(num, TextFileFriendlizer.getDefriendlized(value));
-	}
-	
-	public void insertLine(int num, String value) {
-		if (num < lines.size()) {
-			lines.add(num, new MsgStr(value, getShouldEncode9BitLine(num)));
+		for (TextFileSection section : sections) {
+			section.insertFriendlyLine(num, value);
 		}
-		else {
-			setLine(num, value);
+	}
+
+	public void insertLine(int num, String value) {
+		for (TextFileSection section : sections) {
+			section.insertLine(num, value);
 		}
 	}
 
 	public boolean setLine(int num, String value) {
-		boolean changed = false;
-		while (num >= lines.size()) {
-			appendLine(hnd.getBlankLineText(lines.size()));
-			changed = true;
-		}
-		if (!value.equals(lines.get(num).value)){
-			changed = true;
-		}
-		lines.get(num).value = value;
-		lines.fireModifyEvent(lines.get(num));
-		return changed;
+		return mainSection.setLine(num, value);
 	}
 
 	@Override
 	public List<MsgStr> getLines() {
-		return lines;
+		return mainSection.getLines();
+	}
+
+	@Override
+	public List<TextFileSection> getSubFiles() {
+		return sections;
 	}
 }
