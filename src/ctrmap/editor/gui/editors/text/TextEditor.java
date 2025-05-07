@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.swing.CellEditor;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -178,6 +179,7 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 						appendRowItem.setText("Add row");
 						tableResizeMenu.add(appendRowItem);
 					}
+					addSectionSyncMenuItem(tableResizeMenu);
 
 					tableResizeMenu.show(textTable, e.getX(), e.getY());
 				}
@@ -191,6 +193,7 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 					tableResizeMenu.removeAll();
 					appendRowItem.setText("Add row");
 					tableResizeMenu.add(appendRowItem);
+					addSectionSyncMenuItem(tableResizeMenu);
 
 					tableResizeMenu.show(textTableSP, e.getX(), e.getY());
 				}
@@ -198,6 +201,17 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 		});
 
 		write9BitColumn = textTable.getColumnModel().getColumn(COL_WRITE9BIT);
+	}
+
+	private void addSectionSyncMenuItem(JPopupMenu menu) {
+		if (ldr.getSections().size() > 1) {
+			JCheckBoxMenuItem item = new JCheckBoxMenuItem("Synchronize across sections");
+			item.setSelected(ldr.isSyncSections());
+			item.addActionListener((e) -> {
+				ldr.setSyncSections(item.isSelected());
+			});
+			menu.add(item);
+		}
 	}
 
 	public void load(CTRMap cm) {
@@ -411,9 +425,14 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 	}
 
 	private void loadTextFileData(Supplier<List<MsgStr>> loader) {
+		loadTextFileData(loader, true);
+	}
+	
+	private void loadTextFileData(Supplier<List<MsgStr>> loader, boolean save) {
 		cancelEditing();
-		save();
-		changed = false;
+		if (save) {
+			save();
+		}
 		loaded = false;
 
 		List<MsgStr> messages = loader.get();
@@ -448,13 +467,13 @@ public class TextEditor extends javax.swing.JPanel implements AbstractTabbedEdit
 			applySelectedSection(sectionNo);
 
 			return ldr.getMsgStrs();
-		});
+		}, false);
 	}
 
 	private void loadTextFileData(ITextArcType fileType, FSFile externalFile) {
 		loadTextFileData(() -> {
 			ldr.setTextFile(fileType, externalFile);
-			
+
 			loadedExternal = true;
 			loadedExternalFile = ldr.getCurrentFile();
 

@@ -15,6 +15,8 @@ public abstract class AbstractTextLoader {
 
 	private ITextFile file;
 	private int subFileIndex = -1;
+	
+	private boolean syncSections = true;
 
 	public abstract MessageHandler getMsgHandler();
 
@@ -36,6 +38,14 @@ public abstract class AbstractTextLoader {
 
 	public AbstractTextLoader(CTRMap cm2) {
 		cm = cm2;
+	}
+	
+	public boolean isSyncSections() {
+		return syncSections;
+	}
+	
+	public void setSyncSections(boolean syncSections) {
+		this.syncSections = syncSections;
 	}
 
 	public boolean setArcType(ITextArcType t) {
@@ -98,6 +108,13 @@ public abstract class AbstractTextLoader {
 		}
 		return file;
 	}
+	
+	private ITextFile getSectionOrSyncedFile() {
+		if (syncSections) {
+			return file;
+		}
+		return getSectionOrFile();
+	}
 
 	public ITextFile getCurrentFile() {
 		return getSectionOrFile();
@@ -108,7 +125,7 @@ public abstract class AbstractTextLoader {
 	}
 
 	public void insertTextLineContent(int line, String data) {
-		getCurrentFile().insertFriendlyLine(line, data);
+		getSectionOrSyncedFile().insertFriendlyLine(line, data);
 	}
 
 	public boolean setTextLineContent(int line, String data) {
@@ -116,7 +133,7 @@ public abstract class AbstractTextLoader {
 	}
 
 	public void removeTextLine(int line) {
-		getCurrentFile().removeLine(line);
+		getSectionOrSyncedFile().removeLine(line);
 	}
 
 	public void writeCurrentTextFile() {
