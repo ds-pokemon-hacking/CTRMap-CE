@@ -33,17 +33,18 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.MessageDigest;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 import java.util.*;
 
 import ctrmap.formats.ntr.rom.OverlayTable;
 import ctrmap.formats.ntr.rom.srl.newlib.SRLHeader;
+import java.security.GeneralSecurityException;
 
 import xstandard.gui.file.ExtensionFilter;
 import xstandard.io.util.IOUtils;
 import xstandard.crypto.Modcrypt;
+import xstandard.io.base.impl.access.MemoryStream;
 
 /**
  * Nintendo DS ROM extractor/rebuilder.
@@ -185,7 +186,13 @@ public class NDSROM {
 			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
 			ByteArrayInputStream is = new ByteArrayInputStream(area1);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
+                        
+			try {
+				modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
+			} catch (GeneralSecurityException e) {
+				throw new RuntimeException("Failed to decrypt DSi binaries", e);
+			}
+			
 			area1 = os.toByteArray();
 			System.arraycopy(area1, 0, arm9iBinary, 0, 0x4000);
 
@@ -197,8 +204,8 @@ public class NDSROM {
 			// ARM7i binary. This should be unencrypted (area2 offset seems to always be 0)
 			FSFile arm7i = dirPath.getAnyChild("arm7i.bin");
 			if(!arm7i.exists()) {
-					rom.seek(header.arm7iRomOffset);
-					arm7i.setBytes(rom.readBytes(header.arm7iSize));
+				rom.seek(header.arm7iRomOffset);
+				arm7i.setBytes(rom.readBytes(header.arm7iSize));
 			}
 		}
 
@@ -399,11 +406,11 @@ public class NDSROM {
 			header.digestSectorHashtableOffset = out.getPosition();
 
 			// Build the TWL digest region from arm9i and arm7i
-			ByteArrayOutputStream regionTwl = new ByteArrayOutputStream();
+			MemoryStream regionTwl = new MemoryStream();
 			regionTwl.write(arm9ibin.getBytes());
-			regionTwl = alignByteArrayStream(regionTwl, TWL_BINARY_ALIGNMENT, (byte)0xFF);
+            regionTwl.pad(TWL_BINARY_ALIGNMENT, 0xFF);
 			regionTwl.write(arm7ibin.getBytes());
-                        regionTwl = alignByteArrayStream(regionTwl, 0x400, (byte)0xFF);
+            regionTwl.pad(0x400, 0xFF);
 
 			// Read NTR digest region
 			out.seek(header.digestNtrRegionOffset);
@@ -414,21 +421,25 @@ public class NDSROM {
 			digestRegion.write(regionNtr);
 			digestRegion.write(regionTwl.toByteArray());
                                                
-			ByteArrayOutputStream digestSector = new ByteArrayOutputStream();
-			digestSector.write(generateDigest(digestRegion.toByteArray(), header.digestSectorSize, true));
-			digestSector = alignByteArrayStream(digestSector, CARTRIDGE_OPTIMAL_ALIGNMENT, (byte)0x00);
-			
-			byte[] digestBlock = generateDigest(digestSector.toByteArray(), header.digestBlockSectorCount * 20, false);
-			
-			// Write digest sector and block
-			out.seek(header.digestSectorHashtableOffset);
-			out.write(digestSector.toByteArray());
-                        out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0x00);
-                        header.digestSectorHashtableLength = out.getPosition() - header.digestSectorHashtableOffset;
+			try {
+				MemoryStream digestSector = new MemoryStream();
+				digestSector.write(generateDigest(digestRegion.toByteArray(), header.digestSectorSize, true));
+				digestSector.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0x00);
 
-			header.digestBlockHashtableOffset = out.getPosition();
-			out.write(digestBlock);
-			header.digestBlockHashtableLength = out.getPosition() - header.digestBlockHashtableOffset;
+				byte[] digestBlock = generateDigest(digestSector.toByteArray(), header.digestBlockSectorCount * 20, false);
+
+				// Write digest sector and block
+				out.seek(header.digestSectorHashtableOffset);
+				out.write(digestSector.toByteArray());
+				out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0x00);
+				header.digestSectorHashtableLength = out.getPosition() - header.digestSectorHashtableOffset;
+
+				header.digestBlockHashtableOffset = out.getPosition();
+				out.write(digestBlock);
+				header.digestBlockHashtableLength = out.getPosition() - header.digestBlockHashtableOffset;
+			} catch (GeneralSecurityException e) {
+				throw new RuntimeException("Generation of DSi digest sectors failed", e);
+			}
 		}
 
 		// Align NTR rom end to 0x200
@@ -480,8 +491,8 @@ public class NDSROM {
 				out.seek(header.arm9RomOffset + 0x4000);
 				hmac.update(out.readBytes(header.arm9Size - 0x4000));
 				header.hmacArm9WithoutSecureArea = hmac.doFinal();
-			} catch (NoSuchAlgorithmException | InvalidKeyException e) {
-				throw new RuntimeException(e);
+			} catch (GeneralSecurityException e) {
+				throw new RuntimeException("Generation of DSi HMAC entries failed", e);
 			}
 
 			// Modcrypt (area 1)
@@ -493,7 +504,13 @@ public class NDSROM {
 			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
             ByteArrayInputStream is = new ByteArrayInputStream(area1);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
+			
+			try {
+				modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
+			} catch (GeneralSecurityException e) {
+				throw new RuntimeException("Failed to encrypt DSi binaries", e);
+			}
+                        
 			area1 = os.toByteArray();
 			System.arraycopy(area1, 0, arm9i, 0, 0x4000);
 
@@ -540,7 +557,7 @@ public class NDSROM {
                 // Tinke DSi writes the plaintext PKCS#1 data here, so we can do the same.
                 header.headerRsaSignature = headerDigest;
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Failed to generate the DSi header signature", e);
             }
 
             // Write changes to rom
@@ -563,37 +580,24 @@ public class NDSROM {
 		) != null;
 	}
 
-	private static byte[] generateDigest(byte[] data, int sectorSize, boolean truncate) throws IOException {
-		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-		
-			Mac mac = Mac.getInstance(TWL_HMAC_FUNCTION);
-			SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
-			mac.init(secretKey);
+	private static byte[] generateDigest(byte[] data, int sectorSize, boolean truncate) throws IOException, GeneralSecurityException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-			int nSectors = truncate ? data.length / sectorSize : (data.length + sectorSize - 1) / sectorSize;
+		Mac mac = Mac.getInstance(TWL_HMAC_FUNCTION);
+		SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
+		mac.init(secretKey);
 
-			for (int i = 0; i < nSectors; i++) {
+		int nSectors = truncate ? data.length / sectorSize : (data.length + sectorSize - 1) / sectorSize;
+
+		for (int i = 0; i < nSectors; i++) {
 				int start = i * sectorSize;
 				int len = Math.min(data.length - start, sectorSize);
 				mac.update(data, start, len);
 				byte[] digest = mac.doFinal();
 
 				out.write(digest);
-			}
-
-			return out.toByteArray();
-		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
-			throw new RuntimeException(e);
 		}
-	}
-        
-	private static ByteArrayOutputStream alignByteArrayStream(ByteArrayOutputStream arrayStream, int boundary, byte paddingByte) throws IOException {
-		int mod = arrayStream.size() % boundary;
-		if(mod != 0)
-			for(int i = 0; i < boundary - mod; ++i)
-				arrayStream.write(paddingByte);
-		
-		return arrayStream;
+
+		return out.toByteArray();
 	}
 }
