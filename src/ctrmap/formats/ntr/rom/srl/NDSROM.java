@@ -61,7 +61,7 @@ public class NDSROM {
 	static final int CARTRIDGE_OPTIMAL_ALIGNMENT = 512;
 	static final int TWL_BINARY_ALIGNMENT = 0x1000;
         
-        static final String TWL_HMAC_FUNCTION = "HmacSHA1";
+    static final String TWL_HMAC_FUNCTION = "HmacSHA1";
 	static final byte[] TWL_HMAC_KEY = HexFormat.of().parseHex("2106C0DEBA98CE3FA692E39D46F2ED0176E3CC08562363FACAD4ECDF9A6278348F6D633CFE22CA9220889723D2CFAEC232678DFECA836498ACFD3E3787465824");
 
 	/**
@@ -168,8 +168,8 @@ public class NDSROM {
 			// TWL Blowfish table (needed by DSi system menu, depends only on gamecode)
 			FSFile twlBlowfishTbl = dirPath.getChild("twlblowfishtable.bin");
 			if(!twlBlowfishTbl.exists()) {
-					rom.seek(header.arm9iRomOffset - 0x3000);
-					twlBlowfishTbl.setBytes(rom.readBytes(0x3000));
+				rom.seek(header.arm9iRomOffset - 0x3000);
+				twlBlowfishTbl.setBytes(rom.readBytes(0x3000));
 			}
 
 			// ARM9i binary. Decrypt now so that it can be encrypted back when writing.
@@ -391,12 +391,11 @@ public class NDSROM {
 		out.seek(fimgOffset);
 		NitroDirectory.repackFileTree(out, fimgOffset, dataDir, root);
                 
-                
-            // DSi-enhanced games: generate and write digest sector/block
-            if(header.unitCode == 2) {
-                        out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
+		// DSi-enhanced games: generate and write digest sector/block
+		if(header.unitCode == 2) {
+			out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
-                        header.digestNtrRegionLength = out.getPosition() - header.digestNtrRegionOffset;
+			header.digestNtrRegionLength = out.getPosition() - header.digestNtrRegionOffset;
 			header.digestSectorHashtableOffset = out.getPosition();
 
 			// Build the TWL digest region from arm9i and arm7i
@@ -415,11 +414,11 @@ public class NDSROM {
 			digestRegion.write(regionNtr);
 			digestRegion.write(regionTwl.toByteArray());
                                                
-                        ByteArrayOutputStream digestSector = new ByteArrayOutputStream();
-                        digestSector.write(generateDigest(digestRegion.toByteArray(), header.digestSectorSize, true));
-                        digestSector = alignByteArrayStream(digestSector, CARTRIDGE_OPTIMAL_ALIGNMENT, (byte)0x00);
-                        
-                        byte[] digestBlock = generateDigest(digestSector.toByteArray(), header.digestBlockSectorCount * 20, false);
+			ByteArrayOutputStream digestSector = new ByteArrayOutputStream();
+			digestSector.write(generateDigest(digestRegion.toByteArray(), header.digestSectorSize, true));
+			digestSector = alignByteArrayStream(digestSector, CARTRIDGE_OPTIMAL_ALIGNMENT, (byte)0x00);
+			
+			byte[] digestBlock = generateDigest(digestSector.toByteArray(), header.digestBlockSectorCount * 20, false);
 			
 			// Write digest sector and block
 			out.seek(header.digestSectorHashtableOffset);
@@ -433,10 +432,10 @@ public class NDSROM {
 		}
 
 		// Align NTR rom end to 0x200
-                out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
-                header.usedRomSize = out.getPosition();
-                
-                // Align TWL region to 0x80000
+		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
+		header.usedRomSize = out.getPosition();
+		
+		// Align TWL region to 0x80000
 		out.pad(1 << 0x13, 0xFF);
 		int size = out.getPosition();
 		header.ntrRomRegionEnd = size >> 0x13;
@@ -444,57 +443,55 @@ public class NDSROM {
 
 		// DSi-enhanced games: HMACs, Modcrypt, write TWL region to rom
 		if(header.unitCode == 2) {
-			// HMACs
-
 			try {
-                            Mac hmac = Mac.getInstance(TWL_HMAC_FUNCTION);
-                            SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
-                            hmac.init(secretKey);
+				Mac hmac = Mac.getInstance(TWL_HMAC_FUNCTION);
+				SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
+				hmac.init(secretKey);
 
-                            // arm9 with secure area
-                            out.seek(header.arm9RomOffset);
-                            hmac.update(out.readBytes(header.arm9Size));
-                            header.hmacArm9WithSecureArea = hmac.doFinal();
+				// arm9 with secure area
+				out.seek(header.arm9RomOffset);
+				hmac.update(out.readBytes(header.arm9Size));
+				header.hmacArm9WithSecureArea = hmac.doFinal();
 
-                            // arm7
-                            out.seek(header.arm7RomOffset);
-                            hmac.update(out.readBytes(header.arm7Size));
-                            header.hmacArm7 = hmac.doFinal();
+				// arm7
+				out.seek(header.arm7RomOffset);
+				hmac.update(out.readBytes(header.arm7Size));
+				header.hmacArm7 = hmac.doFinal();
 
-                            // digest master
-                            out.seek(header.digestBlockHashtableOffset);
-                            hmac.update(out.readBytes(header.digestBlockHashtableLength));
-                            header.hmacDigestMaster = hmac.doFinal();
+				// digest master
+				out.seek(header.digestBlockHashtableOffset);
+				hmac.update(out.readBytes(header.digestBlockHashtableLength));
+				header.hmacDigestMaster = hmac.doFinal();
 
-                            // icon
-                            out.seek(header.iconOffset);
-                            hmac.update(out.readBytes(header.iconSize));
-                            header.hmacIconTitle = hmac.doFinal();
+				// icon
+				out.seek(header.iconOffset);
+				hmac.update(out.readBytes(header.iconSize));
+				header.hmacIconTitle = hmac.doFinal();
 
-                            // arm9i
-                            hmac.update(arm9ibin.getBytes());
-                            header.hmacArm9i = hmac.doFinal();
+				// arm9i
+				hmac.update(arm9ibin.getBytes());
+				header.hmacArm9i = hmac.doFinal();
 
-                            // arm7i
-                            hmac.update(arm7ibin.getBytes());
-                            header.hmacArm7i = hmac.doFinal();
+				// arm7i
+				hmac.update(arm7ibin.getBytes());
+				header.hmacArm7i = hmac.doFinal();
 
-                            // arm9 without secure area
-                            out.seek(header.arm9RomOffset + 0x4000);
-                            hmac.update(out.readBytes(header.arm9Size - 0x4000));
-                            header.hmacArm9WithoutSecureArea = hmac.doFinal();
-                        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-                            throw new RuntimeException(e);
-                        }
+				// arm9 without secure area
+				out.seek(header.arm9RomOffset + 0x4000);
+				hmac.update(out.readBytes(header.arm9Size - 0x4000));
+				header.hmacArm9WithoutSecureArea = hmac.doFinal();
+			} catch (NoSuchAlgorithmException | InvalidKeyException e) {
+				throw new RuntimeException(e);
+			}
 
 			// Modcrypt (area 1)
 
 			byte[] arm9i = arm9ibin.getBytes();
-                        byte[] area1 = new byte[0x4000];
+            byte[] area1 = new byte[0x4000];
 			System.arraycopy(arm9i, 0, area1, 0, 0x4000);
 
 			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
-                        ByteArrayInputStream is = new ByteArrayInputStream(area1);
+            ByteArrayInputStream is = new ByteArrayInputStream(area1);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
 			area1 = os.toByteArray();
@@ -505,15 +502,15 @@ public class NDSROM {
 			out.seek(header.twlRomRegionStart << 0x13);
 			out.write(twlBlowfishTbl.getBytes());
 			header.arm9iRomOffset = out.getPosition();
-                        header.digestTwlRegionOffset = header.arm9iRomOffset;
-                        header.modcryptArea1Offset = header.arm9iRomOffset;
+            header.digestTwlRegionOffset = header.arm9iRomOffset;
+            header.modcryptArea1Offset = header.arm9iRomOffset;
 			out.write(arm9i);
 			out.pad(TWL_BINARY_ALIGNMENT, 0xFF);
 			header.arm7iRomOffset = out.getPosition();
 			out.write(arm7ibin.getBytes());
 			out.pad(0x400, 0xFF);
 			header.totalUsedRomSize = out.getPosition();
-                        header.digestTwlRegionLength = out.getPosition() - header.digestTwlRegionOffset;
+            header.digestTwlRegionLength = out.getPosition() - header.digestTwlRegionOffset;
 			out.pad(TWL_BINARY_ALIGNMENT, 0xFF);
 		}
 
@@ -567,36 +564,36 @@ public class NDSROM {
 	}
 
 	private static byte[] generateDigest(byte[] data, int sectorSize, boolean truncate) throws IOException {
-            try {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-            
-                Mac mac = Mac.getInstance(TWL_HMAC_FUNCTION);
-                SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
-                mac.init(secretKey);
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+		
+			Mac mac = Mac.getInstance(TWL_HMAC_FUNCTION);
+			SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
+			mac.init(secretKey);
 
-                int nSectors = truncate ? data.length / sectorSize : (data.length + sectorSize - 1) / sectorSize;
+			int nSectors = truncate ? data.length / sectorSize : (data.length + sectorSize - 1) / sectorSize;
 
-                for (int i = 0; i < nSectors; i++) {
-                    int start = i * sectorSize;
-                    int len = Math.min(data.length - start, sectorSize);
-                    mac.update(data, start, len);
-                    byte[] digest = mac.doFinal();
+			for (int i = 0; i < nSectors; i++) {
+				int start = i * sectorSize;
+				int len = Math.min(data.length - start, sectorSize);
+				mac.update(data, start, len);
+				byte[] digest = mac.doFinal();
 
-                    out.write(digest);
-                }
+				out.write(digest);
+			}
 
-                return out.toByteArray();
-            } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-                throw new RuntimeException(e);
-            }
+			return out.toByteArray();
+		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
+			throw new RuntimeException(e);
+		}
 	}
         
-        private static ByteArrayOutputStream alignByteArrayStream(ByteArrayOutputStream arrayStream, int boundary, byte paddingByte) throws IOException {
-            int mod = arrayStream.size() % boundary;
-            if(mod != 0)
-                for(int i = 0; i < boundary - mod; ++i)
-                    arrayStream.write(paddingByte);
-            
-            return arrayStream;
-        }
+	private static ByteArrayOutputStream alignByteArrayStream(ByteArrayOutputStream arrayStream, int boundary, byte paddingByte) throws IOException {
+		int mod = arrayStream.size() % boundary;
+		if(mod != 0)
+			for(int i = 0; i < boundary - mod; ++i)
+				arrayStream.write(paddingByte);
+		
+		return arrayStream;
+	}
 }
