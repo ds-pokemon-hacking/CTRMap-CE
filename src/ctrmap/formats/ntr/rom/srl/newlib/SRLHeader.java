@@ -65,7 +65,7 @@ public class SRLHeader {
 	public int headerSize;
 
 	public int arm9ParamTableOffset;
-    public int arm7ParamTableOffset;
+	public int arm7ParamTableOffset;
 
 	/**
 	 * These two fields are a doozy. Pokemon White 2 refuses to read files past this point, so they both have
@@ -87,7 +87,7 @@ public class SRLHeader {
 
 	public int reserved4;
 	public byte[] reserved5;
-        
+
 	// TWL extended header fields
 	
 	public byte[] globalWramSlotSettings;
@@ -260,7 +260,7 @@ public class SRLHeader {
 		usedRomSize = rom.readInt();
 		headerSize = rom.readInt();
 		arm9ParamTableOffset = rom.readInt();
-        arm7ParamTableOffset = rom.readInt();
+		arm7ParamTableOffset = rom.readInt();
 		ntrRomRegionEnd = rom.readUnsignedShort();
 		twlRomRegionStart = rom.readUnsignedShort();
 		reserved2 = rom.readBytes(0x1C);
@@ -273,7 +273,7 @@ public class SRLHeader {
 		debugRamAddress = rom.readInt();
 		reserved4 = rom.readInt();
 		reserved5 = rom.readBytes(0x10);
-                
+
 		// TWL extended header
 		
 		globalWramSlotSettings = rom.readBytes(20);
@@ -307,7 +307,7 @@ public class SRLHeader {
 		digestSectorHashtableOffset = rom.readInt();
 		digestSectorHashtableLength = rom.readInt();
 		digestBlockHashtableOffset = rom.readInt();
-        digestBlockHashtableLength = rom.readInt();
+		digestBlockHashtableLength = rom.readInt();
 		digestSectorSize = rom.readInt();
 		digestBlockSectorCount = rom.readInt();
 
@@ -530,7 +530,7 @@ public class SRLHeader {
 		rom.write(reserved9);
 
 		rom.write(reserved10);
-		
+
 		rom.write(headerRsaSignature);
 	}
 

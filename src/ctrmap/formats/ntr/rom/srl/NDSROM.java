@@ -61,8 +61,8 @@ public class NDSROM {
 	
 	static final int CARTRIDGE_OPTIMAL_ALIGNMENT = 512;
 	static final int TWL_BINARY_ALIGNMENT = 0x1000;
-        
-    static final String TWL_HMAC_FUNCTION = "HmacSHA1";
+
+	static final String TWL_HMAC_FUNCTION = "HmacSHA1";
 	static final byte[] TWL_HMAC_KEY = HexFormat.of().parseHex("2106C0DEBA98CE3FA692E39D46F2ED0176E3CC08562363FACAD4ECDF9A6278348F6D633CFE22CA9220889723D2CFAEC232678DFECA836498ACFD3E3787465824");
 
 	/**
@@ -161,7 +161,7 @@ public class NDSROM {
 			int iconSize = (header.iconSize != 0) ? header.iconSize : 0x840;
 			banner.setBytes(rom.readBytes(iconSize));
 		}
-                
+
 		// DSi enhanced games
 		
 		if(header.unitCode == 2) {
@@ -186,7 +186,7 @@ public class NDSROM {
 			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
 			ByteArrayInputStream is = new ByteArrayInputStream(area1);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
-                        
+
 			try {
 				modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
 			} catch (GeneralSecurityException e) {
@@ -397,7 +397,7 @@ public class NDSROM {
 		// The actual files
 		out.seek(fimgOffset);
 		NitroDirectory.repackFileTree(out, fimgOffset, dataDir, root);
-                
+
 		// DSi-enhanced games: generate and write digest sector/block
 		if(header.unitCode == 2) {
 			out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
@@ -408,9 +408,9 @@ public class NDSROM {
 			// Build the TWL digest region from arm9i and arm7i
 			MemoryStream regionTwl = new MemoryStream();
 			regionTwl.write(arm9ibin.getBytes());
-            regionTwl.pad(TWL_BINARY_ALIGNMENT, 0xFF);
+			regionTwl.pad(TWL_BINARY_ALIGNMENT, 0xFF);
 			regionTwl.write(arm7ibin.getBytes());
-            regionTwl.pad(0x400, 0xFF);
+			regionTwl.pad(0x400, 0xFF);
 
 			// Read NTR digest region
 			out.seek(header.digestNtrRegionOffset);
@@ -420,7 +420,7 @@ public class NDSROM {
 			ByteArrayOutputStream digestRegion = new ByteArrayOutputStream();
 			digestRegion.write(regionNtr);
 			digestRegion.write(regionTwl.toByteArray());
-                                               
+
 			try {
 				MemoryStream digestSector = new MemoryStream();
 				digestSector.write(generateDigest(digestRegion.toByteArray(), header.digestSectorSize, true));
@@ -498,11 +498,11 @@ public class NDSROM {
 			// Modcrypt (area 1)
 
 			byte[] arm9i = arm9ibin.getBytes();
-            byte[] area1 = new byte[0x4000];
+			byte[] area1 = new byte[0x4000];
 			System.arraycopy(arm9i, 0, area1, 0, 0x4000);
 
 			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
-            ByteArrayInputStream is = new ByteArrayInputStream(area1);
+			ByteArrayInputStream is = new ByteArrayInputStream(area1);
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			
 			try {
@@ -510,7 +510,7 @@ public class NDSROM {
 			} catch (GeneralSecurityException e) {
 				throw new RuntimeException("Failed to encrypt DSi binaries", e);
 			}
-                        
+
 			area1 = os.toByteArray();
 			System.arraycopy(area1, 0, arm9i, 0, 0x4000);
 
@@ -519,15 +519,15 @@ public class NDSROM {
 			out.seek(header.twlRomRegionStart << 0x13);
 			out.write(twlBlowfishTbl.getBytes());
 			header.arm9iRomOffset = out.getPosition();
-            header.digestTwlRegionOffset = header.arm9iRomOffset;
-            header.modcryptArea1Offset = header.arm9iRomOffset;
+			header.digestTwlRegionOffset = header.arm9iRomOffset;
+			header.modcryptArea1Offset = header.arm9iRomOffset;
 			out.write(arm9i);
 			out.pad(TWL_BINARY_ALIGNMENT, 0xFF);
 			header.arm7iRomOffset = out.getPosition();
 			out.write(arm7ibin.getBytes());
 			out.pad(0x400, 0xFF);
 			header.totalUsedRomSize = out.getPosition();
-            header.digestTwlRegionLength = out.getPosition() - header.digestTwlRegionOffset;
+			header.digestTwlRegionLength = out.getPosition() - header.digestTwlRegionOffset;
 			out.pad(TWL_BINARY_ALIGNMENT, 0xFF);
 		}
 
@@ -538,31 +538,31 @@ public class NDSROM {
 		
 		// Recalculate header signature
 		if(header.unitCode == 2) {
-            try {
-                MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-                out.seek(0);
-                byte[] headerBytes = out.readBytes(0xE00);
-                sha1.update(headerBytes);
-                byte[] sha1Digest = sha1.digest();
+			try {
+				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+				out.seek(0);
+				byte[] headerBytes = out.readBytes(0xE00);
+				sha1.update(headerBytes);
+				byte[] sha1Digest = sha1.digest();
 
-                // Header digest (PKCS#1 v1.5 without ASN.1 encoding)
-                byte[] headerDigest = new byte[128];
-                headerDigest[0] = 0x00;
-                headerDigest[1] = 0x01;
-                Arrays.fill(headerDigest, 2, 107, (byte)0xFF);
-                headerDigest[107] = 0x00;
-                System.arraycopy(sha1Digest, 0, headerDigest, 108, sha1Digest.length);
+				// Header digest (PKCS#1 v1.5 without ASN.1 encoding)
+				byte[] headerDigest = new byte[128];
+				headerDigest[0] = 0x00;
+				headerDigest[1] = 0x01;
+				Arrays.fill(headerDigest, 2, 107, (byte)0xFF);
+				headerDigest[107] = 0x00;
+				System.arraycopy(sha1Digest, 0, headerDigest, 108, sha1Digest.length);
 
-                // We don't know the retail private key, so we can't actually encrypt it.
-                // Tinke DSi writes the plaintext PKCS#1 data here, so we can do the same.
-                header.headerRsaSignature = headerDigest;
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Failed to generate the DSi header signature", e);
-            }
+				// We don't know the retail private key, so we can't actually encrypt it.
+				// Tinke DSi writes the plaintext PKCS#1 data here, so we can do the same.
+				header.headerRsaSignature = headerDigest;
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException("Failed to generate the DSi header signature", e);
+			}
 
-            // Write changes to rom
-            out.seek(0);
-		    header.write(out);
+			// Write changes to rom
+			out.seek(0);
+			header.write(out);
 		}
 
 		out.close();
