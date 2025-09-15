@@ -1,14 +1,17 @@
 package ctrmap.formats.ntr.rom.srl.newlib;
 
 import ctrmap.formats.ntr.rom.OverlayTable;
+import xstandard.crypto.Modcrypt;
 import xstandard.fs.FSFile;
 import xstandard.fs.FSUtil;
 import xstandard.fs.accessors.FSFileAdapter;
 import xstandard.fs.accessors.InlineFile;
+import xstandard.fs.accessors.MemoryFile;
 import xstandard.io.base.impl.ext.data.DataIOStream;
 import xstandard.text.FormattingUtils;
 import xstandard.util.ArraysEx;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,9 @@ public class NDSROMFile extends FSFileAdapter {
 
 	private OverlayTable ovl9;
 	private OverlayTable ovl7;
+
+	private MemoryFile arm9i;
+	private MemoryFile arm7i;
 
 	public NDSROMFile(FSFile fsf) {
 		super(fsf);
@@ -53,7 +59,10 @@ public class NDSROMFile extends FSFileAdapter {
 	
 	@Override
 	public List<? extends FSFile> listFiles() {
-		return ArraysEx.asList(headerBin, bannerBin, data, y7, y9, overlay7, overlay);
+		if (header.unitCode == 2)
+			return ArraysEx.asList(headerBin, bannerBin, data, y7, y9, overlay7, overlay, arm9i, arm7i);
+		else
+			return ArraysEx.asList(headerBin, bannerBin, data, y7, y9, overlay7, overlay);
 	}
 
 	private void loadROM(FSFile romFile) {
@@ -86,6 +95,10 @@ public class NDSROMFile extends FSFileAdapter {
 
 			readOverlays(ovl9, overlay, fsFileInfo);
 			readOverlays(ovl7, overlay7, fsFileInfo);
+
+            if(header.unitCode == 2) {
+				readDsiBinaries(io);
+			}
 		} catch (IOException ex) {
 			Logger.getLogger(NDSROMFile.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -144,5 +157,26 @@ public class NDSROMFile extends FSFileAdapter {
 
 	private boolean fntIdentIsDirectory(int ident) {
 		return (ident & 0x80) != 0;
+	}
+
+	private void readDsiBinaries(DataIOStream io) throws IOException {
+		io.seek(header.modcryptArea1Offset);
+		byte[] area1 = io.readBytes(header.modcryptArea1Size);
+		Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
+	
+		try {
+			area1 = modcrypt.transform(area1);
+		} catch (GeneralSecurityException e) {
+			throw new RuntimeException("Failed to decrypt DSi binaries", e);
+		}
+		
+		io.seek(header.arm9iRomOffset);
+		byte[] arm9iBin = io.readBytes(header.arm9iSize);
+		System.arraycopy(area1, 0, arm9iBin, 0, area1.length);
+		arm9i = new MemoryFile("arm9i.bin", arm9iBin);
+
+		io.seek(header.arm7iRomOffset);
+		byte[] arm7iBin = io.readBytes(header.arm7iSize);
+		arm7i = new MemoryFile("arm7i.bin", arm7iBin);
 	}
 }
