@@ -59,9 +59,10 @@ public class NDSROMFile extends FSFileAdapter {
 	private void loadROM(FSFile romFile) {
 		try (DataIOStream io = romFile.getDataIOStream()) {
 			header = new SRLHeader(io);
-
-			headerBin = new InlineFile(this, "header.bin", 0, 0x200);
-			bannerBin = new InlineFile(this, "banner.bin", header.iconOffset, header.iconOffset + 0x840);
+                        
+                        int iconSize = header.iconSize > 0 ? header.iconSize : 0x840;
+			headerBin = new InlineFile(this, "header.bin", 0, 0x1000);
+			bannerBin = new InlineFile(this, "banner.bin", header.iconOffset, header.iconOffset + iconSize);
 
 			Map<Integer, NTRFSFileInfo> fsFileInfo = new HashMap<>();
 
