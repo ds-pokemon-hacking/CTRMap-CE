@@ -55,12 +55,22 @@ import xstandard.io.base.impl.access.MemoryStream;
 public class NDSROM {
 
 	public static final ExtensionFilter EXTENSION_FILTER = new ExtensionFilter("Nintendo DS ROM", "*.nds");
-	
-	static final int CARTRIDGE_OPTIMAL_ALIGNMENT = 512;
-	static final int TWL_BINARY_ALIGNMENT = 0x1000;
 
-	static final String TWL_HMAC_FUNCTION = "HmacSHA1";
-	static final byte[] TWL_HMAC_KEY = HexFormat.of().parseHex("2106C0DEBA98CE3FA692E39D46F2ED0176E3CC08562363FACAD4ECDF9A6278348F6D633CFE22CA9220889723D2CFAEC232678DFECA836498ACFD3E3787465824");
+	static final int CARTRIDGE_OPTIMAL_ALIGNMENT = 512;
+	
+	private static final int TWL_BINARY_ALIGNMENT = 0x1000;
+
+	private static final String TWL_HMAC_FUNCTION = "HmacSHA1";
+	private static final byte[] TWL_HMAC_KEY = new byte[]{
+		(byte) 0x21, (byte) 0x06, (byte) 0xC0, (byte) 0xDE, (byte) 0xBA, (byte) 0x98, (byte) 0xCE, (byte) 0x3F,
+		(byte) 0xA6, (byte) 0x92, (byte) 0xE3, (byte) 0x9D, (byte) 0x46, (byte) 0xF2, (byte) 0xED, (byte) 0x01,
+		(byte) 0x76, (byte) 0xE3, (byte) 0xCC, (byte) 0x08, (byte) 0x56, (byte) 0x23, (byte) 0x63, (byte) 0xFA,
+		(byte) 0xCA, (byte) 0xD4, (byte) 0xEC, (byte) 0xDF, (byte) 0x9A, (byte) 0x62, (byte) 0x78, (byte) 0x34,
+		(byte) 0x8F, (byte) 0x6D, (byte) 0x63, (byte) 0x3C, (byte) 0xFE, (byte) 0x22, (byte) 0xCA, (byte) 0x92,
+		(byte) 0x20, (byte) 0x88, (byte) 0x97, (byte) 0x23, (byte) 0xD2, (byte) 0xCF, (byte) 0xAE, (byte) 0xC2,
+		(byte) 0x32, (byte) 0x67, (byte) 0x8D, (byte) 0xFE, (byte) 0xCA, (byte) 0x83, (byte) 0x64, (byte) 0x98,
+		(byte) 0xAC, (byte) 0xFD, (byte) 0x3E, (byte) 0x37, (byte) 0x87, (byte) 0x46, (byte) 0x58, (byte) 0x24
+	};
 
 	/**
 	 * Extract the entire NDSROM in the host file system
@@ -155,17 +165,15 @@ public class NDSROM {
 		FSFile banner = dirPath.getChild("banner.bin");
 		if (!banner.exists()) {
 			rom.seek(header.iconOffset);
-			int iconSize = (header.iconSize != 0) ? header.iconSize : 0x840;
-			banner.setBytes(rom.readBytes(iconSize));
+			banner.setBytes(rom.readBytes(header.getIconSize()));
 		}
 
 		// DSi enhanced games
-		
-		if(header.isTwlExtended()) {
-			
+		if (header.isTwlExtended()) {
+
 			// TWL Blowfish table (needed by DSi system menu, depends only on gamecode)
 			FSFile twlBlowfishTbl = dirPath.getChild("twlblowfishtable.bin");
-			if(!twlBlowfishTbl.exists()) {
+			if (!twlBlowfishTbl.exists()) {
 				rom.seek(header.arm9iRomOffset - 0x3000);
 				twlBlowfishTbl.setBytes(rom.readBytes(0x3000));
 			}
@@ -181,13 +189,13 @@ public class NDSROM {
 			System.arraycopy(area1, 0, arm9iBinary, 0, 0x4000);
 
 			FSFile arm9i = dirPath.getChild("arm9i.bin");
-			if(!arm9i.exists()) {
+			if (!arm9i.exists()) {
 				arm9i.setBytes(arm9iBinary);
 			}
 
 			// ARM7i binary. This should be unencrypted (area2 offset seems to always be 0)
 			FSFile arm7i = dirPath.getAnyChild("arm7i.bin");
-			if(!arm7i.exists()) {
+			if (!arm7i.exists()) {
 				rom.seek(header.arm7iRomOffset);
 				arm7i.setBytes(rom.readBytes(header.arm7iSize));
 			}
@@ -235,7 +243,7 @@ public class NDSROM {
 		FSFile headerBin = sourceDir.getChild("header.bin");
 		FSFile banner = sourceDir.getChild("banner.bin");
 		// DSi-enhanced only
-        FSFile twlBlowfishTbl = sourceDir.getChild("twlblowfishtable.bin");
+		FSFile twlBlowfishTbl = sourceDir.getChild("twlblowfishtable.bin");
 		FSFile arm9ibin = sourceDir.getChild("arm9i.bin");
 		FSFile arm7ibin = sourceDir.getChild("arm7i.bin");
 
@@ -270,14 +278,12 @@ public class NDSROM {
 		);
 
 		// Reading the header template, but skipping the section for now as we have to adjust some values
-		DataIOStream reader = headerBin.getDataIOStream();
-		SRLHeader header = new SRLHeader(reader);
+		SRLHeader header = new SRLHeader(headerBin);
 
-		if(header.isTwlExtended()) {
+		if (header.isTwlExtended()) {
 			ensureFilesExist(arm9ibin, arm7bin, twlBlowfishTbl);
 		}
 
-		reader.close();
 		out.write(new byte[0x4000]); //allocate
 
 		byte[] temp;
@@ -302,8 +308,7 @@ public class NDSROM {
 			System.out.println("Writing ARM9 compression footer 0x" + Integer.toHexString(arm9DecompressRamAddress));
 			arm9editor.skipBytes(-8);
 			arm9editor.writeInt(arm9DecompressRamAddress);
-		}
-		else {
+		} else {
 			System.out.println("ARM9 bootstrap header not found!");
 		}
 		arm9editor.close();
@@ -383,7 +388,7 @@ public class NDSROM {
 		NitroDirectory.repackFileTree(out, fimgOffset, dataDir, root);
 
 		// DSi-enhanced games: generate and write digest sector/block
-		if(header.isTwlExtended()) {
+		if (header.isTwlExtended()) {
 			out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 			header.digestNtrRegionLength = out.getPosition() - header.digestNtrRegionOffset;
@@ -429,7 +434,7 @@ public class NDSROM {
 		// Align NTR rom end to 0x200
 		out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 		header.usedRomSize = out.getPosition();
-		
+
 		// Align TWL region to 0x80000
 		out.pad(1 << 0x13, 0xFF);
 		int size = out.getPosition();
@@ -437,7 +442,7 @@ public class NDSROM {
 		header.twlRomRegionStart = size >> 0x13;
 
 		// DSi-enhanced games: HMACs, Modcrypt, write TWL region to rom
-		if(header.isTwlExtended()) {
+		if (header.isTwlExtended()) {
 			try {
 				Mac hmac = Mac.getInstance(TWL_HMAC_FUNCTION);
 				SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
@@ -480,13 +485,12 @@ public class NDSROM {
 			}
 
 			// Modcrypt (area 1)
-
 			byte[] arm9i = arm9ibin.getBytes();
 			byte[] area1 = new byte[0x4000];
 			System.arraycopy(arm9i, 0, area1, 0, 0x4000);
 
 			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
-			
+
 			try {
 				area1 = modcrypt.transform(area1);
 			} catch (GeneralSecurityException e) {
@@ -496,7 +500,6 @@ public class NDSROM {
 			System.arraycopy(area1, 0, arm9i, 0, 0x4000);
 
 			// Write TWL region to rom
-
 			out.seek(header.twlRomRegionStart << 0x13);
 			out.write(twlBlowfishTbl.getBytes());
 			header.arm9iRomOffset = out.getPosition();
@@ -516,9 +519,9 @@ public class NDSROM {
 		header.updateHeaderChecksum(out);
 		out.seek(0);
 		header.write(out);
-		
+
 		// Recalculate header signature
-		if(header.isTwlExtended()) {
+		if (header.isTwlExtended()) {
 			try {
 				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 				out.seek(0);
@@ -530,7 +533,7 @@ public class NDSROM {
 				byte[] headerDigest = new byte[128];
 				headerDigest[0] = 0x00;
 				headerDigest[1] = 0x01;
-				Arrays.fill(headerDigest, 2, 107, (byte)0xFF);
+				Arrays.fill(headerDigest, 2, 107, (byte) 0xFF);
 				headerDigest[107] = 0x00;
 				System.arraycopy(sha1Digest, 0, headerDigest, 108, sha1Digest.length);
 
@@ -585,12 +588,12 @@ public class NDSROM {
 		int nSectors = truncate ? data.length / sectorSize : (data.length + sectorSize - 1) / sectorSize;
 
 		for (int i = 0; i < nSectors; i++) {
-				int start = i * sectorSize;
-				int len = Math.min(data.length - start, sectorSize);
-				mac.update(data, start, len);
-				byte[] digest = mac.doFinal();
+			int start = i * sectorSize;
+			int len = Math.min(data.length - start, sectorSize);
+			mac.update(data, start, len);
+			byte[] digest = mac.doFinal();
 
-				out.write(digest);
+			out.write(digest);
 		}
 
 		return out.toByteArray();

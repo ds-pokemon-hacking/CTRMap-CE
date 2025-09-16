@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SRLHeader {
+
 	private static final int UNIT_CODE_TWL = 2;
 
 	public String gameTitle;
@@ -90,31 +91,30 @@ public class SRLHeader {
 	public byte[] reserved5;
 
 	// TWL extended header fields
-	
 	public byte[] globalWramSlotSettings;
 	public byte[] localWramAreasArm9;
 	public byte[] localWramAreasArm7;
 	public byte[] globalWramWriteProtect;
 	public byte globalWramCnt;
-	
+
 	public int regionFlags;
 	public int accessControl;
 	public int arm7scfgExt7Settings;
-	
+
 	public byte[] reserved6;
-	
+
 	public byte twlApplicationFlags;
-	
+
 	public int arm9iRomOffset;
 	public int reserved7;
 	public int arm9iRamLoadAddress;
 	public int arm9iSize;
-	
-	public int arm7iRomOffset;        
+
+	public int arm7iRomOffset;
 	public int deviceListArm7RamAddress;
 	public int arm7iRamLoadAddress;
 	public int arm7iSize;
-	
+
 	public int digestNtrRegionOffset;
 	public int digestNtrRegionLength;
 	public int digestTwlRegionOffset;
@@ -125,41 +125,41 @@ public class SRLHeader {
 	public int digestBlockHashtableLength;
 	public int digestSectorSize;
 	public int digestBlockSectorCount;
-	
+
 	public int iconSize;
-	
+
 	public byte shared2File0000Size;
 	public byte shared2File0001Size;
-	
+
 	public byte eulaVersion;
 	public byte useRatings;
-	
+
 	public int totalUsedRomSize;    // Including TWL region
-	
+
 	public byte shared2File0002Size;
 	public byte shared2File0003Size;
 	public byte shared2File0004Size;
 	public byte shared2File0005Size;
-	
+
 	public int arm9iParamTableOffset;
 	public int arm7iParamTableOffset;
-	
+
 	public int modcryptArea1Offset;
 	public int modcryptArea1Size;
 	public int modcryptArea2Offset;
 	public int modcryptArea2Size;
-	
+
 	public String titleIdEmagcode;
 	public byte titleIdFileType;
 	public byte titleIdFixedZero1;
 	public byte titleIdFixedThree;
 	public byte titleIdFixedZero2;
-	
+
 	public int dsiwarePublicFilesize;
 	public int dsiwarePrivateFilesize;
-	
+
 	public byte[] reserved8;
-	
+
 	public byte parentalControlAgeRatingCero;
 	public byte parentalControlAgeRatingEsrb;
 	public byte parentalControlAgeRatingReserved1;
@@ -171,51 +171,51 @@ public class SRLHeader {
 	public byte parentalControlAgeRatingAgcb;
 	public byte parentalControlAgeRatingGrb;
 	public byte[] parentalControlAgeRatingReserved3;
-	
+
 	// TWL SHA-1 HMAC table
-	
 	public byte[] hmacArm9WithSecureArea;
 	public byte[] hmacArm7;
 	public byte[] hmacDigestMaster;
 	public byte[] hmacIconTitle;    // Also in non-whitelisted NDS titles
 	public byte[] hmacArm9i;
 	public byte[] hmacArm7i;
-	
+
 	public byte[] hmacNdsReserved1; // HMAC for 0x160-byte header + ARM9 + ARM7 in non-whitelisted NDS titles
 	public byte[] hmacNdsReserved2; // HMAC for ARM9 overlay table + NitroFAT in non-whitelisted NDS titles
-	
-	public byte[] hmacArm9WithoutSecureArea;
-	
-	// Empty reserved area (zero-filled)
 
+	public byte[] hmacArm9WithoutSecureArea;
+
+	// Empty reserved area (zero-filled)
 	public byte[] reserved9;
-	
+
 	// Reserved for passing arguments in debug roms. Empty in retail
-	
 	public byte[] reserved10;
-	
+
 	// Extended header RSA signature
-	
 	public byte[] headerRsaSignature;   // Commits to [0x00 - 0xDFF]
-	
-	/**
+
+	/*
 	 * Beyond this point there is a region [0x1000 - 0x3FFF] which is not loaded by BIOS.
 	 * ndstool -se will place some test patterns here, and also some Blowfish tables
 	 * which are derived from the game code. This data is also found in debug .SRL files.
 	 * In dumps of retail cartridges this is zero-filled, so we can just ignore it.
 	 */
-
+	
+	private boolean isLegacyHeader = false;
+	
 	public SRLHeader(FSFile fsf) throws IOException {
-		DataInputEx in = fsf.getDataInputStream();
-		read(in);
-		in.close();
+		try (DataInputEx in = fsf.getDataInputStream()) {
+			read(in, fsf.length());
+		}
 	}
 
 	public SRLHeader(DataInputEx rom) throws IOException {
-		read(rom);
+		read(rom, -1);
 	}
 
-	private void read(DataInputEx rom) throws IOException {
+	private void read(DataInputEx rom, int maxIn) throws IOException {
+		isLegacyHeader = maxIn != -1 && maxIn <= 0x200;
+		
 		gameTitle = rom.readPaddedString(12);
 		gameCode = rom.readPaddedString(4);
 		makerCode = rom.readPaddedString(2);
@@ -276,31 +276,30 @@ public class SRLHeader {
 		reserved5 = rom.readBytes(0x10);
 
 		// TWL extended header
-		
 		globalWramSlotSettings = rom.readBytes(20);
 		localWramAreasArm9 = rom.readBytes(12);
 		localWramAreasArm7 = rom.readBytes(12);
 		globalWramWriteProtect = rom.readBytes(3);
 		globalWramCnt = rom.readByte();
-		
+
 		regionFlags = rom.readInt();
 		accessControl = rom.readInt();
 		arm7scfgExt7Settings = rom.readInt();
-		
+
 		reserved6 = rom.readBytes(3);
-		
+
 		twlApplicationFlags = rom.readByte();
-		
+
 		arm9iRomOffset = rom.readInt();
 		reserved7 = rom.readInt();
 		arm9iRamLoadAddress = rom.readInt();
 		arm9iSize = rom.readInt();
-		
+
 		arm7iRomOffset = rom.readInt();
 		deviceListArm7RamAddress = rom.readInt();
 		arm7iRamLoadAddress = rom.readInt();
 		arm7iSize = rom.readInt();
-		
+
 		digestNtrRegionOffset = rom.readInt();
 		digestNtrRegionLength = rom.readInt();
 		digestTwlRegionOffset = rom.readInt();
@@ -309,6 +308,12 @@ public class SRLHeader {
 		digestSectorHashtableLength = rom.readInt();
 		digestBlockHashtableOffset = rom.readInt();
 		digestBlockHashtableLength = rom.readInt();
+
+		if (isLegacyHeader) {
+			//earlier tool versions and non-DSi compatible extractors do not have data beyond this point
+			return;
+		}
+
 		digestSectorSize = rom.readInt();
 		digestBlockSectorCount = rom.readInt();
 
@@ -436,7 +441,6 @@ public class SRLHeader {
 		rom.write(reserved5);
 
 		// TWL extended header
-
 		rom.write(globalWramSlotSettings);
 		rom.write(localWramAreasArm9);
 		rom.write(localWramAreasArm7);
@@ -469,6 +473,11 @@ public class SRLHeader {
 		rom.writeInt(digestSectorHashtableLength);
 		rom.writeInt(digestBlockHashtableOffset);
 		rom.writeInt(digestBlockHashtableLength);
+		
+		if (isLegacyHeader) {
+			return;
+		}
+		
 		rom.writeInt(digestSectorSize);
 		rom.writeInt(digestBlockSectorCount);
 
@@ -549,6 +558,12 @@ public class SRLHeader {
 	}
 
 	public boolean isTwlExtended() {
-		return unitCode == UNIT_CODE_TWL;
+		//some tools may have created a ROM with DSi unit code, but NDS header
+		//on such ROMs, the totalUsedRomSize will be zeroed out
+		return unitCode == UNIT_CODE_TWL && !isLegacyHeader && (totalUsedRomSize > 0);
+	}
+	
+	public int getIconSize() {
+		return iconSize != 0 ? iconSize : 0x840;
 	}
 }
