@@ -422,7 +422,7 @@ public class NDSROM {
 				out.write(digestBlock);
 				header.digestBlockHashtableLength = out.getPosition() - header.digestBlockHashtableOffset;
 			} catch (GeneralSecurityException e) {
-				throw new RuntimeException("Generation of DSi digest sectors failed", e);
+				throw new IOException("Generation of DSi digest sectors failed", e);
 			}
 		}
 
@@ -476,7 +476,7 @@ public class NDSROM {
 				hmac.update(out.readBytes(header.arm9Size - 0x4000));
 				header.hmacArm9WithoutSecureArea = hmac.doFinal();
 			} catch (GeneralSecurityException e) {
-				throw new RuntimeException("Generation of DSi HMAC entries failed", e);
+				throw new IOException("Generation of DSi HMAC entries failed", e);
 			}
 
 			// Modcrypt (area 1)
@@ -490,7 +490,7 @@ public class NDSROM {
 			try {
 				area1 = modcrypt.transform(area1);
 			} catch (GeneralSecurityException e) {
-				throw new RuntimeException("Failed to encrypt DSi binaries", e);
+				throw new IOException("Failed to encrypt DSi binaries", e);
 			}
 
 			System.arraycopy(area1, 0, arm9i, 0, 0x4000);
@@ -538,7 +538,7 @@ public class NDSROM {
 				// Tinke DSi writes the plaintext PKCS#1 data here, so we can do the same.
 				header.headerRsaSignature = headerDigest;
 			} catch (NoSuchAlgorithmException e) {
-				throw new RuntimeException("Failed to generate the DSi header signature", e);
+				throw new IOException("Failed to generate the DSi header signature", e);
 			}
 
 			// Write changes to rom
