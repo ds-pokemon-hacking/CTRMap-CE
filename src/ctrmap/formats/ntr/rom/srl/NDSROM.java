@@ -18,10 +18,7 @@
  */
 package ctrmap.formats.ntr.rom.srl;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 
 import ctrmap.formats.ntr.common.compression.BLZ;
 import xstandard.fs.FSFile;
@@ -164,7 +161,7 @@ public class NDSROM {
 
 		// DSi enhanced games
 		
-		if(header.unitCode == 2) {
+		if(header.isTwlExtended()) {
 			
 			// TWL Blowfish table (needed by DSi system menu, depends only on gamecode)
 			FSFile twlBlowfishTbl = dirPath.getChild("twlblowfishtable.bin");
@@ -177,23 +174,10 @@ public class NDSROM {
 			// This is needed because editing ARM9 changes the IV for Modcrypt.
 			rom.seek(header.arm9iRomOffset);
 			byte[] arm9iBinary = rom.readBytes(header.arm9iSize);
-			
+			byte[] area1 = readDecryptedArea1(header, rom);
+
 			// Technically area1 can be anywhere, but it seems to always be in the first 0x4000 bytes of arm9i.
 			// If any exceptions are found this should be updated to handle them.
-			byte[] area1 = new byte[0x4000];
-			System.arraycopy(arm9iBinary, 0, area1, 0, 0x4000);
-
-			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
-			ByteArrayInputStream is = new ByteArrayInputStream(area1);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-			try {
-				modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
-			} catch (GeneralSecurityException e) {
-				throw new RuntimeException("Failed to decrypt DSi binaries", e);
-			}
-			
-			area1 = os.toByteArray();
 			System.arraycopy(area1, 0, arm9iBinary, 0, 0x4000);
 
 			FSFile arm9i = dirPath.getChild("arm9i.bin");
@@ -289,7 +273,7 @@ public class NDSROM {
 		DataIOStream reader = headerBin.getDataIOStream();
 		SRLHeader header = new SRLHeader(reader);
 
-		if(header.unitCode == 2) {
+		if(header.isTwlExtended()) {
 			ensureFilesExist(arm9ibin, arm7bin, twlBlowfishTbl);
 		}
 
@@ -399,7 +383,7 @@ public class NDSROM {
 		NitroDirectory.repackFileTree(out, fimgOffset, dataDir, root);
 
 		// DSi-enhanced games: generate and write digest sector/block
-		if(header.unitCode == 2) {
+		if(header.isTwlExtended()) {
 			out.pad(CARTRIDGE_OPTIMAL_ALIGNMENT, 0xFF);
 
 			header.digestNtrRegionLength = out.getPosition() - header.digestNtrRegionOffset;
@@ -453,7 +437,7 @@ public class NDSROM {
 		header.twlRomRegionStart = size >> 0x13;
 
 		// DSi-enhanced games: HMACs, Modcrypt, write TWL region to rom
-		if(header.unitCode == 2) {
+		if(header.isTwlExtended()) {
 			try {
 				Mac hmac = Mac.getInstance(TWL_HMAC_FUNCTION);
 				SecretKeySpec secretKey = new SecretKeySpec(TWL_HMAC_KEY, TWL_HMAC_FUNCTION);
@@ -502,16 +486,13 @@ public class NDSROM {
 			System.arraycopy(arm9i, 0, area1, 0, 0x4000);
 
 			Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
-			ByteArrayInputStream is = new ByteArrayInputStream(area1);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			
 			try {
-				modcrypt.transform(new DataInputStream(is), new DataOutputStream(os));
+				area1 = modcrypt.transform(area1);
 			} catch (GeneralSecurityException e) {
 				throw new RuntimeException("Failed to encrypt DSi binaries", e);
 			}
 
-			area1 = os.toByteArray();
 			System.arraycopy(area1, 0, arm9i, 0, 0x4000);
 
 			// Write TWL region to rom
@@ -537,7 +518,7 @@ public class NDSROM {
 		header.write(out);
 		
 		// Recalculate header signature
-		if(header.unitCode == 2) {
+		if(header.isTwlExtended()) {
 			try {
 				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
 				out.seek(0);
@@ -566,6 +547,20 @@ public class NDSROM {
 		}
 
 		out.close();
+	}
+
+	public static byte[] readDecryptedArea1(SRLHeader header, DataIOStream rom) throws IOException {
+		rom.seek(header.modcryptArea1Offset);
+		byte[] area1 = rom.readBytes(header.modcryptArea1Size);
+		Modcrypt modcrypt = new Modcrypt(header.gameCode, header.hmacArm9i, header.hmacArm9WithSecureArea);
+
+		try {
+			area1 = modcrypt.transform(area1);
+		} catch (GeneralSecurityException e) {
+			throw new IOException("Failed to decrypt DSi binaries", e);
+		}
+
+		return area1;
 	}
 
 	private static boolean seekBootstrapHeader(DataIOStream stream) throws IOException {

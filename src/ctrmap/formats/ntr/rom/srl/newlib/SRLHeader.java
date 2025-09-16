@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SRLHeader {
+	private static final int UNIT_CODE_TWL = 2;
 
 	public String gameTitle;
 	public String gameCode;
@@ -545,5 +546,9 @@ public class SRLHeader {
 		} catch (IOException ex) {
 			Logger.getLogger(SRLHeader.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
+
+	public boolean isTwlExtended() {
+		return unitCode == UNIT_CODE_TWL;
 	}
 }
