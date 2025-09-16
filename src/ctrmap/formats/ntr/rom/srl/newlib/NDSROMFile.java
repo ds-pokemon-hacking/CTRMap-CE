@@ -1,10 +1,12 @@
 package ctrmap.formats.ntr.rom.srl.newlib;
 
 import ctrmap.formats.ntr.rom.OverlayTable;
+import ctrmap.formats.ntr.rom.srl.NDSROM;
 import xstandard.fs.FSFile;
 import xstandard.fs.FSUtil;
 import xstandard.fs.accessors.FSFileAdapter;
 import xstandard.fs.accessors.InlineFile;
+import xstandard.fs.accessors.MemoryFile;
 import xstandard.io.base.impl.ext.data.DataIOStream;
 import xstandard.text.FormattingUtils;
 import xstandard.util.ArraysEx;
@@ -30,6 +32,9 @@ public class NDSROMFile extends FSFileAdapter {
 	private OverlayTable ovl9;
 	private OverlayTable ovl7;
 
+	private MemoryFile arm9i;
+	private MemoryFile arm7i;
+
 	public NDSROMFile(FSFile fsf) {
 		super(fsf);
 		if (fsf.isFile()) {
@@ -53,15 +58,19 @@ public class NDSROMFile extends FSFileAdapter {
 	
 	@Override
 	public List<? extends FSFile> listFiles() {
-		return ArraysEx.asList(headerBin, bannerBin, data, y7, y9, overlay7, overlay);
+		if (header.isTwlExtended())
+			return ArraysEx.asList(headerBin, bannerBin, data, y7, y9, overlay7, overlay, arm9i, arm7i);
+		else
+			return ArraysEx.asList(headerBin, bannerBin, data, y7, y9, overlay7, overlay);
 	}
 
 	private void loadROM(FSFile romFile) {
 		try (DataIOStream io = romFile.getDataIOStream()) {
 			header = new SRLHeader(io);
 
-			headerBin = new InlineFile(this, "header.bin", 0, 0x200);
-			bannerBin = new InlineFile(this, "banner.bin", header.iconOffset, header.iconOffset + 0x840);
+			int iconSize = header.iconSize > 0 ? header.iconSize : 0x840;
+			headerBin = new InlineFile(this, "header.bin", 0, 0x1000);
+			bannerBin = new InlineFile(this, "banner.bin", header.iconOffset, header.iconOffset + iconSize);
 
 			Map<Integer, NTRFSFileInfo> fsFileInfo = new HashMap<>();
 
@@ -85,6 +94,10 @@ public class NDSROMFile extends FSFileAdapter {
 
 			readOverlays(ovl9, overlay, fsFileInfo);
 			readOverlays(ovl7, overlay7, fsFileInfo);
+
+            if(header.isTwlExtended()) {
+				readDsiBinaries(io);
+			}
 		} catch (IOException ex) {
 			Logger.getLogger(NDSROMFile.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -143,5 +156,18 @@ public class NDSROMFile extends FSFileAdapter {
 
 	private boolean fntIdentIsDirectory(int ident) {
 		return (ident & 0x80) != 0;
+	}
+
+	private void readDsiBinaries(DataIOStream io) throws IOException {
+		byte[] area1 = NDSROM.readDecryptedArea1(header, io);
+		
+		io.seek(header.arm9iRomOffset);
+		byte[] arm9iBin = io.readBytes(header.arm9iSize);
+		System.arraycopy(area1, 0, arm9iBin, 0, area1.length);
+		arm9i = new MemoryFile("arm9i.bin", arm9iBin);
+
+		io.seek(header.arm7iRomOffset);
+		byte[] arm7iBin = io.readBytes(header.arm7iSize);
+		arm7i = new MemoryFile("arm7i.bin", arm7iBin);
 	}
 }

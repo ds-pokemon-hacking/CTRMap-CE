@@ -24,6 +24,6 @@ hs_err_pid*
 dist/
 build/
 store/
-jogamp-all-platforms_2.4/
+jogamp-all-platforms*/
 
 nbproject/private
