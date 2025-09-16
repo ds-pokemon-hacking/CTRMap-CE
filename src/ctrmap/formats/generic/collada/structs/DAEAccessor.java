@@ -75,7 +75,8 @@ public class DAEAccessor implements DAESerializable {
 						Matrix4[] matrices = new Matrix4[count];
 						float[] srcData = (float[]) src;
 						int offs = paramIdx;
-						for (int i = 0; i < count; i++) {
+						//bugfix: 3ds max tends to write IBP matrix references, but not the actual data
+						for (int i = 0; i < Math.min(count, srcData.length / (4 * 4)); i++) {
 							matrices[i] = Matrix4.createRowMajor(Arrays.copyOfRange(srcData, offs, offs + 4 * 4));
 							offs += stride;
 						}
