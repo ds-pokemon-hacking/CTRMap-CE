@@ -6,8 +6,10 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -19,6 +21,7 @@ public class JRTLDRCore {
 	private static final List<JExtensionManager> managers = new ArrayList<>();
 	private static final List<RExtensionBase> plugins = new ArrayList<>();
 
+	private static final Set<String> suppressedPluginFileNames = new HashSet<>();
 	private static final List<String> loadedPluginPaths = new ArrayList<>();
 	private static final Map<String, JExtensionClassLoader> classloaders = new HashMap<>();
 
@@ -45,6 +48,7 @@ public class JRTLDRCore {
 	}
 
 	public static void suppressDebugPluginByFileName(String fileName) {
+		suppressedPluginFileNames.add(fileName);
 		for (String path : loadedPluginPaths) {
 			if (FSUtil.getFileName(path).equals(fileName)) {
 				unloadJarExt(new File(path));
@@ -205,7 +209,15 @@ public class JRTLDRCore {
 	}
 
 	public static void loadJarExt(File file) {
+		loadJarExt(file, false);
+	}
+	
+	public static void loadJarExt(File file, boolean ignoreSuppressed) {
 		if (file != null && file.isFile()) {
+			if (!ignoreSuppressed && suppressedPluginFileNames.contains(file.getName())) {
+				System.out.println("Suppressed debug plugin " + file);
+				return;
+			}
 			String absPath = file.getAbsolutePath();
 			if (!loadedPluginPaths.contains(absPath)) {
 				JExtensionClassLoader cldr = JJarLoader.mountFileToClasspath(linkingClassLoader, file);
