@@ -24,12 +24,15 @@ import ctrmap.renderer.backends.base.shaderengine.ShaderProgramManager;
 import ctrmap.renderer.scene.texturing.MaterialParams;
 import ctrmap.renderer.scene.texturing.formats.TextureFormatHandler;
 import ctrmap.renderer.util.generators.PlaneGenerator;
+import java.awt.Dimension;
+import java.awt.geom.Dimension2D;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import xstandard.math.vec.Vec2f;
 
 public abstract class GLBackendBase extends GLJPanel implements AbstractBackend, GLEventListener {
 
@@ -120,9 +123,19 @@ public abstract class GLBackendBase extends GLJPanel implements AbstractBackend,
 		this.settings = settings;
 	}
 	
+	public Dimension getSurfaceDimensions() {
+		return new Dimension(getSurfaceWidth(), getSurfaceHeight());
+	}
+	
+	public Vec2f getClientPixelScale() {
+		float[] result = new float[2];
+		getCurrentSurfaceScale(result);
+		return new Vec2f(result);
+	}
+	
 	@Override
 	public ViewportInfo getViewportInfo() {
-		return new ViewportInfo(getSize());
+		return new ViewportInfo(getSurfaceDimensions(), getClientPixelScale());
 	}
 
 	@Override

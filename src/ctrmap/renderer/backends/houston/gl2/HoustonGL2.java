@@ -122,7 +122,7 @@ public class HoustonGL2 extends GLBackendBase {
 		}
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fbname);
 
-		Dimension windowSize = getSize();
+		Dimension windowSize = getSurfaceDimensions();
 		boolean needsUpdateAllTex = !windowSize.equals(lastFramebufferSize);
 
 		lastFramebufferSize = windowSize;

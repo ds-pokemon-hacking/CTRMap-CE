@@ -3,17 +3,19 @@ package ctrmap.util.gui;
 import ctrmap.CTRMapResources;
 import ctrmap.formats.pokemon.WorldObject;
 import ctrmap.editor.gui.editors.common.AbstractPerspective;
+import ctrmap.renderer.backends.base.ViewportInfo;
 import xstandard.fs.FSUtil;
 import xstandard.gui.DialogUtils;
 import xstandard.util.ReflectionHash;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.io.InputStream;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
-import xstandard.res.ResourceAccess;
 
 public class CMGUI {
 
@@ -94,5 +96,17 @@ public class CMGUI {
 			}
 		}
 		return true;
+	}
+	
+	public static MouseEvent mouseEventToSurfaceSpace(MouseEvent event, ViewportInfo surfaceViewport) {
+		Point newCoords = surfaceViewport.clientToSurfacePixel(event.getPoint());
+		
+		return new MouseEvent(
+			(Component) event.getSource(), event.getID(), event.getWhen(), event.getModifiersEx(),
+			newCoords.x, newCoords.y, event.getXOnScreen(), event.getYOnScreen(),
+			event.getClickCount(),
+			event.isPopupTrigger(),
+			event.getButton()
+		);
 	}
 }

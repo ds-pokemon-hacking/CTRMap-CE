@@ -118,7 +118,7 @@ public class HoustonGL4 extends GLBackendBase {
 		}
 		gl.glBindFramebuffer(GL4.GL_FRAMEBUFFER, fbname);
 
-		Dimension windowSize = getSize();
+		Dimension windowSize = getSurfaceDimensions();
 		boolean needsUpdateAllTex = !windowSize.equals(lastFramebufferSize);
 
 		lastFramebufferSize = windowSize;

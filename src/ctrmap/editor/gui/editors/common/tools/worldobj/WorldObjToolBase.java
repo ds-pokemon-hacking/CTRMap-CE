@@ -15,6 +15,7 @@ import ctrmap.renderer.scene.texturing.MaterialParams;
 import ctrmap.renderer.scene.texturing.TexEnvStage;
 import ctrmap.renderer.scenegraph.G3DResourceInstance;
 import ctrmap.renderer.util.MaterialProcessor;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -330,6 +331,8 @@ public abstract class WorldObjToolBase extends BaseTool implements MaterialProvi
 		WorldObject selectedObj = getSelectedEditorObject();
 
 		WorldObjSelectionInfo info = new WorldObjSelectionInfo();
+		
+		Point location = e.getPoint();
 
 		//The gizmos use the old system to account for alpha testing shenanigans
 		if (selectedObj != null) {
@@ -337,18 +340,18 @@ public abstract class WorldObjToolBase extends BaseTool implements MaterialProvi
 
 			if (selectedObjAdapter != null) {
 				if (getIsGizmoEnabled()) {
-					if (ObjectSelection.getIsObjSelected(e, selectedObjAdapter.dimGizmo_TL, edt.getRenderer())) {
+					if (ObjectSelection.getIsObjSelected(location, selectedObjAdapter.dimGizmo_TL, edt.getRenderer())) {
 						info.selectedObjId = getWorldObjects().indexOf(selectedObj);
 						info.selectionType = DragStatus.DragType.GIZMO_POSDIM;
 						return info;
-					} else if (ObjectSelection.getIsObjSelected(e, selectedObjAdapter.dimGizmo_BR, edt.getRenderer())) {
+					} else if (ObjectSelection.getIsObjSelected(location, selectedObjAdapter.dimGizmo_BR, edt.getRenderer())) {
 						info.selectedObjId = getWorldObjects().indexOf(selectedObj);
 						info.selectionType = DragStatus.DragType.GIZMO_DIM;
 						return info;
 					}
 				}
 
-				if (enableLastSelected && ObjectSelection.getIsObjSelected(e, selectedObjAdapter, edt.getRenderer())) {
+				if (enableLastSelected && ObjectSelection.getIsObjSelected(location, selectedObjAdapter, edt.getRenderer())) {
 					info.selectedObjId = getWorldObjects().indexOf(selectedObj);
 					info.selectionType = DragStatus.DragType.OBJECT;
 					return info;
@@ -356,7 +359,7 @@ public abstract class WorldObjToolBase extends BaseTool implements MaterialProvi
 			}
 		}
 
-		int selectedIndex = ObjectSelection.getSelectedObjectIDSHA(e, edt.getRenderer());
+		int selectedIndex = ObjectSelection.getSelectedObjectIDSHA(location, edt.getRenderer());
 
 		if (selectedIndex != -1) {
 			int dragType = selectedIndex >>> 16;
@@ -372,25 +375,27 @@ public abstract class WorldObjToolBase extends BaseTool implements MaterialProvi
 	protected WorldObjSelectionInfo getSelectedGridObjIndex3D_Old(List<? extends WorldObject> l, MouseEvent e) {
 		WorldObjSelectionInfo info = new WorldObjSelectionInfo();
 		List<WorldObject> newCandidates = new ArrayList<>();
+		
+		Point location = e.getPoint();
 
 		int lIdx = 0;
 		for (WorldObject obj : l) {
 			WorldObjInstanceAdapter adapter = worldObjHelperMap.get(obj);
 			if (adapter != null) {
 				if (adapter.isSelected && adapter.isGizmoEnabled) {
-					if (ObjectSelection.getIsObjSelected(e, adapter.dimGizmo_TL, edt.getRenderer())) {
+					if (ObjectSelection.getIsObjSelected(location, adapter.dimGizmo_TL, edt.getRenderer())) {
 						info.selectedObjId = lIdx;
 						info.selectionType = DragStatus.DragType.GIZMO_POSDIM;
 						return info;
 					}
-					if (ObjectSelection.getIsObjSelected(e, adapter.dimGizmo_BR, edt.getRenderer())) {
+					if (ObjectSelection.getIsObjSelected(location, adapter.dimGizmo_BR, edt.getRenderer())) {
 						info.selectedObjId = lIdx;
 						info.selectionType = DragStatus.DragType.GIZMO_DIM;
 						return info;
 					}
 				}
 
-				boolean isSelected = ObjectSelection.getIsObjSelected(e, adapter, edt.getRenderer());
+				boolean isSelected = ObjectSelection.getIsObjSelected(location, adapter, edt.getRenderer());
 				if (isSelected) {
 					newCandidates.add(obj);
 				}

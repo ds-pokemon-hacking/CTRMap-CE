@@ -16,6 +16,7 @@ import ctrmap.renderer.util.texture.TextureProcessor;
 import xstandard.math.vec.Matrix4;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -58,16 +59,23 @@ public class ObjectSelection {
 		material.addShaderExtension(OBJSEL_NEW_SHADER_NAME);
 	}
 
-	public static int getObjectSelectionRenderTargetRawValue(MouseEvent evt, AbstractBackend backend) {
+	public static int getObjectSelectionRenderTargetRawValue(Point location, AbstractBackend backend) {
+		ViewportInfo vi = backend.getViewportInfo();
+		location = vi.clientToSurfacePixel(location);
+
 		ByteBuffer buf = ByteBuffer.allocate(Float.BYTES);
 		buf.order(ByteOrder.LITTLE_ENDIAN);
-		backend.readPixels(evt.getX(), backend.getViewportInfo().surfaceDimensions.height - evt.getY() - 1, 1, 1, OBJSEL_RT_NAME, buf);
+		backend.readPixels(location.x, vi.surfaceDimensions.height - location.y - 1, 1, 1, OBJSEL_RT_NAME, buf);
 
 		int intResult = buf.getInt();
 		return intResult;
 	}
+
+	public static int getSelectedObjectIDSHA(MouseEvent event, AbstractBackend backend) {
+		return getSelectedObjectIDSHA(event.getPoint(), backend);
+	}
 	
-	public static int getSelectedObjectIDSHA(MouseEvent evt, AbstractBackend backend) {
+	public static int getSelectedObjectIDSHA(Point location, AbstractBackend backend) {
 		//The ObjId output from the shader is as follows:
 		// 31 ............. 24    23    22 .... 17  16 ............. 0
 		// Object ID High bits  Active  Type flags  Object ID Low bits
@@ -75,7 +83,7 @@ public class ObjectSelection {
 		//This ensures that the component used for determining the presence of the ObjID is untampered with by the GPU
 		//However, since the alpha is blended by the alpha blend function, we can't really use its channel for storing data
 		//As a result, the high bits are unused and unusable
-		int intResult = getObjectSelectionRenderTargetRawValue(evt, backend);
+		int intResult = getObjectSelectionRenderTargetRawValue(location, backend);
 
 		if (OBJSEL_DEBUG) {
 			System.out.println("ReadPixels objsel resulted to int result " + Integer.toHexString(intResult));
@@ -107,10 +115,17 @@ public class ObjectSelection {
 		return result;
 	}
 
-	public static boolean getIsObjSelected(MouseEvent evt, G3DResourceInstance instance, AbstractBackend backend) {
+	public static boolean getIsObjSelected(MouseEvent location, G3DResourceInstance instance, AbstractBackend backend) {
+		return getIsObjSelected(location.getPoint(), instance, backend);
+	}
+	
+	public static boolean getIsObjSelected(Point location, G3DResourceInstance instance, AbstractBackend backend) {
 		if (instance.resource == null) {
 			return false;
 		}
+		
+		ViewportInfo vi = backend.getViewportInfo();
+		location = vi.clientToSurfacePixel(location);
 
 		if (OBJSEL_DEBUG) {
 			if (System.currentTimeMillis() - lastPassTime > 100 && lastPassTime != 0) {
@@ -125,12 +140,10 @@ public class ObjectSelection {
 			}
 
 			g.setColor(Color.BLUE);
-			g.drawRect(evt.getX() - 1, evt.getY() - 1, 3, 3);
+			g.drawRect(location.x - 1, location.y - 1, 3, 3);
 			g.setColor(Color.RED);
-			g.drawRect(evt.getX(), evt.getY(), 1, 1);
+			g.drawRect(location.x, location.y, 1, 1);
 		}
-
-		ViewportInfo vi = backend.getViewportInfo();
 
 		GLUgl2 glu = new GLUgl2();
 
@@ -157,7 +170,7 @@ public class ObjectSelection {
 					g.drawPolygon(poly);
 				}
 			}
-			if (poly != null && poly.contains(evt.getPoint())) {
+			if (poly != null && poly.contains(location)) {
 				return true;
 			}
 		}

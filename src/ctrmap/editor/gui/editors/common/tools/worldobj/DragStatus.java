@@ -7,6 +7,7 @@ import ctrmap.renderer.backends.base.AbstractBackend;
 import ctrmap.renderer.backends.base.ViewportInfo;
 import ctrmap.renderer.scene.Scene;
 import ctrmap.renderer.util.ConstYPlaneRayCaster;
+import ctrmap.util.gui.CMGUI;
 import java.awt.event.MouseEvent;
 
 public class DragStatus {
@@ -45,8 +46,9 @@ public class DragStatus {
 	}
 
 	public void beginDrag(MouseEvent e, AbstractBackend backend) {
-		updateConstPlaneHeight();
 		ViewportInfo vi = backend.getViewportInfo();
+		e = CMGUI.mouseEventToSurfaceSpace(e, vi);
+		updateConstPlaneHeight();
 		Vec3f constPlaneContact = ConstYPlaneRayCaster.getConstYPlaneIntersectMouse(
 			e,
 			currentConstPlaneHeight,
@@ -62,6 +64,7 @@ public class DragStatus {
 		ViewportInfo vi = backend.getViewportInfo();
 		float[] mtxProj = scene.getAbsoluteProjectionMatrix().getMatrix();
 		int[] mtxVp = vi.getViewportMatrix();
+		e = CMGUI.mouseEventToSurfaceSpace(e, vi);
 
 		Vec3f oldWPos = obj.getWPos();
 		Vec3f oldDim = obj.getWDim();
