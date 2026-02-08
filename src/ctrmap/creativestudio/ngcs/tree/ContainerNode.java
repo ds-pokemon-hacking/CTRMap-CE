@@ -146,11 +146,57 @@ public class ContainerNode extends CSNode {
 		callImportAll(true);
 	}
 
+	private boolean isAMatch(String fileBaseName, String projectName) {
+		// Exact match
+        if (fileBaseName.equals(projectName)) return true;
+
+		return false;
+	}
+
 	public void callImportAll(boolean replace) {
 		NGCSIOManager ioMgr = getCS().getIOManager();
 		List<DiskFile> sourceFiles = XFileDialog.openMultiFileDialog(childCntType.getFiltersImport(ioMgr));
 
-		G3DResource imported = NGCSImporter.importFiles(getCS(), childCntType.getFormats(ioMgr), sourceFiles.toArray(new DiskFile[sourceFiles.size()]));
+		// Collect names of resources currently in the project
+        HashSet<String> projectResourceNames = new HashSet<>();
+        for (int i = 0; i < list.size(); i++) {
+            NamedResource nr = (NamedResource) list.get(i);
+            projectResourceNames.add(nr.getName());
+        }
+
+		// Filter to only source files matching the names
+        List<DiskFile> matchingFiles = new ArrayList<>();
+        for (DiskFile file : sourceFiles) {
+            String fileFullName = file.getName();
+            String fileBaseName = fileFullName;
+            int lastDot = fileFullName.lastIndexOf('.');
+            if (lastDot > 0) {
+                fileBaseName = fileFullName.substring(0, lastDot);
+            }
+            for (String projectName : projectResourceNames) {
+                if (isAMatch(fileBaseName, projectName)) {
+                    matchingFiles.add(file);
+                    break;  // Found a match, move to next file
+                }
+            }
+        }
+
+		G3DResource imported = null;
+
+		if (replace) {
+            // Proceed if there are matching files
+            if (!matchingFiles.isEmpty()) {
+                imported = NGCSImporter.importFiles(getCS(), childCntType.getFormats(ioMgr), matchingFiles.toArray(new DiskFile[matchingFiles.size()]));
+            } else {
+                return;
+            }
+        } else {
+            imported = NGCSImporter.importFiles(getCS(), childCntType.getFormats(ioMgr), sourceFiles.toArray(new DiskFile[sourceFiles.size()]));
+        }
+
+	    if (imported == null) {        
+            return;
+        }
 
 		List<? extends NamedResource> sourceList = null;
 
@@ -188,25 +234,30 @@ public class ContainerNode extends CSNode {
 				}
 				sourceList = l;
 				break;
-			case JOINT:
-			case MATERIAL:
+			case JOINT: {
+				List<Joint> allJoints = new ArrayList<>();
+                for (Model mdl : imported.models) {
+                    allJoints.addAll(mdl.skeleton.getJoints());
+                }
+                sourceList = allJoints;
+                break;
+			}
+			case MATERIAL: {
+				List<Material> allMaterials = new ArrayList<>();
+                for (Model mdl : imported.models) {
+                    if (mdl.materials != null) {
+                        allMaterials.addAll(mdl.materials);
+                    }
+                }
+                sourceList = allMaterials;
+                break;
+			}
 			case MESH:
-				Model model = getFirst(imported.models);
-
-				if (model != null) {
-					switch (childCntType) {
-						case JOINT:
-							sourceList = model.skeleton.getJoints();
-							break;
-						case MATERIAL:
-							sourceList = model.materials;
-							break;
-						case MESH:
-							sourceList = model.meshes;
-							break;
-					}
-				}
-
+				List<Mesh> allMeshes = new ArrayList<>();
+                for (Model mdl : imported.models) {
+                    allMeshes.addAll(mdl.meshes);
+                }
+                sourceList = allMeshes;
 				break;
 		}
 
