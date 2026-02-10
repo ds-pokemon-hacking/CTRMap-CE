@@ -146,57 +146,11 @@ public class ContainerNode extends CSNode {
 		callImportAll(true);
 	}
 
-	private boolean isAMatch(String fileBaseName, String projectName) {
-		// Exact match
-        if (fileBaseName.equals(projectName)) return true;
-
-		return false;
-	}
-
 	public void callImportAll(boolean replace) {
 		NGCSIOManager ioMgr = getCS().getIOManager();
 		List<DiskFile> sourceFiles = XFileDialog.openMultiFileDialog(childCntType.getFiltersImport(ioMgr));
 
-		// Collect names of resources currently in the project
-        HashSet<String> projectResourceNames = new HashSet<>();
-        for (int i = 0; i < list.size(); i++) {
-            NamedResource nr = (NamedResource) list.get(i);
-            projectResourceNames.add(nr.getName());
-        }
-
-		// Filter to only source files matching the names
-        List<DiskFile> matchingFiles = new ArrayList<>();
-        for (DiskFile file : sourceFiles) {
-            String fileFullName = file.getName();
-            String fileBaseName = fileFullName;
-            int lastDot = fileFullName.lastIndexOf('.');
-            if (lastDot > 0) {
-                fileBaseName = fileFullName.substring(0, lastDot);
-            }
-            for (String projectName : projectResourceNames) {
-                if (isAMatch(fileBaseName, projectName)) {
-                    matchingFiles.add(file);
-                    break;  // Found a match, move to next file
-                }
-            }
-        }
-
-		G3DResource imported = null;
-
-		if (replace) {
-            // Proceed if there are matching files
-            if (!matchingFiles.isEmpty()) {
-                imported = NGCSImporter.importFiles(getCS(), childCntType.getFormats(ioMgr), matchingFiles.toArray(new DiskFile[matchingFiles.size()]));
-            } else {
-                return;
-            }
-        } else {
-            imported = NGCSImporter.importFiles(getCS(), childCntType.getFormats(ioMgr), sourceFiles.toArray(new DiskFile[sourceFiles.size()]));
-        }
-
-	    if (imported == null) {        
-            return;
-        }
+		G3DResource imported = NGCSImporter.importFiles(getCS(), childCntType.getFormats(ioMgr), sourceFiles.toArray(new DiskFile[sourceFiles.size()]));
 
 		List<? extends NamedResource> sourceList = null;
 
