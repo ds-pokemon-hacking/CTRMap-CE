@@ -191,7 +191,9 @@ public class ContainerNode extends CSNode {
 			case JOINT: {
 				List<Joint> allJoints = new ArrayList<>();
                 for (Model mdl : imported.models) {
-                    allJoints.addAll(mdl.skeleton.getJoints());
+					if (mdl.materials != null) {
+                    	allJoints.addAll(mdl.skeleton.getJoints());
+					}
                 }
                 sourceList = allJoints;
                 break;
@@ -199,9 +201,7 @@ public class ContainerNode extends CSNode {
 			case MATERIAL: {
 				List<Material> allMaterials = new ArrayList<>();
                 for (Model mdl : imported.models) {
-                    if (mdl.materials != null) {
-                        allMaterials.addAll(mdl.materials);
-                    }
+                    allMaterials.addAll(mdl.materials);
                 }
                 sourceList = allMaterials;
                 break;
