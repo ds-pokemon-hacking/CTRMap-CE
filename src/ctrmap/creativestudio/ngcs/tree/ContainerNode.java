@@ -188,25 +188,30 @@ public class ContainerNode extends CSNode {
 				}
 				sourceList = l;
 				break;
-			case JOINT:
-			case MATERIAL:
-			case MESH:
-				Model model = getFirst(imported.models);
-
-				if (model != null) {
-					switch (childCntType) {
-						case JOINT:
-							sourceList = model.skeleton.getJoints();
-							break;
-						case MATERIAL:
-							sourceList = model.materials;
-							break;
-						case MESH:
-							sourceList = model.meshes;
-							break;
+			case JOINT: {
+				List<Joint> allJoints = new ArrayList<>();
+                for (Model mdl : imported.models) {
+					if (mdl.materials != null) {
+                    	allJoints.addAll(mdl.skeleton.getJoints());
 					}
-				}
-
+                }
+                sourceList = allJoints;
+                break;
+			}
+			case MATERIAL: {
+				List<Material> allMaterials = new ArrayList<>();
+                for (Model mdl : imported.models) {
+                    allMaterials.addAll(mdl.materials);
+                }
+                sourceList = allMaterials;
+                break;
+			}
+			case MESH:
+				List<Mesh> allMeshes = new ArrayList<>();
+                for (Model mdl : imported.models) {
+                    allMeshes.addAll(mdl.meshes);
+                }
+                sourceList = allMeshes;
 				break;
 		}
 
