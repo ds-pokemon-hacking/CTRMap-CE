@@ -22,9 +22,11 @@ import ctrmap.renderer.scene.texturing.TextureMapper;
 import xstandard.util.ListenableList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import xstandard.math.AABB6f;
 
@@ -43,21 +45,20 @@ public class G3DResource {
 	public final ListenableList<G3DSceneTemplate> sceneTemplates = new ListenableList<>();
 
 	public final AABB6f boundingBox = new AABB6f();
-	
+
 	public final MetaData metaData = new MetaData();
 
 	public G3DResource() {
 
 	}
 
-		
 	public String getModelName() {
 		if (!models.isEmpty()) {
 			return models.get(0).name;
 		}
 		return "<none>";
 	}
-	
+
 	public List<NamedResource> getAllResources() {
 		List<NamedResource> l = new ArrayList<>();
 		l.addAll(models);
@@ -83,7 +84,7 @@ public class G3DResource {
 	public Vec3f getCenterVector() {
 		return boundingBox.getCenter();
 	}
-	
+
 	public Vec3f getDimVector() {
 		return boundingBox.getDimensions();
 	}
@@ -158,7 +159,7 @@ public class G3DResource {
 		}
 		return null;
 	}
-	
+
 	public boolean isTextureUsed(String name) {
 		for (Material mat : materials()) {
 			for (TextureMapper m : mat.textures) {
@@ -198,8 +199,7 @@ public class G3DResource {
 						while (matIt == null || !matIt.hasNext()) {
 							if (mdlIt.hasNext()) {
 								matIt = mdlIt.next().materials.iterator();
-							}
-							else {
+							} else {
 								return false;
 							}
 						}
@@ -229,8 +229,7 @@ public class G3DResource {
 						while (meshIt == null || !meshIt.hasNext()) {
 							if (mdlIt.hasNext()) {
 								meshIt = mdlIt.next().meshes.iterator();
-							}
-							else {
+							} else {
 								return false;
 							}
 						}
@@ -245,7 +244,7 @@ public class G3DResource {
 			}
 		};
 	}
-	
+
 	public Iterable<MeshVisibilityGroup> visGroups() {
 		return new Iterable<MeshVisibilityGroup>() {
 			@Override
@@ -260,8 +259,7 @@ public class G3DResource {
 						while (visgroupIt == null || !visgroupIt.hasNext()) {
 							if (mdlIt.hasNext()) {
 								visgroupIt = mdlIt.next().visGroups.iterator();
-							}
-							else {
+							} else {
 								return false;
 							}
 						}
@@ -486,6 +484,31 @@ public class G3DResource {
 
 			usedNames.add(name);
 			dest.add(elem);
+		}
+	}
+
+	public static <T extends NamedResource> void addListOverwrite(List<T> dest, List<T> source) {
+		Map<String, T> resByName = new HashMap<>();
+		for (T r : source) {
+			String name = r.getName();
+			if (!resByName.containsKey(name)) {
+				resByName.put(name, r);
+			}
+		}
+		
+		for (int i = 0; i < dest.size(); ++i) {
+			T existing = dest.get(i);
+			T replacement = resByName.get(existing.getName());
+			if (replacement != null) {
+				dest.set(i, replacement);
+				resByName.remove(existing.getName());
+			}
+		}
+		
+		for (T remaining : source) {
+			if (!dest.contains(remaining)) {
+				dest.add(remaining);
+			}
 		}
 	}
 

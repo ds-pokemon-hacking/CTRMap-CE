@@ -30,7 +30,6 @@ import xstandard.text.FormattingUtils;
 import xstandard.util.ArraysEx;
 import xstandard.util.ListenableList;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class ContainerNode extends CSNode {
@@ -216,23 +215,11 @@ public class ContainerNode extends CSNode {
 		}
 
 		if (sourceList != null && !sourceList.isEmpty()) {
-			HashSet<String> names = new HashSet<>();
-			for (NamedResource r : sourceList) {
-				String name = r.getName();
-				if (!names.contains(name)) {
-					names.add(name);
-				}
-			}
 			if (replace) {
-				for (int i = 0; i < list.size(); i++) {
-					if (names.contains(((NamedResource) list.get(i)).getName())) {
-						list.remove(i);
-						i--;
-					}
-				}
+				G3DResource.addListOverwrite(list, sourceList);
+			} else {
+				G3DResource.addListPrededupe(list, sourceList, childCntType.name);
 			}
-
-			G3DResource.addListPrededupe(list, sourceList, childCntType.name);
 			
 			setExpansionState(true);
 		}
