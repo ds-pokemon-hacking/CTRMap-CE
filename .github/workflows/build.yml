@@ -2,9 +2,9 @@ name: Build CTRMap-CE
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, maven ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, maven ]
 
 jobs:
   build:
