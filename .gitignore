@@ -24,6 +24,11 @@ hs_err_pid*
 dist/
 build/
 store/
+target/
 jogamp-all-platforms*/
 
 nbproject/private
+
+# IntelliJ IDEA
+.idea/
+*.iml
