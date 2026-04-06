@@ -17,7 +17,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <build.date>local</build.date>
         <build.commit>unknown</build.commit>
-        <build.type>dev</build.type>
+        <build.type>nightly</build.type>
     </properties>
 
     <repositories>
@@ -73,6 +73,12 @@
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>jogl-all</artifactId>
             <version>2.4.0</version>
+            <classifier>natives-linux-aarch64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>2.4.0</version>
             <classifier>natives-macosx-universal</classifier>
         </dependency>
         <dependency>
@@ -91,6 +97,12 @@
             <artifactId>gluegen-rt</artifactId>
             <version>2.4.0</version>
             <classifier>natives-linux-amd64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>2.4.0</version>
+            <classifier>natives-linux-aarch64</classifier>
         </dependency>
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>

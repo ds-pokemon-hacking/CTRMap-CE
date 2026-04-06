@@ -32,9 +32,9 @@ jobs:
           DATE=$(date -u +'%Y%m%d')
           COMMIT=${GITHUB_SHA::7}
           if [[ "$GITHUB_REF" == "refs/heads/main" || "$GITHUB_REF" == "refs/heads/master" ]]; then
-            TYPE=release
+            TYPE=stable
           else
-            TYPE=dev
+            TYPE=nightly
           fi
           echo "date=$DATE" >> $GITHUB_OUTPUT
           echo "commit=$COMMIT" >> $GITHUB_OUTPUT
