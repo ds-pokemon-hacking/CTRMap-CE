@@ -5,22 +5,142 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ctrmap</groupId>
-    <artifactId>ctrmap-ce-parent</artifactId>
+    <artifactId>ctrmap-ce</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <name>CTRMap-CE</name>
-
-    <modules>
-        <module>submodules/XStandard</module>
-        <module>submodules/RPMAuthoringTools</module>
-        <module>submodules/PokeScript</module>
-        <module>ctrmap-ce</module>
-    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <build.date>local</build.date>
+        <build.commit>unknown</build.commit>
+        <build.type>nightly</build.type>
+
+        <jogl.version>2.6.0</jogl.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>jogamp</id>
+            <url>https://jogamp.org/deployment/maven</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.hello007</groupId>
+            <artifactId>xstandard</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.hello007</groupId>
+            <artifactId>rpm-authoring-tools</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ctrmap</groupId>
+            <artifactId>pokescript</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ctrmap</groupId>
+            <artifactId>pokescript-ide</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-windows-amd64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-linux-amd64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-linux-aarch64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-macosx-universal</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-windows-amd64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-linux-amd64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-linux-aarch64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-macosx-universal</classifier>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}-${build.type}-${build.date}-${build.commit}</finalName>
+        <sourceDirectory>src</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                    <exclude>**/*.form</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>ctrmap.Launc</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

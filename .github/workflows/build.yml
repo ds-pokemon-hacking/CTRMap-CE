@@ -2,9 +2,9 @@ name: Build CTRMap-CE
 
 on:
   push:
-    branches: [main, master, maven]
+    branches: [main, master]
   pull_request:
-    branches: [main, master, maven]
+    branches: [main, master]
 
 permissions:
   contents: write
@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CTRMap-CE
-          path: ctrmap-ce/target/ctrmap-ce-*.jar
+          path: ctrmap-ce/target/ctrmap-ce-*-jar-with-dependencies.jar
           if-no-files-found: warn
 
       - name: Create Nightly Release
@@ -61,7 +61,7 @@ jobs:
             --title "Nightly ${{ steps.meta.outputs.date }} (${{ steps.meta.outputs.commit }})" \
             --notes "Dev build from \`${{ steps.meta.outputs.commit }}\` on $(date -u +'%Y-%m-%d %H:%M:%S UTC')" \
             --prerelease \
-            ctrmap-ce/target/ctrmap-ce-*.jar
+            ctrmap-ce/target/ctrmap-ce-*-jar-with-dependencies.jar
 
       - name: Create Stable Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -72,4 +72,4 @@ jobs:
           gh release create "$TAG" \
             --title "Stable ${{ steps.meta.outputs.date }} (${{ steps.meta.outputs.commit }})" \
             --notes "Stable release from \`${{ steps.meta.outputs.commit }}\` on $(date -u +'%Y-%m-%d %H:%M:%S UTC')" \
-            ctrmap-ce/target/ctrmap-ce-*.jar
+            ctrmap-ce/target/ctrmap-ce-*-jar-with-dependencies.jar
