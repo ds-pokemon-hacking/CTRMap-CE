@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -41,30 +42,26 @@ jobs:
           echo "type=$TYPE" >> $GITHUB_OUTPUT
 
       - name: Build and install XStandard
-        working-directory: submodules/XStandard
-        run: |
-          cd lib
-          chmod +x _InstallLibs.sh
-          ./_InstallLibs.sh
-          cd ..
-          mvn install -B
+        run: bash ci/build/01-build-xstandard.sh
 
       - name: Build and publish RSyntaxTextArea
-        working-directory: submodules/PokeScript/PokeScriptIDE/submodules/RSyntaxTextArea
-        run: |
-          chmod +x ./gradlew
-          ./gradlew jar publishToMavenLocal --no-daemon
+        run: bash ci/build/02-build-rsyntaxtextarea.sh
 
       - name: Build and install PokeScript
-        working-directory: submodules/PokeScript
-        run: mvn install -B
+        run: bash ci/build/03-build-pokescript.sh
 
       - name: Build and install RPMAuthoringTools
-        working-directory: submodules/RPMAuthoringTools
-        run: mvn install -B
+        run: bash ci/build/04-build-rpm-authoring-tools.sh
+
+      - name: Install CTRMap-CE
+        run: bash ci/build/05-install-ctrmap-ce.sh
 
       - name: Build with Maven
-        run: mvn package assembly:single -B -Dbuild.date=${{ steps.meta.outputs.date }} -Dbuild.commit=${{ steps.meta.outputs.commit }} -Dbuild.type=${{ steps.meta.outputs.type }}
+        env:
+          BUILD_DATE: ${{ steps.meta.outputs.date }}
+          BUILD_COMMIT: ${{ steps.meta.outputs.commit }}
+          BUILD_TYPE: ${{ steps.meta.outputs.type }}
+        run: bash ci/build/06-package-ctrmap-ce.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
