@@ -40,14 +40,37 @@ jobs:
           echo "commit=$COMMIT" >> $GITHUB_OUTPUT
           echo "type=$TYPE" >> $GITHUB_OUTPUT
 
+      - name: Build and install XStandard
+        working-directory: submodules/XStandard
+        run: |
+          cd lib
+          chmod +x _InstallLibs.sh
+          ./_InstallLibs.sh
+          cd ..
+          mvn install -B
+
+      - name: Build and publish RSyntaxTextArea
+        working-directory: submodules/PokeScript/PokeScriptIDE/submodules/RSyntaxTextArea
+        run: |
+          chmod +x ./gradlew
+          ./gradlew jar publishToMavenLocal --no-daemon
+
+      - name: Build and install PokeScript
+        working-directory: submodules/PokeScript
+        run: mvn install -B
+
+      - name: Build and install RPMAuthoringTools
+        working-directory: submodules/RPMAuthoringTools
+        run: mvn install -B
+
       - name: Build with Maven
-        run: mvn install -B -Dbuild.date=${{ steps.meta.outputs.date }} -Dbuild.commit=${{ steps.meta.outputs.commit }} -Dbuild.type=${{ steps.meta.outputs.type }}
+        run: mvn package assembly:single -B -Dbuild.date=${{ steps.meta.outputs.date }} -Dbuild.commit=${{ steps.meta.outputs.commit }} -Dbuild.type=${{ steps.meta.outputs.type }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: CTRMap-CE
-          path: ctrmap-ce/target/ctrmap-ce-*-jar-with-dependencies.jar
+          path: target/ctrmap-ce-*-jar-with-dependencies.jar
           if-no-files-found: warn
 
       - name: Create Nightly Release
@@ -61,7 +84,7 @@ jobs:
             --title "Nightly ${{ steps.meta.outputs.date }} (${{ steps.meta.outputs.commit }})" \
             --notes "Dev build from \`${{ steps.meta.outputs.commit }}\` on $(date -u +'%Y-%m-%d %H:%M:%S UTC')" \
             --prerelease \
-            ctrmap-ce/target/ctrmap-ce-*-jar-with-dependencies.jar
+            target/ctrmap-ce-*-jar-with-dependencies.jar
 
       - name: Create Stable Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -72,4 +95,4 @@ jobs:
           gh release create "$TAG" \
             --title "Stable ${{ steps.meta.outputs.date }} (${{ steps.meta.outputs.commit }})" \
             --notes "Stable release from \`${{ steps.meta.outputs.commit }}\` on $(date -u +'%Y-%m-%d %H:%M:%S UTC')" \
-            ctrmap-ce/target/ctrmap-ce-*-jar-with-dependencies.jar
+            target/ctrmap-ce-*-jar-with-dependencies.jar
